@@ -13,31 +13,37 @@ class WebsiteWriter:
 	consensus = None
 	votes = None
 	statistics = None
+	consensus_expirey = datetime.timedelta(hours=3)
+	directory_key_warning_time = datetime.timedelta(days=14)
 	def writeWebsite(self, filename):
 		self.site = open(filename, 'w')
-		self._writePageHeader()
-		self._writeValidAfterTime()
-		self._writeKnownFlags()
-		self._writeNumberOfRelaysVotedAbout()
-		self._writeConsensusMethods()
-		self._writeRecommendedVersions()
-		self._writeConsensusParameters()
-		self._writeAuthorityKeys()
-		self._writeBandwidthScannerStatus()
-		self._writeAuthorityVersions()
-		self._writeDownloadStatistics()
-		self._writeRelayFlagsSummary()
-		self._writeRelayFlagsTable()
-		self._writePageFooter()
+		self._write_page_header()
+		self._write_valid_after_time()
+		self._write_known_flags()
+		self._write_number_of_relays_voted_about()
+		self._write_consensus_methods()
+		self._write_recommended_versions()
+		self._write_consensus_parameters()
+		self._write_authority_keys()
+		self._write_bandwidth_scanner_status()
+		self._write_authority_versions()
+		self._write_download_statistics()
+		self._write_relay_flags_summary()
+		self._write_relay_flags_table()
+		self._write_page_footer()
 		self.site.close()
 
-	def setConsensus(self, c):
+	def set_consensus(self, c):
 		self.consensus = c
-	def setVotes(self, v):
+	def set_votes(self, v):
 		self.votes = v
+	def set_consensus_expirey(self, timedelta):
+		self.consensus_expirey = timedelta
+	def set_directory_key_warning_time(self, timedelta):
+		self.directory_key_warning_time = timedelta
 
 	#-----------------------------------------------------------------------------------------
-	def _writePageHeader(self):
+	def _write_page_header(self):
 		"""
 		Write the HTML page header including the metrics website navigation.
 		"""
@@ -82,7 +88,7 @@ class WebsiteWriter:
 			+ "directory consensus process.</p>\n")
 		
 	#-----------------------------------------------------------------------------------------
-	def _writeValidAfterTime(self):
+	def _write_valid_after_time(self):
 		"""
 		Write the valid-after time of the downloaded consensus.
 		"""
@@ -94,7 +100,7 @@ class WebsiteWriter:
 		+ "<br>\n" \
 		+ "<p>Consensus was published ")
 
-		if self.consensus.valid_after + datetime.timedelta(hours=3) < datetime.datetime.now():
+		if self.consensus.valid_after + self.consensus_expirey < datetime.datetime.now():
 			self.site.write('<span class="oiv">'
 				+ self.consensus.valid_after.isoformat().replace("T", " ")
 				+ '</span>')
@@ -105,7 +111,7 @@ class WebsiteWriter:
 			+ "about new consensus and votes and process them.</i></p>\n")
 
 	#-----------------------------------------------------------------------------------------
-	def _writeKnownFlags(self):
+	def _write_known_flags(self):
 		"""
 		Write the lists of known flags.
 		"""
@@ -141,7 +147,7 @@ class WebsiteWriter:
 		+ "</table>\n")
 
 	#-----------------------------------------------------------------------------------------
-	def _writeNumberOfRelaysVotedAbout(self):
+	def _write_number_of_relays_voted_about(self):
 		"""
 		Write the number of relays voted about.
 		"""
@@ -183,7 +189,7 @@ class WebsiteWriter:
 		+  "</table>\n")		
 
 	#-----------------------------------------------------------------------------------------
-	def _writeConsensusMethods(self):
+	def _write_consensus_methods(self):
 		"""
 		Write the supported consensus methods of directory authorities and
 		the resulting consensus method.
@@ -232,7 +238,7 @@ class WebsiteWriter:
 		+ "</table>\n")
 
 	#-----------------------------------------------------------------------------------------
-	def _writeRecommendedVersions(self):
+	def _write_recommended_versions(self):
 		"""
 		Write recommended versions.
 		"""
@@ -298,7 +304,7 @@ class WebsiteWriter:
 		+ "</table>\n")
 
 	#-----------------------------------------------------------------------------------------
-	def _writeConsensusParameters(self):
+	def _write_consensus_parameters(self):
 		"""
 		Write consensus parameters.
 		"""
@@ -363,7 +369,7 @@ class WebsiteWriter:
 		+ "</table>\n")
 
 	#-----------------------------------------------------------------------------------------
-	def _writeAuthorityKeys(self):
+	def _write_authority_keys(self):
 		"""
 		Write authority keys and their expiration dates.
 		"""
@@ -385,7 +391,7 @@ class WebsiteWriter:
 				vote = self.votes[dirauth_nickname]
 
 				voteDirKeyExpires = vote.directory_authorities[0].key_certificate.expires
-				if voteDirKeyExpires - datetime.timedelta(days=14) < datetime.datetime.now():
+				if voteDirKeyExpires - self.directory_key_warning_time < datetime.datetime.now():
 					self.site.write("  <tr>\n"
 					+  "    <td><span class=\"oiv\">" + dirauth_nickname + "</span></td>\n"
 					+  "    <td><span class=\"oiv\">dir-key-expires "
@@ -405,7 +411,7 @@ class WebsiteWriter:
 			+ "</p>\n")
 
 	#-----------------------------------------------------------------------------------------
-	def _writeBandwidthScannerStatus(self):
+	def _write_bandwidth_scanner_status(self):
 		"""
 		Write the status of bandwidth scanners and results being contained in votes.
 		"""
@@ -440,7 +446,7 @@ class WebsiteWriter:
 		self.site.write("</table>\n")
 
 	#-----------------------------------------------------------------------------------------
-	def _writeAuthorityVersions(self):
+	def _write_authority_versions(self):
 		"""
 		Write directory authority versions.
 		"""
@@ -473,7 +479,7 @@ class WebsiteWriter:
 			+ "directory authorities!</i></p>\n")
 
 	#-----------------------------------------------------------------------------------------
-	def _writeDownloadStatistics(self):
+	def _write_download_statistics(self):
 		"""
 		Write some download statistics.
 		"""
@@ -527,7 +533,7 @@ class WebsiteWriter:
 		self.site.write("</table>\n");
 
 	#-----------------------------------------------------------------------------------------
-	def _writeRelayFlagsSummary(self):
+	def _write_relay_flags_summary(self):
 		"""
 		Write the relay flag summary
 		"""
@@ -633,7 +639,7 @@ class WebsiteWriter:
 		self.site.write("</table>\n")
 
 	#-----------------------------------------------------------------------------------------
-	def _writeRelayFlagsTable(self):
+	def _write_relay_flags_table(self):
 		"""
 		Write the (huge) table containing relay flags contained in votes and
 		the consensus for each relay.
@@ -676,14 +682,14 @@ class WebsiteWriter:
 		sortedKeys.sort()
 		for relay_fp in sortedKeys:
 			if linesWritten % 10 == 0:
-				self._writeRelayFlagsTableHeader()
+				self._write_relay_flags_tableHeader()
 			linesWritten += 1
-			self._writeRelayFlagsTableRow(relay_fp, allRelays[relay_fp])
+			self._write_relay_flags_tableRow(relay_fp, allRelays[relay_fp])
 
 		self.site.write("</table>\n")
 
 	#-----------------------------------------------------------------------------------------	
-	def _writeRelayFlagsTableHeader(self):
+	def _write_relay_flags_tableHeader(self):
 		"""
 		Write the table header that is repeated every ten relays and that
 		contains the directory authority names.
@@ -695,7 +701,7 @@ class WebsiteWriter:
 		self.site.write("    <th>consensus</th>\n  </tr>\n")
 
 	#-----------------------------------------------------------------------------------------
-	def _writeRelayFlagsTableRow(self, relay_fp, relay_nickname):
+	def _write_relay_flags_tableRow(self, relay_fp, relay_nickname):
 		"""
 		Write a single row in the table of relay flags.
 		"""
@@ -758,7 +764,7 @@ class WebsiteWriter:
 		self.site.write("  </tr>\n")
 
 	#-----------------------------------------------------------------------------------------
-	def _writePageFooter(self):
+	def _write_page_footer(self):
 		"""
 		Write the footer of the HTML page containing the blurb that is on
 		every page of the metrics website.
