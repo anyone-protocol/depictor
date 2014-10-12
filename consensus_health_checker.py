@@ -21,6 +21,8 @@ import stem.util.enum
 from stem import Flag
 from stem.util.lru_cache import lru_cache
 
+from website import WebsiteWriter
+
 # Set this flag to print results rather than email them.
 
 TEST_RUN = False
@@ -200,6 +202,12 @@ def main():
 
   consensuses, consensus_fetching_issues = get_consensuses()
   votes, vote_fetching_issues = get_votes()
+
+  w = WebsiteWriter()
+  w.setConsensus(consensuses.values()[0])
+  w.setVotes(votes)
+  w.writeWebsite('consensus-health.html')
+
   issues = consensus_fetching_issues + vote_fetching_issues
 
   if consensuses and votes:
