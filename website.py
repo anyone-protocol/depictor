@@ -748,7 +748,7 @@ class WebsiteWriter:
 			flagsWritten = 0;
 			
 			for flag in relevantFlags:
-				self.site.write(" <br />" if flagsWritten > 0 else " ")
+				self.site.write(" <br />" if flagsWritten > 0 else "")
 				flagsWritten += 1
 		
 				if flag in consensusFlags:
