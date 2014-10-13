@@ -15,6 +15,7 @@ class WebsiteWriter:
 	statistics = None
 	consensus_expirey = datetime.timedelta(hours=3)
 	directory_key_warning_time = datetime.timedelta(days=14)
+	known_params = []
 	def write_website(self, filename):
 		self.site = open(filename, 'w')
 		self._write_page_header()
@@ -41,6 +42,8 @@ class WebsiteWriter:
 		self.consensus_expirey = timedelta
 	def set_directory_key_warning_time(self, timedelta):
 		self.directory_key_warning_time = timedelta
+	def set_known_params(self, kp):
+		self.known_params = kp
 
 	#-----------------------------------------------------------------------------------------
 	def _write_page_header(self):
@@ -322,21 +325,13 @@ class WebsiteWriter:
 		if not self.votes:
 			self.site.write("  <tr><td>(No votes.)</td><td></td></tr>\n")
 		else:
-			validParameters = ['circwindow', 'CircuitPriorityHalflifeMsec', 
-				'refuseunknownexits', 'cbtdisabled', 'cbtnummodes', 
-				'cbtrecentcount', 'cbtmaxtimeouts', 'cbtmincircs', 
-				'cbtquantile', 'cbtclosequantile', 'cbttestfreq', 
-				'cbtmintimeout', 'cbtinitialtimeout', 'perconnbwburst', 
-				'perconnbwrate', 'UseOptimisticData', 'pb_disablepct', 
-                                'UseNTorHandshake', 'NumNTorsPerTAP', 'Support022HiddenServices']
-
 			for dirauth_nickname in self.votes:
 				vote = self.votes[dirauth_nickname]
 
 				conflictOrInvalid = False
 				if vote.params:
 					for p in vote.params:
-						if (p not in validParameters and not p.startswith('bwauth')) or \
+						if (p not in self.known_params and not p.startswith('bwauth')) or \
 						   p not in self.consensus.params or \
 						   self.consensus.params[p] != vote.params[p]:
 							conflictOrInvalid = True

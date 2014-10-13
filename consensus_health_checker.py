@@ -206,6 +206,7 @@ def main():
   w = WebsiteWriter()
   w.set_consensus(consensuses.values()[0])
   w.set_votes(votes)
+  w.set_known_params(CONFIG['known_params'])
   w.write_website('consensus-health.html')
 
   issues = consensus_fetching_issues + vote_fetching_issues
