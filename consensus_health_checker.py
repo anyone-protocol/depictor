@@ -204,9 +204,9 @@ def main():
   votes, vote_fetching_issues = get_votes()
 
   w = WebsiteWriter()
-  w.setConsensus(consensuses.values()[0])
-  w.setVotes(votes)
-  w.writeWebsite('consensus-health.html')
+  w.set_consensus(consensuses.values()[0])
+  w.set_votes(votes)
+  w.write_website('consensus-health.html')
 
   issues = consensus_fetching_issues + vote_fetching_issues
 
