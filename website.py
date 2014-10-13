@@ -322,7 +322,7 @@ class WebsiteWriter:
 				'cbtquantile', 'cbtclosequantile', 'cbttestfreq', 
 				'cbtmintimeout', 'cbtinitialtimeout', 'perconnbwburst', 
 				'perconnbwrate', 'UseOptimisticData', 'pb_disablepct', 
-				'UseNTorHandshake', 'NumNTorsPerTAP']
+                                'UseNTorHandshake', 'NumNTorsPerTAP', 'Support022HiddenServices']
 
 			for dirauth_nickname in self.votes:
 				vote = self.votes[dirauth_nickname]
