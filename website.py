@@ -15,7 +15,7 @@ class WebsiteWriter:
 	statistics = None
 	consensus_expirey = datetime.timedelta(hours=3)
 	directory_key_warning_time = datetime.timedelta(days=14)
-	def writeWebsite(self, filename):
+	def write_website(self, filename):
 		self.site = open(filename, 'w')
 		self._write_page_header()
 		self._write_valid_after_time()
@@ -793,7 +793,7 @@ if __name__ == '__main__':
 	import pickle
 	w = WebsiteWriter()
 	c = pickle.load(open('consensus.p', 'rb'))
-	w.setConsensus(c.values()[0])#Just take one of them
+	w.set_consensus(c.values()[0])#Just take one of them
 	v = pickle.load(open('votes.p', 'rb'))
-	w.setVotes(v)
-	w.writeWebsite('consensus-health-test.html')
+	w.set_votes(v)
+	w.write_website('consensus-health-test.html')
