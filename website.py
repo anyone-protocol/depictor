@@ -20,6 +20,7 @@ class WebsiteWriter:
 		self.site = open(filename, 'w')
 		self._write_page_header()
 		self._write_valid_after_time()
+		self._write_signatures()
 		self._write_known_flags()
 		self._write_number_of_relays_voted_about()
 		self._write_consensus_methods()
@@ -114,6 +115,35 @@ class WebsiteWriter:
 			+ "about new consensus and votes and process them.</i></p>\n")
 
 	#-----------------------------------------------------------------------------------------
+	def _write_signatures(self):
+		"""
+		Write the presence and method of each signature
+		"""
+		self.site.write("<br>\n\n\n"
+		+ " <!-- ================================================================= -->"
+		+ "<a name=\"signatures\">\n" 
+		+ "<h3><a href=\"#signatures\" class=\"anchor\">" 
+		+ "Signatures</a></h3>\n" 
+		+ "<br>\n"
+		+ "<table border=\"0\" cellpadding=\"4\" cellspacing=\"0\" summary=\"\">\n"
+		+ "  <colgroup>\n"
+		+ "    <col width=\"160\">\n"
+		+ "    <col width=\"640\">\n"
+		+ "  </colgroup>\n")
+   
+		signingFPs = {sig.identity:sig.method for sig in self.consensus.signatures}
+		for authority in self.consensus.directory_authorities:
+			self.site.write("  <tr>\n" 
+			+ "    <td>" + authority.nickname + "</td>\n")
+			if authority.fingerprint in signingFPs:
+				self.site.write("    <td>" + signingFPs[authority.fingerprint] + "</td>\n")
+			else:
+				self.site.write("    <td class=\"oiv\">Missing Signature!</td>\n")
+			self.site.write("  </tr>\n")
+		self.site.write("</table>\n")
+
+
+	#-----------------------------------------------------------------------------------------
 	def _write_known_flags(self):
 		"""
 		Write the lists of known flags.
@@ -159,7 +189,7 @@ class WebsiteWriter:
 		+ "<a name=\"numberofrelays\">\n"
 		+ "<h3><a href=\"#numberofrelays\" class=\"anchor\">"
 		+ "Number of relays voted about</a></h3>\n"
-		+         "<br>\n"
+		+	 "<br>\n"
 		+ "<table border=\"0\" cellpadding=\"4\" cellspacing=\"0\" summary=\"\">\n"
 		+ "  <colgroup>\n"
 		+ "    <col width=\"160\">\n"
@@ -226,7 +256,7 @@ class WebsiteWriter:
 				else:
 					self.site.write("  <tr>\n"
 					+ "    <td><span class=\"oiv\">"
-					+           dirauth_nickname + "</span></td>\n"
+					+	   dirauth_nickname + "</span></td>\n"
 					+ "    <td><span class=\"oiv\">consensus-methods")
 					for cm in vote.consensus_methods:
 						self.site.write(" " + str(cm))
