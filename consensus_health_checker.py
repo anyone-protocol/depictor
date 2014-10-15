@@ -6,9 +6,10 @@
 Performs a variety of checks against the present votes and consensus.
 """
 
-import datetime
 import gc
 import time
+import datetime
+import operator
 import traceback
 
 import util
@@ -204,7 +205,8 @@ def main():
   votes, vote_fetching_issues = get_votes()
 
   w = WebsiteWriter()
-  w.set_consensus(consensuses.values()[0])
+  most_recent_consensus = max(consensuses.itervalues(), key=operator.attrgetter('valid_after'))
+  w.set_consensus(most_recent_consensus)
   w.set_votes(votes)
   w.set_known_params(CONFIG['known_params'])
   w.write_website('consensus-health.html')
