@@ -294,9 +294,10 @@ def run_checks(consensuses, votes):
   )
 
   all_issues = []
+  out_of_date_authorities = []
 
   for checker in checker_functions:
-    issues = checker(latest_consensus, consensuses, votes)
+    issues = checker(latest_consensus, consensuses, votes, out_of_date_authorities)
 
     if issues:
       if isinstance(issues, Issue):
@@ -309,7 +310,7 @@ def run_checks(consensuses, votes):
   return all_issues
 
 
-def missing_latest_consensus(latest_consensus, consensuses, votes):
+def missing_latest_consensus(latest_consensus, consensuses, votes, out_of_date_authorities):
   "Checks that none of the consensuses are more than an hour old."
 
   stale_authorities = []
@@ -318,13 +319,14 @@ def missing_latest_consensus(latest_consensus, consensuses, votes):
   for authority, consensus in consensuses.items():
     if (current_time - consensus.valid_after) > datetime.timedelta(hours = 1):
       stale_authorities.append(authority)
+      out_of_date_authorities.append(authority)
 
   if stale_authorities:
     runlevel = Runlevel.ERROR if len(stale_authorities) > 3 else Runlevel.WARNING
     return Issue(runlevel, 'MISSING_LATEST_CONSENSUS', authorities = ', '.join(stale_authorities))
 
 
-def consensus_method_unsupported(latest_consensus, consensuses, votes):
+def consensus_method_unsupported(latest_consensus, consensuses, votes, out_of_date_authorities):
   "Checks that all of the votes support the present consensus method."
 
   incompatible_authorities = []
@@ -337,7 +339,7 @@ def consensus_method_unsupported(latest_consensus, consensuses, votes):
     return Issue(Runlevel.WARNING, 'CONSENSUS_METHOD_UNSUPPORTED', authorities = ', '.join(incompatible_authorities))
 
 
-def different_recommended_client_version(latest_consensus, consensuses, votes):
+def different_recommended_client_version(latest_consensus, consensuses, votes, out_of_date_authorities):
   "Checks that the recommended tor versions for clients match the present consensus."
 
   differences = []
@@ -351,7 +353,7 @@ def different_recommended_client_version(latest_consensus, consensuses, votes):
     return Issue(Runlevel.NOTICE, 'DIFFERENT_RECOMMENDED_VERSION', type = 'client', differences = ', '.join(differences))
 
 
-def different_recommended_server_version(latest_consensus, consensuses, votes):
+def different_recommended_server_version(latest_consensus, consensuses, votes, out_of_date_authorities):
   "Checks that the recommended tor versions for servers match the present consensus."
 
   differences = []
@@ -365,7 +367,7 @@ def different_recommended_server_version(latest_consensus, consensuses, votes):
     return Issue(Runlevel.NOTICE, 'DIFFERENT_RECOMMENDED_VERSION', type = 'server', differences = ', '.join(differences))
 
 
-def _version_difference_str(authority, consensus_versions, vote_versions):
+def _version_difference_str(authority, consensus_versions, vote_versions, out_of_date_authorities):
   """
   Provide a description of the delta between the given consensus and vote
   versions. For instance...
@@ -387,7 +389,7 @@ def _version_difference_str(authority, consensus_versions, vote_versions):
   return msg
 
 
-def unknown_consensus_parameters(latest_consensus, consensuses, votes):
+def unknown_consensus_parameters(latest_consensus, consensuses, votes, out_of_date_authorities):
   "Checks that votes don't contain any parameters that we don't recognize."
 
   unknown_entries = []
@@ -406,7 +408,7 @@ def unknown_consensus_parameters(latest_consensus, consensuses, votes):
     return Issue(Runlevel.NOTICE, 'UNKNOWN_CONSENSUS_PARAMETERS', parameters = ', '.join(unknown_entries))
 
 
-def vote_parameters_mismatch_consensus(latest_consensus, consensuses, votes):
+def vote_parameters_mismatch_consensus(latest_consensus, consensuses, votes, out_of_date_authorities):
   "Check that all vote parameters appear in the consensus."
 
   mismatching_entries = []
@@ -425,7 +427,7 @@ def vote_parameters_mismatch_consensus(latest_consensus, consensuses, votes):
     return Issue(Runlevel.NOTICE, 'MISMATCH_CONSENSUS_PARAMETERS', parameters = ', '.join(mismatching_entries))
 
 
-def certificate_expiration(latest_consensus, consensuses, votes):
+def certificate_expiration(latest_consensus, consensuses, votes, out_of_date_authorities):
   "Check if an authority's certificate is about to expire."
 
   issues = []
@@ -447,7 +449,7 @@ def certificate_expiration(latest_consensus, consensuses, votes):
   return issues
 
 
-def consensuses_have_same_votes(latest_consensus, consensuses, votes):
+def consensuses_have_same_votes(latest_consensus, consensuses, votes, out_of_date_authorities):
   "Checks that all fresh consensuses are made up of the same votes."
 
   current_time = datetime.datetime.now()
@@ -468,12 +470,17 @@ def consensuses_have_same_votes(latest_consensus, consensuses, votes):
     return Issue(Runlevel.NOTICE, 'MISSING_VOTES', authorities = ', '.join(authorities_missing_votes))
 
 
-def has_all_signatures(latest_consensus, consensuses, votes):
+def has_all_signatures(latest_consensus, consensuses, votes, out_of_date_authorities):
   "Check that the consensuses have signatures for authorities that voted on it."
 
   issues = []
 
   for consensus_of, consensus in consensuses.items():
+
+    if consensus_of in out_of_date_authorities:
+      #An out of date authority is almost certainly missing signatures.  If it's not, we still don't care
+      continue
+
     voting_authorities = set([authority.fingerprint for authority in consensus.directory_authorities])
     signing_authorities = set([sig.identity for sig in consensus.signatures])
     missing_authorities = set()
@@ -497,7 +504,7 @@ def has_all_signatures(latest_consensus, consensuses, votes):
   return issues
 
 
-def voting_bandwidth_scanners(latest_consensus, consensuses, votes):
+def voting_bandwidth_scanners(latest_consensus, consensuses, votes, out_of_date_authorities):
   "Checks that we have bandwidth scanner results from the authorities that vote on it."
 
   missing_authorities, extra_authorities = [], []
@@ -527,7 +534,7 @@ def voting_bandwidth_scanners(latest_consensus, consensuses, votes):
   return issues
 
 
-def unmeasured_relays(latest_consensus, consensuses, votes):
+def unmeasured_relays(latest_consensus, consensuses, votes, out_of_date_authorities):
   "Checks that the bandwidth authorities have all formed an opinion about at least 90% of the relays."
 
   issues = []
@@ -553,7 +560,7 @@ def unmeasured_relays(latest_consensus, consensuses, votes):
   return issues
 
 
-def has_authority_flag(latest_consensus, consensuses, votes):
+def has_authority_flag(latest_consensus, consensuses, votes, out_of_date_authorities):
   "Checks that the authorities have the 'authority' flag in the present consensus."
 
   seen_authorities = set()
@@ -577,7 +584,7 @@ def has_authority_flag(latest_consensus, consensuses, votes):
   return issues
 
 
-def has_expected_fingerprints(latest_consensus, consensuses, votes):
+def has_expected_fingerprints(latest_consensus, consensuses, votes, out_of_date_authorities):
   "Checks that the authorities have the fingerprints that we expect."
 
   issues = []
@@ -591,7 +598,7 @@ def has_expected_fingerprints(latest_consensus, consensuses, votes):
   return issues
 
 
-def is_recommended_versions(latest_consensus, consensuses, votes):
+def is_recommended_versions(latest_consensus, consensuses, votes, out_of_date_authorities):
   "Checks that the authorities are running a recommended version or higher."
 
   outdated_authorities = {}
@@ -608,7 +615,7 @@ def is_recommended_versions(latest_consensus, consensuses, votes):
     return Issue(Runlevel.WARNING, 'TOR_OUT_OF_DATE', authorities = ', '.join(entries))
 
 
-def bad_exits_in_sync(latest_consensus, consensuses, votes):
+def bad_exits_in_sync(latest_consensus, consensuses, votes, out_of_date_authorities):
   "Checks that the authorities that vote on the BadExit flag are in agreement."
 
   bad_exits = {}  # mapping of authorities to the fingerprints with the BadExit flag
@@ -637,7 +644,7 @@ def bad_exits_in_sync(latest_consensus, consensuses, votes):
   return issues
 
 
-def bandwidth_authorities_in_sync(latest_consensus, consensuses, votes):
+def bandwidth_authorities_in_sync(latest_consensus, consensuses, votes, out_of_date_authorities):
   """
   Checks that the bandwidth authorities are reporting roughly the same number
   of measurements. This is in alarm if any of the authorities deviate by more
