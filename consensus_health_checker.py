@@ -451,7 +451,7 @@ def consensuses_have_same_votes(latest_consensus, consensuses, votes):
   "Checks that all fresh consensuses are made up of the same votes."
 
   current_time = datetime.datetime.now()
-  fresh_consensuses = dict((k, v) for k, v in consensuses.items() if ((current_time - v.valid_after) < datetime.timedelta(hours = 1)))
+  fresh_consensuses = {k:v for k, v in consensuses.items() if v.valid_after == latest_consensus.valid_after}
 
   all_votes = set()
 
