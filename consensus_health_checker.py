@@ -205,8 +205,7 @@ def main():
   votes, vote_fetching_issues = get_votes()
 
   w = WebsiteWriter()
-  most_recent_consensus = max(consensuses.itervalues(), key=operator.attrgetter('valid_after'))
-  w.set_consensus(most_recent_consensus)
+  w.set_consensuses(consensuses)
   w.set_votes(votes)
   w.set_known_params(CONFIG['known_params'])
   w.write_website('consensus-health.html')

@@ -6,7 +6,7 @@ Produces an HTML file for easily viewing voting and consensus differences
 Ported from Java version Doctor
 """
 
-
+import operator
 import datetime
 
 class WebsiteWriter:
@@ -35,8 +35,9 @@ class WebsiteWriter:
 		self._write_page_footer()
 		self.site.close()
 
-	def set_consensus(self, c):
-		self.consensus = c
+	def set_consensuses(self, c):
+		self.consensuses = c
+                self.consensus = max(c.itervalues(), key=operator.attrgetter('valid_after'))
 	def set_votes(self, v):
 		self.votes = v
 	def set_consensus_expirey(self, timedelta):
@@ -138,7 +139,10 @@ class WebsiteWriter:
 			if authority.fingerprint in signingFPs:
 				self.site.write("    <td>" + signingFPs[authority.fingerprint] + "</td>\n")
 			else:
-				self.site.write("    <td class=\"oiv\">Missing Signature!</td>\n")
+				self.site.write("    <td class=\"oiv\">Missing Signature! "
+                                                + "Valid-after time of auth's displayed consensus: "
+                                                + self.consensuses[authority.nickname].valid_after.isoformat().replace("T", " ")
+                                                + "</td>\n")
 			self.site.write("  </tr>\n")
 		self.site.write("</table>\n")
 
