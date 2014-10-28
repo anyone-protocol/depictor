@@ -222,14 +222,24 @@ def main():
   config = stem.util.conf.get_config('last_notified')
   config.load(util.get_path('data', 'last_notified.cfg'))
 
-  consensuses, consensus_fetching_issues = get_consensuses()
-  votes, vote_fetching_issues = get_votes()
+  consensuses, consensus_fetching_issues, consensus_fetching_runtimes = get_consensuses()
+  votes, vote_fetching_issues, vote_fetching_runtimes = get_votes()
+
+  # updates the download statistics file
+  f = open('download-stats.csv', 'a')
+  for ds in consensus_fetching_runtimes:
+    f.write("%s,%i,%i\n" % (ds, time.time() * 1000, int(consensus_fetching_runtimes[ds] * 1000)))
+  f.close()
+  
+  # produces the website
 
   w = WebsiteWriter()
   w.set_consensuses(consensuses)
   w.set_votes(votes)
   w.set_known_params(CONFIG['known_params'])
   w.write_website('consensus-health.html')
+
+  # perform the checks
 
   issues = consensus_fetching_issues + vote_fetching_issues
 
@@ -693,7 +703,7 @@ def get_consensuses():
   """
   Provides a mapping of directory authority nicknames to their present consensus.
 
-  :returns: tuple of the form ({authority => consensus}, issues)
+  :returns: tuple of the form ({authority => consensus}, issues, runtimes)
   """
 
   return _get_documents('consensus', '/tor/status-vote/current/consensus')
@@ -703,14 +713,14 @@ def get_votes():
   """
   Provides a mapping of directory authority nicknames to their present vote.
 
-  :returns: tuple of the form ({authority => vote}, issues)
+  :returns: tuple of the form ({authority => vote}, issues, runtimes)
   """
 
   return _get_documents('vote', '/tor/status-vote/current/authority')
 
 
 def _get_documents(label, resource):
-  queries, documents, issues = {}, {}, []
+  queries, documents, issues, runtimes = {}, {}, [], {}
 
   for authority in directory_authorities().values():
     if authority.v3ident is None:
@@ -724,7 +734,9 @@ def _get_documents(label, resource):
 
   for authority, query in queries.items():
     try:
-      documents[authority] = query.run()[0]
+      result = query.run()
+      documents[authority] = result[0]
+      runtimes[authority] = query.runtime
     except Exception, exc:
       if label == 'vote':
         # try to download the vote via the other authorities
@@ -744,7 +756,7 @@ def _get_documents(label, resource):
 
       issues.append(Issue(Runlevel.ERROR, 'AUTHORITY_UNAVAILABLE', fetch_type = label, authority = authority, url = query.download_url, error = exc))
 
-  return documents, issues
+  return documents, issues, runtimes
 
 
 if __name__ == '__main__':
