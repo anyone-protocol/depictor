@@ -6,13 +6,13 @@ Produces an HTML file for easily viewing voting and consensus differences
 Ported from Java version Doctor
 """
 
+import time
 import operator
 import datetime
 
 class WebsiteWriter:
 	consensus = None
 	votes = None
-	statistics = None
 	consensus_expirey = datetime.timedelta(hours=3)
 	directory_key_warning_time = datetime.timedelta(days=14)
 	known_params = []
@@ -512,9 +512,29 @@ class WebsiteWriter:
 		"""
 		Write some download statistics.
 		"""
-		if not self.statistics:
-			return
-		#TODO
+                f = open('download-stats.csv', 'r')
+                lines = f.readlines()
+                f.close()
+
+                cutoff = int(time.time() * 1000) - (7 * 24 * 60 * 60 * 1000)
+                downloadData = {}
+                for l in lines:
+                        parts = l.split(',')
+                        if int(parts[1]) < cutoff:
+                                continue
+                        if parts[0] not in downloadData:
+                                downloadData[parts[0]] = []
+                        downloadData[parts[0]].append(int(parts[2].strip()))
+
+                maxDownloadsForAnyAuthority = 0
+                for a in downloadData:
+                        downloadData[a].sort()
+                        maxDownloadsForAnyAuthority = max(len(downloadData[a]), maxDownloadsForAnyAuthority)
+
+                def getPercentile(dataset, percentile):
+                        index = (percentile * (len(dataset) - 1)) / 100
+                        return str(dataset[index])
+
 		self.site.write("<br>\n\n\n"
 		+ " <!-- ================================================================= -->"
 		+ "<a name=\"downloadstats\">\n"
@@ -543,22 +563,29 @@ class WebsiteWriter:
 		+ "    <th>Timeouts</th>\n"
 		+ "  </tr>\n");
 		
-		for authority in self.statistics:
-			self.site.write("  <tr>\n"
-			+  "    <td>" + authority + "</td>\n"
-			+  "    <td>"
-			+ this.statistics.getPercentile(authority, 0) + "</td>\n"
-			+  "    <td>"
-			+ this.statistics.getPercentile(authority, 25) + "</td>\n"
-			+  "    <td>"
-			+ this.statistics.getPercentile(authority, 50) + "</td>\n"
-			+  "    <td>"
-			+ this.statistics.getPercentile(authority, 75) + "</td>\n"
-			+  "    <td>"
-			+ this.statistics.getPercentile(authority, 100) + "</td>\n"
-			+  "    <td>"
-			+ this.statistics.getNAs(authority) + "</td>\n"
-			+ "  </tr>\n");
+                for dirauth_nickname in self.votes:
+                        if dirauth_nickname not in downloadData:
+                                self.site.write("  <tr>\n"
+                                + "     <td colspan=\"7\"><span class=\"oiv\">"
+                                + dirauth_nickname + " not present in download statistics"
+                                + "</span></td>\n"
+                                + "  </tr>\n");
+                        else:
+                                self.site.write("  <tr>\n"
+                                +  "    <td>" + dirauth_nickname + "</td>\n"
+                                +  "    <td>"
+                                + getPercentile(downloadData[dirauth_nickname], 0) + "</td>\n"
+                                +  "    <td>"
+                                + getPercentile(downloadData[dirauth_nickname], 25) + "</td>\n"
+                                +  "    <td>"
+                                + getPercentile(downloadData[dirauth_nickname], 50) + "</td>\n"
+                                +  "    <td>"
+                                + getPercentile(downloadData[dirauth_nickname], 75) + "</td>\n"
+                                +  "    <td>"
+                                + getPercentile(downloadData[dirauth_nickname], 100) + "</td>\n"
+                                +  "    <td>"
+                                + str(maxDownloadsForAnyAuthority - len(downloadData[dirauth_nickname])) + "</td>\n"
+                                + "  </tr>\n");
 		self.site.write("</table>\n");
 
 	#-----------------------------------------------------------------------------------------
