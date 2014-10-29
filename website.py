@@ -59,7 +59,7 @@ class WebsiteWriter:
 			+ "    <title>Consensus health</title>\n"
 			+ "    <meta http-equiv=\"content-type\" content=\"text/html; charset=ISO-8859-1\">\n"
 			+ "    <link href=\"stylesheet-ltr.css\" type=\"text/css\" rel=\"stylesheet\">\n"
-			+ "    <link href=\"/images/favicon.ico\" type=\"image/x-icon\" rel=\"shortcut icon\">\n"
+			+ "    <link href=\"favicon.ico\" type=\"image/x-icon\" rel=\"shortcut icon\">\n"
 			+ "  </head>\n"
 			+ "  <body>\n"
 			+ "  <style>\n"

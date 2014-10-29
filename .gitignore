@@ -1,9 +1,6 @@
 *.pyc
 *.p
 *.swp
-logs/
-data/fingerprints
-data/last_notified.cfg
 stem
-gmail_pw
-consensus-health-test.html
+consensus-health.html
+download-stats.csv

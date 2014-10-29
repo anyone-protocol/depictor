@@ -47,7 +47,7 @@ def main():
   # loads configuration data
 
   config = stem.util.conf.get_config("consensus")
-  config.load(os.path.join('data', 'consensus.cfg'))
+  config.load(os.path.join(os.path.dirname(__file__), 'data', 'consensus.cfg'))
 
   consensuses, consensus_fetching_issues, consensus_fetching_runtimes = get_consensuses()
   votes, vote_fetching_issues, vote_fetching_runtimes = get_votes()
@@ -64,7 +64,7 @@ def main():
   w.set_consensuses(consensuses)
   w.set_votes(votes)
   w.set_known_params(CONFIG['known_params'])
-  w.write_website('consensus-health.html')
+  w.write_website(os.path.join(os.path.dirname(__file__), 'consensus-health.html'))
 
 
 def get_consensuses():
