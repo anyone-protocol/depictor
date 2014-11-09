@@ -138,10 +138,14 @@ class WebsiteWriter:
 			+ "    <td>" + authority.nickname + "</td>\n")
 			if authority.fingerprint in signingFPs:
 				self.site.write("    <td>" + signingFPs[authority.fingerprint] + "</td>\n")
-			else:
+			elif authority.nickname in self.consensuses:
 				self.site.write("    <td class=\"oiv\">Missing Signature! "
                                                 + "Valid-after time of auth's displayed consensus: "
                                                 + self.consensuses[authority.nickname].valid_after.isoformat().replace("T", " ")
+                                                + "</td>\n")
+			else:
+				self.site.write("    <td class=\"oiv\">Missing Signature! "
+                                                + authority.nickname + " does not have a consensus available."
                                                 + "</td>\n")
 			self.site.write("  </tr>\n")
 		self.site.write("</table>\n")
