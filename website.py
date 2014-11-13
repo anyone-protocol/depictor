@@ -16,9 +16,9 @@ class WebsiteWriter:
 	consensus_expirey = datetime.timedelta(hours=3)
 	directory_key_warning_time = datetime.timedelta(days=14)
 	known_params = []
-	def write_website(self, filename):
+	def write_website(self, filename, include_relay_flags=True):
 		self.site = open(filename, 'w')
-		self._write_page_header()
+		self._write_page_header(include_relay_flags)
 		self._write_valid_after_time()
 		self._write_signatures()
 		self._write_known_flags()
@@ -31,7 +31,10 @@ class WebsiteWriter:
 		self._write_authority_versions()
 		self._write_download_statistics()
 		self._write_relay_flags_summary()
-		self._write_relay_flags_table()
+		if include_relay_flags:
+			self._write_relay_flags_table()
+		else:
+			self._write_relay_flags_pointer()
 		self._write_page_footer()
 		self.site.close()
 
@@ -48,7 +51,7 @@ class WebsiteWriter:
 		self.known_params = kp
 
 	#-----------------------------------------------------------------------------------------
-	def _write_page_header(self):
+	def _write_page_header(self, include_relay_flags):
 		"""
 		Write the HTML page header including the metrics website navigation.
 		"""
@@ -90,7 +93,13 @@ class WebsiteWriter:
 			+ "        <br>\n"
 			+ "        <p>This page shows statistics about the current "
 			+ "consensus and votes to facilitate debugging of the "
-			+ "directory consensus process.</p>\n")
+			+ "directory consensus process.")
+		if not include_relay_flags:
+			self.site.write("<br />This is the abbreviated page. The "
+		        + "<a href=\"/consensus-health.html\">detailed page</a> "
+			+ "which includes the (large) relay flags table is also "
+			+ "available.")
+		self.site.write("</p>\n")
 		
 	#-----------------------------------------------------------------------------------------
 	def _write_valid_after_time(self):
@@ -699,6 +708,17 @@ class WebsiteWriter:
 		self.site.write("</table>\n")
 
 	#-----------------------------------------------------------------------------------------
+	def _write_relay_flags_pointer(self):
+		"""
+		Write a pointer to where the huge table is located
+		"""
+		self.site.write("<br>\n\n\n"
+		+ " <!-- ================================================================= -->"
+		+ "<a name=\"relayflags\">\n"
+		+ "<h3><a href=\"#relayflags\" class=\"anchor\">Relay flags</a></h3>\n"
+		+ "<br>\n"
+		+ "<p>Looking for the (huge) relay flags table? It's been moved to the <a "
+		+ "href=\"/consensus-health.html\">detailed page</a> to speed up this page.</p>\n")
 	def _write_relay_flags_table(self):
 		"""
 		Write the (huge) table containing relay flags contained in votes and

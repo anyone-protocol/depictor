@@ -64,7 +64,8 @@ def main():
   w.set_consensuses(consensuses)
   w.set_votes(votes)
   w.set_known_params(CONFIG['known_params'])
-  w.write_website(os.path.join(os.path.dirname(__file__), 'consensus-health.html'))
+  w.write_website(os.path.join(os.path.dirname(__file__), 'consensus-health.html'), True)
+  w.write_website(os.path.join(os.path.dirname(__file__), 'index.html'), False)
 
 
 def get_consensuses():
