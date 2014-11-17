@@ -13,6 +13,7 @@ import datetime
 class WebsiteWriter:
 	consensus = None
 	votes = None
+	known_authorities = []
 	consensus_expirey = datetime.timedelta(hours=3)
 	directory_key_warning_time = datetime.timedelta(days=14)
 	known_params = []
@@ -40,7 +41,8 @@ class WebsiteWriter:
 
 	def set_consensuses(self, c):
 		self.consensuses = c
-                self.consensus = max(c.itervalues(), key=operator.attrgetter('valid_after'))
+		self.consensus = max(c.itervalues(), key=operator.attrgetter('valid_after'))
+		self.known_authorities = [r.nickname for r in self.consensus.routers.values() if 'Authority' in r.flags and r.nickname != "Tonga"]
 	def set_votes(self, v):
 		self.votes = v
 	def set_consensus_expirey(self, timedelta):
@@ -96,7 +98,7 @@ class WebsiteWriter:
 			+ "directory consensus process.")
 		if not include_relay_flags:
 			self.site.write("<br />This is the abbreviated page. The "
-		        + "<a href=\"/consensus-health.html\">detailed page</a> "
+			+ "<a href=\"/consensus-health.html\">detailed page</a> "
 			+ "which includes the (large) relay flags table is also "
 			+ "available.")
 		self.site.write("</p>\n")
@@ -116,13 +118,13 @@ class WebsiteWriter:
 
 		if self.consensus.valid_after + self.consensus_expirey < datetime.datetime.now():
 			self.site.write('<span class="oiv">'
-				+ self.consensus.valid_after.isoformat().replace("T", " ")
-				+ '</span>')
+			+ self.consensus.valid_after.isoformat().replace("T", " ")
+			+ '</span>')
 		else:
 			self.site.write(self.consensus.valid_after.isoformat().replace("T", " "))
 
 		self.site.write(". <i>Note that it takes up to 15 minutes to learn "
-			+ "about new consensus and votes and process them.</i></p>\n")
+		+ "about new consensus and votes and process them.</i></p>\n")
 
 	#-----------------------------------------------------------------------------------------
 	def _write_signatures(self):
@@ -138,27 +140,37 @@ class WebsiteWriter:
 		+ "<table border=\"0\" cellpadding=\"4\" cellspacing=\"0\" summary=\"\">\n"
 		+ "  <colgroup>\n"
 		+ "    <col width=\"160\">\n"
-		+ "    <col width=\"640\">\n"
+		+ "    <col width=\"160\">\n"
+		+ "    <col width=\"480\">\n"
 		+ "  </colgroup>\n")
    
 		signingFPs = {sig.identity:sig.method for sig in self.consensus.signatures}
-		for authority in self.consensus.directory_authorities:
+		for dirauth_nickname in self.known_authorities: 
 			self.site.write("  <tr>\n" 
-			+ "    <td>" + authority.nickname + "</td>\n")
-			if authority.fingerprint in signingFPs:
-				self.site.write("    <td>" + signingFPs[authority.fingerprint] + "</td>\n")
-			elif authority.nickname in self.consensuses:
-				self.site.write("    <td class=\"oiv\">Missing Signature! "
-                                                + "Valid-after time of auth's displayed consensus: "
-                                                + self.consensuses[authority.nickname].valid_after.isoformat().replace("T", " ")
-                                                + "</td>\n")
+			+ "    <td>" + dirauth_nickname + "</td>\n")
+			authority = [r for r in self.consensus.routers.values() if r.nickname == dirauth_nickname and 'Authority' in r.flags][0]
+			self.site.write("    <td><a href=\"http://" + authority.address + ":" + str(authority.dir_port)
+			+ "/tor/status-vote/current/consensus\">consensus</a> <a href=\"http://"
+			+ authority.address + ":" + str(authority.dir_port)
+			+ "/tor/status-vote/current/authority\">vote</a></td>\n")
+			if dirauth_nickname in [d.nickname for d in self.consensus.directory_authorities]:
+				#The above structure is sufficient for getting the address & port
+				# but we need this structure for the authority's fingerprint
+				authority = [d for d in self.consensus.directory_authorities if d.nickname == dirauth_nickname][0]
+				if authority.fingerprint in signingFPs:
+					self.site.write("    <td>" + signingFPs[authority.fingerprint] + "</td>\n")
+				elif authority.nickname in self.consensuses:
+					self.site.write("    <td class=\"oiv\">Missing Signature! "
+					+ "Valid-after time of auth's displayed consensus: "
+					+ self.consensuses[authority.nickname].valid_after.isoformat().replace("T", " ")
+					+ "</td>\n")
+				else:
+					self.site.write("    <td class=\"oiv\">Missing Signature! "
+					+ authority.nickname + " does not have a consensus available</td>\n")
 			else:
-				self.site.write("    <td class=\"oiv\">Missing Signature! "
-                                                + authority.nickname + " does not have a consensus available."
-                                                + "</td>\n")
+				self.site.write("    <td class=\"oiv\">Missing From Consensus</td>\n")
 			self.site.write("  </tr>\n")
 		self.site.write("</table>\n")
-
 
 	#-----------------------------------------------------------------------------------------
 	def _write_known_flags(self):
@@ -175,10 +187,8 @@ class WebsiteWriter:
 		+ "    <col width=\"160\">\n"
 		+ "    <col width=\"640\">\n"
 		+ "  </colgroup>\n")
-		if not self.votes:
-				self.site.write("  <tr><td>(No votes.)</td><td></td></tr>\n")
-		else:
-			for dirauth_nickname in self.votes:
+		for dirauth_nickname in self.known_authorities:
+			if dirauth_nickname in self.votes:
 				vote = self.votes[dirauth_nickname]
 				self.site.write("  <tr>\n"
 				+ "    <td>" + dirauth_nickname + "</td>\n"
@@ -186,7 +196,11 @@ class WebsiteWriter:
 				for knownFlag in vote.known_flags:
 					self.site.write(" " + knownFlag)
 				self.site.write("</td>\n" + "  </tr>\n")
-		
+			else:
+				self.site.write("  <tr>\n"
+				+ "    <td>" + dirauth_nickname + "</td>\n"
+				+ "    <td><span class=\"oiv\">Vote Not Present<span></td>\n"
+				+ "  </tr>\n")
 		self.site.write("  <tr>\n"
 		+ "    <td class=\"ic\">consensus</td>\n"
 		+ "    <td class=\"ic\">known-flags")
@@ -216,17 +230,23 @@ class WebsiteWriter:
 		if not self.votes:
 		  self.site.write("  <tr><td>(No votes.)</td><td></td><td></td></tr>\n")
 		else:
-			for dirauth_nickname in self.votes:
-				vote = self.votes[dirauth_nickname]
-				runningRelays = 0
-				for r in vote.routers.values():
-					if u'Running' in r.flags:
-						runningRelays += 1
-				self.site.write("  <tr>\n"
-				+ "    <td>" + dirauth_nickname + "</td>\n"
-				+ "    <td>" + str(len(vote.routers)) + " total</td>\n"
-				+ "    <td>" + str(runningRelays) + " Running</td>\n"
-				+ "  </tr>\n")
+			for dirauth_nickname in self.known_authorities:
+				if dirauth_nickname in self.votes:
+					vote = self.votes[dirauth_nickname]
+					runningRelays = 0
+					for r in vote.routers.values():
+						if u'Running' in r.flags:
+							runningRelays += 1
+					self.site.write("  <tr>\n"
+					+ "    <td>" + dirauth_nickname + "</td>\n"
+					+ "    <td>" + str(len(vote.routers)) + " total</td>\n"
+					+ "    <td>" + str(runningRelays) + " Running</td>\n"
+					+ "  </tr>\n")
+				else:
+					self.site.write("  <tr>\n"
+					+ "    <td>" + dirauth_nickname + "</td>\n"
+					+ "    <td colspan=\"2\"><span class=\"oiv\">Vote Not Present<span></td>\n"
+					+ "  </tr>\n")
 		runningRelays = 0
 		for r in self.consensus.routers.values():
 			if u'Running' in r.flags:
@@ -258,26 +278,32 @@ class WebsiteWriter:
 		if not self.votes:
 			self.site.write("  <tr><td>(No votes.)</td><td></td></tr>\n")
 		else:
-			for dirauth_nickname in self.votes:
-				vote = self.votes[dirauth_nickname]
-				usedMethod = self.consensus.consensus_method
+			for dirauth_nickname in self.known_authorities:
+				if dirauth_nickname in self.votes:
+					vote = self.votes[dirauth_nickname]
+					usedMethod = self.consensus.consensus_method
 
-				if usedMethod in vote.consensus_methods:
-					self.site.write("  <tr>\n"
-					+ "    <td>" + dirauth_nickname + "</td>\n"
-					+ "    <td>consensus-methods")
-					for cm in vote.consensus_methods:
-						self.site.write(" " + str(cm))
-					self.site.write("</td>\n"
-					+ "  </tr>\n")
+					if usedMethod in vote.consensus_methods:
+						self.site.write("  <tr>\n"
+						+ "    <td>" + dirauth_nickname + "</td>\n"
+						+ "    <td>consensus-methods")
+						for cm in vote.consensus_methods:
+							self.site.write(" " + str(cm))
+						self.site.write("</td>\n"
+						+ "  </tr>\n")
+					else:
+						self.site.write("  <tr>\n"
+						+ "    <td><span class=\"oiv\">"
+						+	   dirauth_nickname + "</span></td>\n"
+						+ "    <td><span class=\"oiv\">consensus-methods")
+						for cm in vote.consensus_methods:
+							self.site.write(" " + str(cm))
+						self.site.write("</span></td>\n"
+						+ "  </tr>\n")
 				else:
 					self.site.write("  <tr>\n"
-					+ "    <td><span class=\"oiv\">"
-					+	   dirauth_nickname + "</span></td>\n"
-					+ "    <td><span class=\"oiv\">consensus-methods")
-					for cm in vote.consensus_methods:
-						self.site.write(" " + str(cm))
-					self.site.write("</span></td>\n"
+					+ "    <td>" + dirauth_nickname + "</td>\n"
+					+ "    <td><span class=\"oiv\">Vote Not Present<span></td>\n"	
 					+ "  </tr>\n")
 		self.site.write("  <tr>\n"
 		+ "    <td class=\"ic\">consensus</td>\n"
@@ -306,39 +332,45 @@ class WebsiteWriter:
 		if not self.votes:
 			self.site.write("  <tr><td>(No votes.)</td><td></td></tr>\n")
 		else:
-			for dirauth_nickname in self.votes:
-				vote = self.votes[dirauth_nickname]
+			for dirauth_nickname in self.known_authorities:
+				if dirauth_nickname in self.votes:
+					vote = self.votes[dirauth_nickname]
 				
-				if vote.client_versions:
-					if self.consensus.client_versions == vote.client_versions:
-						self.site.write("  <tr>\n"
-						+ "  <td>" + dirauth_nickname + "</td>\n"
-						+ "    <td>client-versions ")
-						self.site.write(", ".join([str(v) for v in vote.client_versions]))
-						self.site.write(  "</td>\n"
-						+ "  </tr>\n");
-					else:
-						self.site.write("  <tr>\n"
-						+ "    <td><span class=\"oiv\">" + dirauth_nickname + "</span></td>\n"
-						+ "    <td><span class=\"oiv\">client-versions ")
-						self.site.write(", ".join([str(v) for v in vote.client_versions]))
-						self.site.write("</span></td>\n"
-						+ "  </tr>\n")
-				if vote.server_versions:
-					if self.consensus.server_versions == vote.server_versions:
-						self.site.write("  <tr>\n"
-						+ "    <td> </td>\n"
-						+ "    <td>server-versions ")
-						self.site.write(", ".join([str(v) for v in vote.server_versions]))
-						self.site.write("</td>\n"
-						+ "  </tr>\n");
-					else:
-						self.site.write("  <tr>\n"
-						+ "    <td><span class=\"oiv\">" + dirauth_nickname + "</span></td>\n"
-						+ "    <td><span class=\"oiv\">server-versions ");
-						self.site.write(", ".join([str(v) for v in vote.server_versions]))
-						self.site.write("</span></td>\n"
-						+ "  </tr>\n")
+					if vote.client_versions:
+						if self.consensus.client_versions == vote.client_versions:
+							self.site.write("  <tr>\n"
+							+ "  <td>" + dirauth_nickname + "</td>\n"
+							+ "    <td>client-versions ")
+							self.site.write(", ".join([str(v) for v in vote.client_versions]))
+							self.site.write(  "</td>\n"
+							+ "  </tr>\n");
+						else:
+							self.site.write("  <tr>\n"
+							+ "    <td><span class=\"oiv\">" + dirauth_nickname + "</span></td>\n"
+							+ "    <td><span class=\"oiv\">client-versions ")
+							self.site.write(", ".join([str(v) for v in vote.client_versions]))
+							self.site.write("</span></td>\n"
+							+ "  </tr>\n")
+					if vote.server_versions:
+						if self.consensus.server_versions == vote.server_versions:
+							self.site.write("  <tr>\n"
+							+ "    <td> </td>\n"
+							+ "    <td>server-versions ")
+							self.site.write(", ".join([str(v) for v in vote.server_versions]))
+							self.site.write("</td>\n"
+							+ "  </tr>\n");
+						else:
+							self.site.write("  <tr>\n"
+							+ "    <td><span class=\"oiv\">" + dirauth_nickname + "</span></td>\n"
+							+ "    <td><span class=\"oiv\">server-versions ");
+							self.site.write(", ".join([str(v) for v in vote.server_versions]))
+							self.site.write("</span></td>\n"
+							+ "  </tr>\n")
+				else:
+					self.site.write("  <tr>\n"
+					+ "    <td>" + dirauth_nickname + "</td>\n"
+					+ "    <td><span class=\"oiv\">Vote Not Present<span></td>\n"
+					+ "  </tr>\n")
 		self.site.write("  <tr>\n"
 		+ "    <td class=\"ic\">consensus</td>\n"
 		+ "    <td class=\"ic\">client-versions ")
@@ -372,33 +404,39 @@ class WebsiteWriter:
 		if not self.votes:
 			self.site.write("  <tr><td>(No votes.)</td><td></td></tr>\n")
 		else:
-			for dirauth_nickname in self.votes:
-				vote = self.votes[dirauth_nickname]
-
-				conflictOrInvalid = False
-				if vote.params:
-					for p in vote.params:
-						if (p not in self.known_params and not p.startswith('bwauth')) or \
-						   p not in self.consensus.params or \
-						   self.consensus.params[p] != vote.params[p]:
-							conflictOrInvalid = True
-							break
-
-				if conflictOrInvalid:
-					self.site.write("  <tr>\n"
-					+ "    <td><span class=\"oiv\">" + dirauth_nickname + "</span></td>\n"
-					+ "    <td><span class=\"oiv\">params")
-					for p in vote.params:
-						self.site.write(" " + p + "=" + str(vote.params[p]))
-					self.site.write("</span></td>\n"
-					+ "  </tr>\n")
+			for dirauth_nickname in self.known_authorities:
+				if dirauth_nickname in self.votes:
+					vote = self.votes[dirauth_nickname]
+					#XXX - Only Write invalid/odd parameter in red
+					conflictOrInvalid = False
+					if vote.params:
+						for p in vote.params:
+							if (p not in self.known_params and not p.startswith('bwauth')) or \
+							   p not in self.consensus.params or \
+							   self.consensus.params[p] != vote.params[p]:
+								conflictOrInvalid = True
+								break
+					
+					if conflictOrInvalid:
+						self.site.write("  <tr>\n"
+						+ "    <td><span class=\"oiv\">" + dirauth_nickname + "</span></td>\n"
+						+ "    <td><span class=\"oiv\">params")
+						for p in vote.params:
+							self.site.write(" " + p + "=" + str(vote.params[p]))
+						self.site.write("</span></td>\n"
+						+ "  </tr>\n")
+					else:
+						self.site.write("  <tr>\n"
+						+  "    <td>" + dirauth_nickname + "</td>\n"
+						+  "    <td>params")
+						for p in vote.params:
+							self.site.write(" " + p + "=" + str(vote.params[p]))
+						self.site.write(  "</td>\n"
+						+ "  </tr>\n")
 				else:
 					self.site.write("  <tr>\n"
-					+  "    <td>" + dirauth_nickname + "</td>\n"
-					+  "    <td>params")
-					for p in vote.params:
-						self.site.write(" " + p + "=" + str(vote.params[p]))
-					self.site.write(  "</td>\n"
+					+ "    <td>" + dirauth_nickname + "</td>\n"
+					+ "    <td><span class=\"oiv\">Vote Not Present<span></td>\n"
 					+ "  </tr>\n")
 
 		self.site.write("  <tr>\n"
@@ -429,22 +467,28 @@ class WebsiteWriter:
 		if not self.votes:
 			self.site.write("  <tr><td>(No votes.)</td><td></td></tr>\n")
 		else:
-			for dirauth_nickname in self.votes:
-				vote = self.votes[dirauth_nickname]
+			for dirauth_nickname in self.known_authorities:
+				if dirauth_nickname in self.votes:
+					vote = self.votes[dirauth_nickname]
 
-				voteDirKeyExpires = vote.directory_authorities[0].key_certificate.expires
-				if voteDirKeyExpires - self.directory_key_warning_time < datetime.datetime.now():
-					self.site.write("  <tr>\n"
-					+  "    <td><span class=\"oiv\">" + dirauth_nickname + "</span></td>\n"
-					+  "    <td><span class=\"oiv\">dir-key-expires "
-					+ voteDirKeyExpires.isoformat().replace("T", " ") + "</span></td>\n"
-					+ "  </tr>\n");
+					voteDirKeyExpires = vote.directory_authorities[0].key_certificate.expires
+					if voteDirKeyExpires - self.directory_key_warning_time < datetime.datetime.now():
+						self.site.write("  <tr>\n"
+						+  "    <td><span class=\"oiv\">" + dirauth_nickname + "</span></td>\n"
+						+  "    <td><span class=\"oiv\">dir-key-expires "
+						+ voteDirKeyExpires.isoformat().replace("T", " ") + "</span></td>\n"
+						+ "  </tr>\n");
+					else:
+						self.site.write("  <tr>\n"
+						+  "    <td>" + dirauth_nickname + "</td>\n"
+						+  "    <td>dir-key-expires "  
+						+ voteDirKeyExpires.isoformat().replace("T", " ") + "</td>\n"
+						+ "  </tr>\n");
 				else:
 					self.site.write("  <tr>\n"
-					+  "    <td>" + dirauth_nickname + "</td>\n"
-					+  "    <td>dir-key-expires "  
-					+ voteDirKeyExpires.isoformat().replace("T", " ") + "</td>\n"
-					+ "  </tr>\n");
+					+ "    <td>" + dirauth_nickname + "</td>\n"
+					+ "    <td><span class=\"oiv\">Vote Not Present<span></td>\n"
+					+ "  </tr>\n")
 
 			self.site.write("</table>\n"
 			+ "<br>\n"
@@ -471,6 +515,7 @@ class WebsiteWriter:
 		if not self.votes:
 			self.site.write("  <tr><td>(No votes.)</td><td></td></tr>\n")
 		else:
+			#XXX - loop over all bwauths, and print if vote is not present
 			for dirauth_nickname in self.votes:
 				vote = self.votes[dirauth_nickname]
 				
@@ -525,28 +570,28 @@ class WebsiteWriter:
 		"""
 		Write some download statistics.
 		"""
-                f = open('download-stats.csv', 'r')
-                lines = f.readlines()
-                f.close()
+		f = open('download-stats.csv', 'r')
+		lines = f.readlines()
+		f.close()
 
-                cutoff = int(time.time() * 1000) - (7 * 24 * 60 * 60 * 1000)
-                downloadData = {}
-                for l in lines:
-                        parts = l.split(',')
-                        if int(parts[1]) < cutoff:
-                                continue
-                        if parts[0] not in downloadData:
-                                downloadData[parts[0]] = []
-                        downloadData[parts[0]].append(int(parts[2].strip()))
+		cutoff = int(time.time() * 1000) - (7 * 24 * 60 * 60 * 1000)
+		downloadData = {}
+		for l in lines:
+			parts = l.split(',')
+			if int(parts[1]) < cutoff:
+				continue
+			if parts[0] not in downloadData:
+				downloadData[parts[0]] = []
+			downloadData[parts[0]].append(int(parts[2].strip()))
 
-                maxDownloadsForAnyAuthority = 0
-                for a in downloadData:
-                        downloadData[a].sort()
-                        maxDownloadsForAnyAuthority = max(len(downloadData[a]), maxDownloadsForAnyAuthority)
+		maxDownloadsForAnyAuthority = 0
+		for a in downloadData:
+			downloadData[a].sort()
+			maxDownloadsForAnyAuthority = max(len(downloadData[a]), maxDownloadsForAnyAuthority)
 
-                def getPercentile(dataset, percentile):
-                        index = (percentile * (len(dataset) - 1)) / 100
-                        return str(dataset[index])
+		def getPercentile(dataset, percentile):
+			index = (percentile * (len(dataset) - 1)) / 100
+			return str(dataset[index])
 
 		self.site.write("<br>\n\n\n"
 		+ " <!-- ================================================================= -->"
@@ -576,29 +621,29 @@ class WebsiteWriter:
 		+ "    <th>Timeouts</th>\n"
 		+ "  </tr>\n");
 		
-                for dirauth_nickname in self.votes:
-                        if dirauth_nickname not in downloadData:
-                                self.site.write("  <tr>\n"
-                                + "     <td colspan=\"7\"><span class=\"oiv\">"
-                                + dirauth_nickname + " not present in download statistics"
-                                + "</span></td>\n"
-                                + "  </tr>\n");
-                        else:
-                                self.site.write("  <tr>\n"
-                                +  "    <td>" + dirauth_nickname + "</td>\n"
-                                +  "    <td>"
-                                + getPercentile(downloadData[dirauth_nickname], 0) + "</td>\n"
-                                +  "    <td>"
-                                + getPercentile(downloadData[dirauth_nickname], 25) + "</td>\n"
-                                +  "    <td>"
-                                + getPercentile(downloadData[dirauth_nickname], 50) + "</td>\n"
-                                +  "    <td>"
-                                + getPercentile(downloadData[dirauth_nickname], 75) + "</td>\n"
-                                +  "    <td>"
-                                + getPercentile(downloadData[dirauth_nickname], 100) + "</td>\n"
-                                +  "    <td>"
-                                + str(maxDownloadsForAnyAuthority - len(downloadData[dirauth_nickname])) + "</td>\n"
-                                + "  </tr>\n");
+		for dirauth_nickname in self.known_authorities:
+			if dirauth_nickname not in downloadData:
+				self.site.write("  <tr>\n"
+				+ "     <td colspan=\"7\"><span class=\"oiv\">"
+				+ dirauth_nickname + " not present in download statistics"
+				+ "</span></td>\n"
+				+ "  </tr>\n");
+			else:
+				self.site.write("  <tr>\n"
+				+  "    <td>" + dirauth_nickname + "</td>\n"
+				+  "    <td>"
+				+ getPercentile(downloadData[dirauth_nickname], 0) + "</td>\n"
+				+  "    <td>"
+				+ getPercentile(downloadData[dirauth_nickname], 25) + "</td>\n"
+				+  "    <td>"
+				+ getPercentile(downloadData[dirauth_nickname], 50) + "</td>\n"
+				+  "    <td>"
+				+ getPercentile(downloadData[dirauth_nickname], 75) + "</td>\n"
+				+  "    <td>"
+				+ getPercentile(downloadData[dirauth_nickname], 100) + "</td>\n"
+				+  "    <td>"
+				+ str(maxDownloadsForAnyAuthority - len(downloadData[dirauth_nickname])) + "</td>\n"
+				+ "  </tr>\n");
 		self.site.write("</table>\n");
 
 	#-----------------------------------------------------------------------------------------
@@ -675,36 +720,42 @@ class WebsiteWriter:
 							else:
 								workingEntry[kf] = 1
 
-		for dirauth_nickname in self.votes:
-			vote = self.votes[dirauth_nickname]
+		for dirauth_nickname in self.known_authorities:
+			if dirauth_nickname in self.votes:
+				vote = self.votes[dirauth_nickname]
 
-			i = 0
-			for kf in vote.known_flags:
-				self.site.write("  <tr>\n"
-				+  "    <td>" + (dirauth_nickname if i == 0 else "")
-				+ "</td>\n")
-				i += 1
+				i = 0
+				for kf in vote.known_flags:
+					self.site.write("  <tr>\n"
+					+  "    <td>" + (dirauth_nickname if i == 0 else "")
+					+ "</td>\n")
+					i += 1
 
-				if dirauth_nickname in flagsLost and kf in flagsLost[dirauth_nickname]:
-					self.site.write("    <td><span class=\"oiv\"> "
+					if dirauth_nickname in flagsLost and kf in flagsLost[dirauth_nickname]:
+						self.site.write("    <td><span class=\"oiv\"> "
 						+ str(flagsLost[dirauth_nickname][kf]) + " " + kf
 						+ "</span></td>\n")
-				else:
-					self.site.write("    <td></td>\n")
+					else:
+						self.site.write("    <td></td>\n")
 
-				if dirauth_nickname in flagsAgree and kf in flagsAgree[dirauth_nickname]:
-					self.site.write("    <td>" + str(flagsAgree[dirauth_nickname][kf])
+					if dirauth_nickname in flagsAgree and kf in flagsAgree[dirauth_nickname]:
+						self.site.write("    <td>" + str(flagsAgree[dirauth_nickname][kf])
 						+ " " + kf + "</td>\n")
-				else:
-					self.site.write("    <td></td>\n")
+					else:
+						self.site.write("    <td></td>\n")
 
-				if dirauth_nickname in flagsMissing and kf in flagsMissing[dirauth_nickname]:
-					self.site.write("    <td><span class=\"oic\">"
+					if dirauth_nickname in flagsMissing and kf in flagsMissing[dirauth_nickname]:
+						self.site.write("    <td><span class=\"oic\">"
 						+ str(flagsMissing[dirauth_nickname][kf]) + " " + kf
 						+ "</span></td>\n")
-				else:
-					self.site.write("    <td></td>\n")
-			self.site.write("  </tr>\n")
+					else:
+						self.site.write("    <td></td>\n")
+					self.site.write("  </tr>\n")
+			else:
+				self.site.write("  <tr>\n"
+				+ "    <td>" + dirauth_nickname + "</td>\n"
+				+ "    <td colspan=\"3\"><span class=\"oiv\">Vote Not Present<span></td>\n"
+				+ "  </tr>\n")
 		self.site.write("</table>\n")
 
 	#-----------------------------------------------------------------------------------------
@@ -866,9 +917,9 @@ if __name__ == '__main__':
 
 	import pickle
 	pickle.dump(consensuses, open('consensus.p', 'wb'))
-    pickle.dump(votes, open('votes.p', 'wb'))
+	pickle.dump(votes, open('votes.p', 'wb'))
 
-    Then I can run ./website.pt and pdb.set_trace() where needed to debug
+	Then I can run ./website.pt and pdb.set_trace() where needed to debug
 	"""
 	import pickle
 	w = WebsiteWriter()
