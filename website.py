@@ -42,7 +42,8 @@ class WebsiteWriter:
 	def set_consensuses(self, c):
 		self.consensuses = c
 		self.consensus = max(c.itervalues(), key=operator.attrgetter('valid_after'))
-		self.known_authorities = [r.nickname for r in self.consensus.routers.values() if 'Authority' in r.flags and r.nickname != "Tonga"]
+		self.known_authorities = set([r.nickname for r in self.consensus.routers.values() if 'Authority' in r.flags and r.nickname != "Tonga"])
+		self.known_authorities.update([r.nickname for r in self.consensus.directory_authorities])
 	def set_votes(self, v):
 		self.votes = v
 	def set_consensus_expirey(self, timedelta):
@@ -148,11 +149,20 @@ class WebsiteWriter:
 		for dirauth_nickname in self.known_authorities: 
 			self.site.write("  <tr>\n" 
 			+ "    <td>" + dirauth_nickname + "</td>\n")
-			authority = [r for r in self.consensus.routers.values() if r.nickname == dirauth_nickname and 'Authority' in r.flags][0]
-			self.site.write("    <td><a href=\"http://" + authority.address + ":" + str(authority.dir_port)
-			+ "/tor/status-vote/current/consensus\">consensus</a> <a href=\"http://"
-			+ authority.address + ":" + str(authority.dir_port)
-			+ "/tor/status-vote/current/authority\">vote</a></td>\n")
+			
+			#Try and find a structure that has it's IP & Port
+			authority = [r for r in self.consensus.routers.values() if r.nickname == dirauth_nickname and 'Authority' in r.flags]
+			if not authority:
+				authority = [d for d in self.consensus.directory_authorities if d.nickname == dirauth_nickname]
+			if authority:
+				authority = authority[0]
+				self.site.write("    <td><a href=\"http://" + authority.address + ":" + str(authority.dir_port)
+				+ "/tor/status-vote/current/consensus\">consensus</a> <a href=\"http://"
+				+ authority.address + ":" + str(authority.dir_port)
+				+ "/tor/status-vote/current/authority\">vote</a></td>\n")
+			else:
+				self.site.write("    <td colspan=\"2\" class=\"oiv\">Missing entirely from consensus</td>\n")
+				
 			if dirauth_nickname in [d.nickname for d in self.consensus.directory_authorities]:
 				#The above structure is sufficient for getting the address & port
 				# but we need this structure for the authority's fingerprint
@@ -165,10 +175,10 @@ class WebsiteWriter:
 					+ self.consensuses[authority.nickname].valid_after.isoformat().replace("T", " ")
 					+ "</td>\n")
 				else:
-					self.site.write("    <td class=\"oiv\">Missing Signature! "
+					self.site.write("    <td class=\"oiv\">Missing Signature, and "
 					+ authority.nickname + " does not have a consensus available</td>\n")
 			else:
-				self.site.write("    <td class=\"oiv\">Missing From Consensus</td>\n")
+				self.site.write("    <td class=\"oiv\">Authority not listed as a dir-source</td>\n")
 			self.site.write("  </tr>\n")
 		self.site.write("</table>\n")
 
