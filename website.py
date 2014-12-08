@@ -43,6 +43,7 @@ class WebsiteWriter:
 	def set_consensuses(self, c):
 		self.consensuses = c
 		self.consensus = max(c.itervalues(), key=operator.attrgetter('valid_after'))
+                # XXX - Change this to be a list of known dir auths, don't calculate it off the consensus because sometimes they're missing entirely
 		self.known_authorities = set([r.nickname for r in self.consensus.routers.values() if 'Authority' in r.flags and r.nickname != "Tonga"])
 		self.known_authorities.update([r.nickname for r in self.consensus.directory_authorities])
 	def set_votes(self, v):
@@ -911,7 +912,7 @@ class WebsiteWriter:
 		Write the footer of the HTML page containing the blurb that is on
 		every page of the metrics website.
    		"""
-		#XXX Write the git version and steam version the page was generated with
+		#XXX Write the git version and stem version the page was generated with
 		self.site.write("</div>\n"
 		+ "</div>\n"
 		+ "<div class=\"bottom\" id=\"bottom\">\n"
