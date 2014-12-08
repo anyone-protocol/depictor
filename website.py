@@ -6,6 +6,7 @@ Produces an HTML file for easily viewing voting and consensus differences
 Ported from Java version Doctor
 """
 
+import os
 import time
 import operator
 import datetime
@@ -580,7 +581,7 @@ class WebsiteWriter:
 		"""
 		Write some download statistics.
 		"""
-		f = open('download-stats.csv', 'r')
+		f = open(os.path.join('out', 'download-stats.csv'), 'r')
 		lines = f.readlines()
 		f.close()
 
