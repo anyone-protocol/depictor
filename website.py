@@ -910,6 +910,7 @@ class WebsiteWriter:
 		Write the footer of the HTML page containing the blurb that is on
 		every page of the metrics website.
    		"""
+		#XXX Write the git version and steam version the page was generated with
 		self.site.write("</div>\n"
 		+ "</div>\n"
 		+ "<div class=\"bottom\" id=\"bottom\">\n"

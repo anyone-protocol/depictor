@@ -53,7 +53,7 @@ def main():
   votes, vote_fetching_issues, vote_fetching_runtimes = get_votes()
 
   # updates the download statistics file
-  f = open('download-stats.csv', 'a')
+  f = open(os.path.join('out', 'download-stats.csv'), 'a')
   for ds in consensus_fetching_runtimes:
     f.write("%s,%i,%i\n" % (ds, time.time() * 1000, int(consensus_fetching_runtimes[ds] * 1000)))
   f.close()
@@ -64,8 +64,8 @@ def main():
   w.set_consensuses(consensuses)
   w.set_votes(votes)
   w.set_known_params(CONFIG['known_params'])
-  w.write_website(os.path.join(os.path.dirname(__file__), 'consensus-health.html'), True)
-  w.write_website(os.path.join(os.path.dirname(__file__), 'index.html'), False)
+  w.write_website(os.path.join(os.path.dirname(__file__), 'out', 'consensus-health.html'), True)
+  w.write_website(os.path.join(os.path.dirname(__file__), 'out', 'index.html'), False)
 
 
 def get_consensuses():

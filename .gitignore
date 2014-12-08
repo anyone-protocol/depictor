@@ -2,6 +2,6 @@
 *.p
 *.swp
 stem
-index.html
-consensus-health.html
-download-stats.csv
+out/index.html
+out/consensus-health.html
+out/download-stats.csv
