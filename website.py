@@ -147,6 +147,7 @@ class WebsiteWriter:
 		+ "    <col width=\"480\">\n"
 		+ "  </colgroup>\n")
    
+		# XXX Should also write the keyszie here
 		signingFPs = {sig.identity:sig.method for sig in self.consensus.signatures}
 		for dirauth_nickname in self.known_authorities: 
 			self.site.write("  <tr>\n" 
