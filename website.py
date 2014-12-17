@@ -584,7 +584,7 @@ class WebsiteWriter:
 		"""
 		Write some download statistics.
 		"""
-		f = open(os.path.join('out', 'download-stats.csv'), 'r')
+		f = open(os.path.join(os.path.dirname(__file__), 'out', 'download-stats.csv'), 'r')
 		lines = f.readlines()
 		f.close()
 

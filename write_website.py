@@ -53,7 +53,7 @@ def main():
   votes, vote_fetching_issues, vote_fetching_runtimes = get_votes()
 
   # updates the download statistics file
-  f = open(os.path.join('out', 'download-stats.csv'), 'a')
+  f = open(os.path.join(os.path.dirname(__file__), 'out', 'download-stats.csv'), 'a')
   for ds in consensus_fetching_runtimes:
     f.write("%s,%i,%i\n" % (ds, time.time() * 1000, int(consensus_fetching_runtimes[ds] * 1000)))
   f.close()
