@@ -147,7 +147,8 @@ class WebsiteWriter:
 		+ "    <col width=\"480\">\n"
 		+ "  </colgroup>\n")
    
-		# XXX Should also write the keyszie here
+		# XXX Should also write the keysize here
+		# XXX Should also write if the displayed consensus is out of date
 		signingFPs = {sig.identity:sig.method for sig in self.consensus.signatures}
 		for dirauth_nickname in self.known_authorities: 
 			self.site.write("  <tr>\n" 
