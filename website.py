@@ -868,7 +868,13 @@ class WebsiteWriter:
 			+ relay_fp
 			+ "</span></td>\n")
 
-		self.site.write("    <td>" + relay_nickname + "</td>\n")
+		self.site.write("    <td>" \
+		+ relay_nickname \
+		+ " <br /><span class=\"agt\"><a href=\"https://atlas.torproject.org/#details/" \
+		+ relay_fp + "\">Atlas</a> | " \
+		+ "<a href=\"https://globe.torproject.org/#/relay/" + relay_fp \
+		+ "\">Globe</a></span>" \
+		+ "</td>\n")
 
 		relevantFlags = set()
 		for dirauth_nickname in self.votes:
