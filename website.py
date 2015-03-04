@@ -854,10 +854,19 @@ class WebsiteWriter:
 		if relay_fp in self.consensus.routers and \
 			"Named" in self.consensus.routers[relay_fp].flags and \
 			 relay_nickname[0].isdigit():
-			self.site.write("    <td id=\"" + relay_nickname + "\">"
-			+ relay_fp.substring(0, 8) + "</td>\n")
+			self.site.write("    <td id=\"" \
+			+ relay_nickname \
+			+ "\">" \
+			+ relay_fp.substring(0, 8) \
+			+ "<br /><span style=\"tiny\">" \
+			+ relay_fp \
+			+ "</span></td>\n")
 		else:
-			self.site.write("    <td>" + relay_fp[0:8] + "</td>\n")
+			self.site.write("    <td>" \
+			+ relay_fp[0:8]
+			+ "<br /><span class=\"tiny\">" \
+			+ relay_fp
+			+ "</span></td>\n")
 
 		self.site.write("    <td>" + relay_nickname + "</td>\n")
 

@@ -94,6 +94,10 @@ td {
     vertical-align: top;
 }
 
+.tiny {
+      font-size: 3px;
+}
+
 /* the banner */
 
 table.banner {
