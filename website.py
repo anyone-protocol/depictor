@@ -865,15 +865,13 @@ class WebsiteWriter:
 		if relay_fp in self.consensus.routers and \
 			"Named" in self.consensus.routers[relay_fp].flags and \
 			 relay_nickname[0].isdigit():
-			self.site.write("    <td id=\"" \
-			+ relay_nickname \
-			+ "\">" \
+			self.site.write("    <td id=\"" + relay_fp + "\">" \
 			+ relay_fp.substring(0, 8) \
 			+ "<br /><span style=\"tiny\">" \
 			+ relay_fp \
 			+ "</span></td>\n")
 		else:
-			self.site.write("    <td>" \
+			self.site.write("    <td id=\"" + relay_fp + "\">" \
 			+ relay_fp[0:8]
 			+ "<br /><span class=\"tiny\">" \
 			+ relay_fp
@@ -884,7 +882,9 @@ class WebsiteWriter:
 		+ " <br /><span class=\"agt\"><a href=\"https://atlas.torproject.org/#details/" \
 		+ relay_fp + "\">Atlas</a> | " \
 		+ "<a href=\"https://globe.torproject.org/#/relay/" + relay_fp \
-		+ "\">Globe</a></span>" \
+		+ "\">Globe</a> | <a href=\"consensus-health-" \
+		+ (self.get_consensus_time() - datetime.timedelta(hours=1)).strftime("%Y-%m-%d-%H-%M")
+		+ ".html#" + relay_fp + "\">&#8668;</a></span>" \
 		+ "</td>\n")
 
 		relevantFlags = set()
