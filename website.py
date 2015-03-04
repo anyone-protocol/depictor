@@ -421,23 +421,25 @@ class WebsiteWriter:
 			for dirauth_nickname in self.known_authorities:
 				if dirauth_nickname in self.votes:
 					vote = self.votes[dirauth_nickname]
-					#XXX - Only Write invalid/odd parameter in red
-					conflictOrInvalid = False
+					conflictOrInvalid = []
 					if vote.params:
 						for p in vote.params:
 							if (p not in self.known_params and not p.startswith('bwauth')) or \
 							   p not in self.consensus.params or \
 							   self.consensus.params[p] != vote.params[p]:
-								conflictOrInvalid = True
+								conflictOrInvalid.append(p)
 								break
 					
 					if conflictOrInvalid:
 						self.site.write("  <tr>\n"
 						+ "    <td><span class=\"oiv\">" + dirauth_nickname + "</span></td>\n"
-						+ "    <td><span class=\"oiv\">params")
+						+ "    <td>params")
 						for p in vote.params:
-							self.site.write(" " + p + "=" + str(vote.params[p]))
-						self.site.write("</span></td>\n"
+							if p in conflictOrInvalid:
+								self.site.write(" <span class=\"oiv\">" + p + "=" + str(vote.params[p]) + "</span>")
+							else:
+								self.site.write(" " + p + "=" + str(vote.params[p]))
+						self.site.write("</td>\n"
 						+ "  </tr>\n")
 					else:
 						self.site.write("  <tr>\n"
