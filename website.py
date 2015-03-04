@@ -947,18 +947,33 @@ class WebsiteWriter:
 if __name__ == '__main__':
 	"""
 	I found that the most effective way to test this independently was to pickle the 
-	downloaded conensuses in ./consensus_health_checker.py like this:
+	downloaded conensuses in ./write_website.py like this:
 
 	import pickle
 	pickle.dump(consensuses, open('consensus.p', 'wb'))
 	pickle.dump(votes, open('votes.p', 'wb'))
 
-	Then I can run ./website.pt and pdb.set_trace() where needed to debug
+	Then I can run ./website.py and pdb.set_trace() where needed to debug
 	"""
+	import stem
 	import pickle
 	w = WebsiteWriter()
+
 	c = pickle.load(open('consensus.p', 'rb'))
-	w.set_consensus(c.values()[0])#Just take one of them
+	w.set_consensuses(c)
 	v = pickle.load(open('votes.p', 'rb'))
 	w.set_votes(v)
-	w.write_website('consensus-health-test.html')
+
+	CONFIG = stem.util.conf.config_dict('consensus', {
+                                    'ignored_authorities': [],
+                                    'bandwidth_authorities': [],
+                                    'known_params': [],
+                                    })
+	config = stem.util.conf.get_config("consensus")
+	config.load(os.path.join(os.path.dirname(__file__), 'data', 'consensus.cfg'))
+	w.set_known_params(CONFIG['known_params'])
+
+	w.write_website(os.path.join(os.path.dirname(__file__), 'out', \
+		'consensus-health-' + w.get_consensus_time().strftime("%Y-%m-%d-%H-%M") + '.html'), True)
+	w.write_website(os.path.join(os.path.dirname(__file__), 'out', 'consensus-health.html'), True)
+	w.write_website(os.path.join(os.path.dirname(__file__), 'out', 'index.html'), False)
