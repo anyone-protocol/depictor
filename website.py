@@ -54,6 +54,8 @@ class WebsiteWriter:
 		self.directory_key_warning_time = timedelta
 	def set_known_params(self, kp):
 		self.known_params = kp
+	def get_consensus_time(self):
+		return self.consensus.valid_after
 
 	#-----------------------------------------------------------------------------------------
 	def _write_page_header(self, include_relay_flags):
