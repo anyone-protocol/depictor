@@ -52,8 +52,9 @@ class WebsiteWriter:
 		self.consensus_expirey = timedelta
 	def set_directory_key_warning_time(self, timedelta):
 		self.directory_key_warning_time = timedelta
-	def set_known_params(self, kp):
-		self.known_params = kp
+	def set_config(self, config):
+		self.known_params = config['known_params']
+		self.bandwidth_authorities = config['bandwidth_authorities']
 	def get_consensus_time(self):
 		return self.consensus.valid_after
 
@@ -533,7 +534,6 @@ class WebsiteWriter:
 		if not self.votes:
 			self.site.write("  <tr><td>(No votes.)</td><td></td></tr>\n")
 		else:
-			#XXX - loop over all bwauths, and print if vote is not present
 			for dirauth_nickname in self.votes:
 				vote = self.votes[dirauth_nickname]
 				
@@ -548,6 +548,13 @@ class WebsiteWriter:
 					+ "    <td>" + str(bandwidthWeights)
 					+ " Measured values in w lines</td>\n"
 					+ "  </tr>\n")
+			for dirauth_nickname in self.bandwidth_authorities:
+				if dirauth_nickname not in self.votes:
+					self.site.write("  <tr>\n"
+					+ "    <td>" + dirauth_nickname + "</td>\n"
+					+ "    <td class=\"oiv\">Missing vote</td>\n"
+					+ "  </tr>\n")
+
 		self.site.write("</table>\n")
 
 	#-----------------------------------------------------------------------------------------
@@ -971,7 +978,7 @@ if __name__ == '__main__':
                                     })
 	config = stem.util.conf.get_config("consensus")
 	config.load(os.path.join(os.path.dirname(__file__), 'data', 'consensus.cfg'))
-	w.set_known_params(CONFIG['known_params'])
+	w.set_config(CONFIG)
 
 	w.write_website(os.path.join(os.path.dirname(__file__), 'out', \
 		'consensus-health-' + w.get_consensus_time().strftime("%Y-%m-%d-%H-%M") + '.html'), True)
