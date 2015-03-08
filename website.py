@@ -10,6 +10,8 @@ import os
 import time
 import operator
 import datetime
+from base64 import b64decode
+from Crypto.PublicKey import RSA
 
 class WebsiteWriter:
 	consensus = None
@@ -43,7 +45,7 @@ class WebsiteWriter:
 	def set_consensuses(self, c):
 		self.consensuses = c
 		self.consensus = max(c.itervalues(), key=operator.attrgetter('valid_after'))
-                # XXX - Change this to be a list of known dir auths, don't calculate it off the consensus because sometimes they're missing entirely
+		# XXX - Change this to be a list of known dir auths, don't calculate it off the consensus because sometimes they're missing entirely
 		self.known_authorities = set([r.nickname for r in self.consensus.routers.values() if 'Authority' in r.flags and r.nickname != "Tonga"])
 		self.known_authorities.update([r.nickname for r in self.consensus.directory_authorities])
 	def set_votes(self, v):
@@ -150,7 +152,6 @@ class WebsiteWriter:
 		+ "    <col width=\"480\">\n"
 		+ "  </colgroup>\n")
    
-		# XXX Should also write the keysize here
 		# XXX Should also write if the displayed consensus is out of date
 		signingFPs = {sig.identity:sig.method for sig in self.consensus.signatures}
 		for dirauth_nickname in self.known_authorities: 
@@ -468,6 +469,14 @@ class WebsiteWriter:
 		+ "</table>\n")
 
 	#-----------------------------------------------------------------------------------------
+	def getKeySize(self, key):
+		key = key.replace("-----BEGIN RSA PUBLIC KEY-----", "")
+		key = key.replace("-----END RSA PUBLIC KEY-----", "")
+		key = key.replace("\n", "")
+		keyDER = b64decode(key)
+		keyPub = RSA.importKey(keyDER)
+		return str(keyPub.size() + 1)
+
 	def _write_authority_keys(self):
 		"""
 		Write authority keys and their expiration dates.
@@ -481,8 +490,17 @@ class WebsiteWriter:
 		+ "<table border=\"0\" cellpadding=\"4\" cellspacing=\"0\" summary=\"\">\n"
 		+ "  <colgroup>\n"
 		+ "    <col width=\"160\">\n"
-		+ "    <col width=\"640\">\n"
-		+ "  </colgroup>\n")
+		+ "    <col width=\"300\">\n"
+		+ "    <col width=\"170\">\n"
+		+ "    <col width=\"170\">\n"
+		+ "  </colgroup>\n"
+		+ "  <tr>\n"
+		+ "    <th>Name</th>"
+		+ "    <th>Expirey</th>"
+		+ "    <th>Identity Key Len.</th>"
+		+ "    <th>Signing Key Len.</th>"
+		+ "  </tr>\n")
+
 		if not self.votes:
 			self.site.write("  <tr><td>(No votes.)</td><td></td></tr>\n")
 		else:
@@ -493,25 +511,27 @@ class WebsiteWriter:
 					voteDirKeyExpires = vote.directory_authorities[0].key_certificate.expires
 					if voteDirKeyExpires - self.directory_key_warning_time < datetime.datetime.now():
 						self.site.write("  <tr>\n"
-						+  "    <td><span class=\"oiv\">" + dirauth_nickname + "</span></td>\n"
-						+  "    <td><span class=\"oiv\">dir-key-expires "
-						+ voteDirKeyExpires.isoformat().replace("T", " ") + "</span></td>\n"
-						+ "  </tr>\n");
+						+ "    <td><span class=\"oiv\">" + dirauth_nickname + "</span></td>\n"
+						+ "    <td><span class=\"oiv\">"
+						+ voteDirKeyExpires.isoformat().replace("T", " ") + "</span></td>\n")
 					else:
 						self.site.write("  <tr>\n"
-						+  "    <td>" + dirauth_nickname + "</td>\n"
-						+  "    <td>dir-key-expires "  
-						+ voteDirKeyExpires.isoformat().replace("T", " ") + "</td>\n"
-						+ "  </tr>\n");
+						+ "    <td>" + dirauth_nickname + "</td>\n"
+						+ "    <td>"
+						+ voteDirKeyExpires.isoformat().replace("T", " ") + "</td>\n")
+
+					self.site.write("    <td>" + self.getKeySize(vote.directory_authorities[0].key_certificate.identity_key) + "</td>\n"
+					+ "    <td>" + self.getKeySize(vote.directory_authorities[0].key_certificate.signing_key) + "</td>\n"
+					+ "  </tr>\n");
 				else:
 					self.site.write("  <tr>\n"
 					+ "    <td>" + dirauth_nickname + "</td>\n"
-					+ "    <td><span class=\"oiv\">Vote Not Present<span></td>\n"
+					+ "    <td colspan=\"3\"><span class=\"oiv\">Vote Not Present<span></td>\n"
 					+ "  </tr>\n")
 
 			self.site.write("</table>\n"
 			+ "<br>\n"
-			+ "<p><i>Note that expiration dates of legacy keys are "
+			+ "<p><i>Note that expiration dates of any legacy keys are "
 			+ "not included in votes and therefore not listed here!</i>"
 			+ "</p>\n")
 
