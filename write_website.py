@@ -59,8 +59,12 @@ def main():
     f.write("%s,%i,%i\n" % (ds, time.time() * 1000, int(consensus_fetching_runtimes[ds] * 1000)))
   f.close()
   
-  # produces the website
+  # great for debugging
+  #import pickle
+  #pickle.dump(consensuses, open('consensus.p', 'wb'))
+  #pickle.dump(votes, open('votes.p', 'wb'))
 
+  # produces the website
   w = WebsiteWriter()
   w.set_consensuses(consensuses)
   w.set_votes(votes)
