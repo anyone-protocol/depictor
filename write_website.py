@@ -71,11 +71,24 @@ def main():
 	w.write_website(os.path.join(os.path.dirname(__file__), 'out', 'consensus-health.html'), True)
 	w.write_website(os.path.join(os.path.dirname(__file__), 'out', 'index.html'), False)
 
+	consensus_time = w.get_consensus_time()
 	archived = os.path.join(os.path.dirname(__file__), 'out', \
-							'consensus-health-' + w.get_consensus_time().strftime("%Y-%m-%d-%H-%M") + '.html')
+							'consensus-health-' + consensus_time.strftime("%Y-%m-%d-%H-%M") + '.html')
 	subprocess.call(["cp", os.path.join(os.path.dirname(__file__), 'out', 'consensus-health.html'), archived])
 	subprocess.call(["gzip", "-9", archived])
 	subprocess.call(["ln", "-s", archived + ".gz", archived])
+
+	# remove old files
+	weeks_to_keep = 3
+	files = [f for f in os.listdir(os.path.join(os.path.dirname(__file__), 'out'))]
+	for f in files:
+		print f
+		if f.startswith("consensus-health-"):
+			f = f.replace("consensus-health-", "").replace(".html", "")
+			f_time = datetime.datetime.strptime(f, "%Y-%m-%d-%H-%M")
+			print "\t", f_time
+			if (consensus_time - f_time).days > weeks_to_keep * 7:
+				os.remove(f)
 
 
 def get_consensuses():
