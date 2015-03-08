@@ -12,6 +12,7 @@ import time
 import datetime
 import operator
 import traceback
+import subprocess
 
 import stem.descriptor
 import stem.descriptor.remote
@@ -64,10 +65,13 @@ def main():
   w.set_consensuses(consensuses)
   w.set_votes(votes)
   w.set_config(CONFIG)
-  w.write_website(os.path.join(os.path.dirname(__file__), 'out', \
-    'consensus-health-' + w.get_consensus_time().strftime("%Y-%m-%d-%H-%M") + '.html'), True)
   w.write_website(os.path.join(os.path.dirname(__file__), 'out', 'consensus-health.html'), True)
   w.write_website(os.path.join(os.path.dirname(__file__), 'out', 'index.html'), False)
+
+  archived = os.path.join(os.path.dirname(__file__), 'out', \
+						  'consensus-health-' + w.get_consensus_time().strftime("%Y-%m-%d-%H-%M") + '.html')
+  subprocess.call(["cp", os.path.join(os.path.dirname(__file__), 'out', 'consensus-health.html'), archived])
+  subprocess.call(["gzip", "-9", archived])
 
 
 def get_consensuses():
