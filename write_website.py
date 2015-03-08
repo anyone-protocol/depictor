@@ -75,6 +75,7 @@ def main():
 							'consensus-health-' + w.get_consensus_time().strftime("%Y-%m-%d-%H-%M") + '.html')
 	subprocess.call(["cp", os.path.join(os.path.dirname(__file__), 'out', 'consensus-health.html'), archived])
 	subprocess.call(["gzip", "-9", archived])
+	subprocess.call(["ln", "-s", archived + ".gz", archived])
 
 
 def get_consensuses():
