@@ -355,35 +355,25 @@ class WebsiteWriter:
 					vote = self.votes[dirauth_nickname]
 				
 					if vote.client_versions:
-						if self.consensus.client_versions == vote.client_versions:
-							self.site.write("  <tr>\n"
-							+ "  <td>" + dirauth_nickname + "</td>\n"
-							+ "    <td>client-versions ")
-							self.site.write(", ".join([str(v) for v in vote.client_versions]))
-							self.site.write(  "</td>\n"
-							+ "  </tr>\n");
-						else:
-							self.site.write("  <tr>\n"
-							+ "    <td><span class=\"oiv\">" + dirauth_nickname + "</span></td>\n"
-							+ "    <td><span class=\"oiv\">client-versions ")
-							self.site.write(", ".join([str(v) for v in vote.client_versions]))
-							self.site.write("</span></td>\n"
-							+ "  </tr>\n")
+						self.site.write("  <tr>\n"
+						+ "    <td>" + dirauth_nickname + "</td>\n"
+						+ "    <td>client-versions ")
+						self.site.write(", ".join([(str(v) if v in self.consensus.client_versions else "<span class=\"oiv\">" + str(v) + "</span>")
+							for v in vote.client_versions]))
+						self.site.write("".join([(", <span class=\"oiv\"><s>" + str(v) + "</s></span>")
+							for v in self.consensus.client_versions if v not in vote.client_versions]))
+						self.site.write("</td>\n"
+						+ "  </tr>\n")
 					if vote.server_versions:
-						if self.consensus.server_versions == vote.server_versions:
-							self.site.write("  <tr>\n"
-							+ "    <td> </td>\n"
-							+ "    <td>server-versions ")
-							self.site.write(", ".join([str(v) for v in vote.server_versions]))
-							self.site.write("</td>\n"
-							+ "  </tr>\n");
-						else:
-							self.site.write("  <tr>\n"
-							+ "    <td><span class=\"oiv\">" + dirauth_nickname + "</span></td>\n"
-							+ "    <td><span class=\"oiv\">server-versions ");
-							self.site.write(", ".join([str(v) for v in vote.server_versions]))
-							self.site.write("</span></td>\n"
-							+ "  </tr>\n")
+						self.site.write("  <tr>\n"
+						+ "    <td>" + dirauth_nickname + "</td>\n"
+						+ "    <td>server-versions ")
+						self.site.write(", ".join([(str(v) if v in self.consensus.server_versions else "<span class=\"oiv\">" + str(v) + "</span>")
+							for v in vote.server_versions]))
+						self.site.write("".join([(", <span class=\"oiv\"><s>" + str(v) + "</s></span>")
+							for v in self.consensus.server_versions if v not in vote.server_versions]))
+						self.site.write("</td>\n"
+						+ "  </tr>\n")
 				else:
 					self.site.write("  <tr>\n"
 					+ "    <td>" + dirauth_nickname + "</td>\n"
