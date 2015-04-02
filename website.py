@@ -10,6 +10,7 @@ import os
 import time
 import operator
 import datetime
+import stem.descriptor.remote
 from base64 import b64decode
 from Crypto.PublicKey import RSA
 
@@ -45,9 +46,9 @@ class WebsiteWriter:
 	def set_consensuses(self, c):
 		self.consensuses = c
 		self.consensus = max(c.itervalues(), key=operator.attrgetter('valid_after'))
-		# XXX - Change this to be a list of known dir auths, don't calculate it off the consensus because sometimes they're missing entirely
 		self.known_authorities = set([r.nickname for r in self.consensus.routers.values() if 'Authority' in r.flags and r.nickname != "Tonga"])
 		self.known_authorities.update([r.nickname for r in self.consensus.directory_authorities])
+		self.known_authorities.update([r for r in stem.descriptor.remote.get_authorities().keys() if r != "Tonga"])
 	def set_votes(self, v):
 		self.votes = v
 	def set_consensus_expirey(self, timedelta):
@@ -185,8 +186,6 @@ class WebsiteWriter:
 				else:
 					self.site.write("    <td class=\"oiv\">Missing Signature, and "
 					+ authority.nickname + " does not have a consensus available</td>\n")
-			else:
-				self.site.write("    <td class=\"oiv\">Authority not listed as a dir-source</td>\n")
 			self.site.write("  </tr>\n")
 		self.site.write("</table>\n")
 
