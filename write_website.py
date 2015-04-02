@@ -88,10 +88,10 @@ def main():
 	files = [f for f in os.listdir(os.path.join(os.path.dirname(__file__), 'out'))]
 	for f in files:
 		if f.startswith("consensus-health-"):
-			f = f.replace("consensus-health-", "").replace(".html", "").replace(".gz", "")
-			f_time = datetime.datetime.strptime(f, "%Y-%m-%d-%H-%M")
+			f_time = f.replace("consensus-health-", "").replace(".html", "").replace(".gz", "")
+			f_time = datetime.datetime.strptime(f_time, "%Y-%m-%d-%H-%M")
 			if (consensus_time - f_time).days > weeks_to_keep * 7:
-				os.remove(f)
+				os.remove(os.path.join(os.path.dirname(__file__), 'out', f))
 
 
 def get_consensuses():
