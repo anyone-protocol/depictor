@@ -115,28 +115,27 @@ def get_votes():
 
 
 def _get_documents(label, resource):
-	queries, documents, issues, runtimes = {}, {}, [], {}
+	documents, issues, runtimes = {}, [], {}
 
 	for authority in directory_authorities().values():
 		if authority.v3ident is None:
 			continue	# not a voting authority
 
-		queries[authority.nickname] = downloader.query(
+		query = downloader.query(
 			resource,
 			endpoints = [(authority.address, authority.dir_port)],
 			default_params = False,
 		)
 
-	for authority, query in queries.items():
 		try:
-			result = query.run()
-			documents[authority] = result[0]
-			runtimes[authority] = query.runtime
+			start_time = time.time()
+			documents[authority.nickname] = query.run()[0]
+			runtimes[authority.nickname] = time.time() - start_time
 		except Exception, exc:
 			if label == 'vote':
 				# try to download the vote via the other authorities
 
-				v3ident = directory_authorities()[authority].v3ident
+				v3ident = directory_authorities()[authority.nickname].v3ident
 
 				query = downloader.query(
 					'/tor/status-vote/current/%s' % v3ident,
@@ -146,7 +145,7 @@ def _get_documents(label, resource):
 				query.run(True)
 
 				if not query.error:
-					documents[authority] = list(query)[0]
+					documents[authority.nickname] = list(query)[0]
 					continue
 
 			issues.append(('AUTHORITY_UNAVAILABLE', label, authority, query.download_url, exc))
