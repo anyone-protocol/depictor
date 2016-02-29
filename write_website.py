@@ -80,8 +80,9 @@ def main():
 	archived = os.path.join(os.path.dirname(__file__), 'out', \
 				'consensus-health-' + consensus_time.strftime("%Y-%m-%d-%H-%M") + '.html')
 	subprocess.call(["cp", os.path.join(os.path.dirname(__file__), 'out', 'consensus-health.html'), archived])
-	subprocess.call(["gzip", "-9", archived])
-	subprocess.call(["ln", "-s", archived + ".gz", archived])
+	#Do not gzip anymore, as Apache is not configured for it.
+	#subprocess.call(["gzip", "-9", archived])
+	#subprocess.call(["ln", "-s", archived + ".gz", archived])
 
 	# remove old files
 	weeks_to_keep = 3
