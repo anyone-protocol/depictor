@@ -906,6 +906,7 @@ class WebsiteWriter:
 			consensusFlags = self.consensus.routers[relay_fp].flags
 			relevantFlags.update(consensusFlags)
 
+		relevantFlags = sorted(list(relevantFlags))
 		for dirauth_nickname in self.votes:
 			vote = self.votes[dirauth_nickname]
 			if relay_fp in vote.routers:
