@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright 2013, Damian Johnson and The Tor Project
+# Copyright 2013, Damian Johnson, Tom Ritter, and The Tor Project
 # See LICENSE for licensing information
 
 """
@@ -23,6 +23,7 @@ from stem import Flag
 from stem.util.lru_cache import lru_cache
 
 from website import WebsiteWriter
+from graphs import GraphWriter
 
 DIRECTORY_AUTHORITIES = stem.descriptor.remote.get_authorities()
 
@@ -71,10 +72,21 @@ def main():
 	w.write_website(os.path.join(os.path.dirname(__file__), 'out', 'consensus-health.html'), True)
 	w.write_website(os.path.join(os.path.dirname(__file__), 'out', 'index.html'), False)
 
-	# delete giant data structures for subprocess forking by piling hacks on top of each other
 	consensus_time = w.get_consensus_time()
+	del w
+
+	# produces the website
+	g = GraphWriter()
+	g.set_consensuses(consensuses)
+	g.set_votes(votes)
+	g.set_config(CONFIG)
+	g.write_website(os.path.join(os.path.dirname(__file__), 'out', 'graphs.html'))
+
+	del g
+
+	# delete giant data structures for subprocess forking by piling hacks on top of each other
 	import gc
-	del w, consensuses, votes
+	del consensuses, votes
 	gc.collect()
 	time.sleep(1)
 	archived = os.path.join(os.path.dirname(__file__), 'out', \
