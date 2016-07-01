@@ -70,8 +70,8 @@ def main(dir):
 	dirauth_columns = ""
 	dirauth_columns_questions = ""
 	for d in dirAuths:
-		dirauth_columns += d + "_running integer, " + d + "_bwauth integer, "
-		dirauth_columns_questions += ", ?, ?"
+		dirauth_columns += d + "_known integer, " + d + "_running integer, " + d + "_bwauth integer, "
+		dirauth_columns_questions += ",?,?,?"
 
 	votes = {}
 	for root, dirs, files in os.walk(dir):
@@ -97,8 +97,9 @@ def main(dir):
 				print "Found two votes for dirauth " + dirauth + " and time " + filepath
 
 			votes[voteTime][dirauth]['present'] = 1
-			votes[voteTime][dirauth]['bwlines'] = int(subprocess.check_output('grep Measured= "' + filepath + '" | wc -l', shell=True))
+			votes[voteTime][dirauth]['known'] = int(subprocess.check_output('egrep "^r " "' + filepath + '" | wc -l', shell=True))
 			votes[voteTime][dirauth]['running'] = int(subprocess.check_output('egrep "^s " "' + filepath + '" | grep " Running" | wc -l', shell=True))
+			votes[voteTime][dirauth]['bwlines'] = int(subprocess.check_output('grep Measured= "' + filepath + '" | wc -l', shell=True))
 
 	dbc.execute("CREATE TABLE IF NOT EXISTS vote_data(date integer, " + dirauth_columns + "PRIMARY KEY(date ASC))")
 	dbc.commit()
@@ -112,9 +113,11 @@ def main(dir):
 		insertValues = [t]
 		for d in dirAuths:
 			if d in votes[t]:
+				insertValues.append(votes[t][d]['known'])
 				insertValues.append(votes[t][d]['running'])
 				insertValues.append(votes[t][d]['bwlines'])
 			else:
+				insertValues.append(None)
 				insertValues.append(None)
 				insertValues.append(None)
 

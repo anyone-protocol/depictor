@@ -3,5 +3,6 @@
 *.swp
 stem
 out/index.html
+out/graphs.html
 out/consensus-health*
 out/download-stats.csv

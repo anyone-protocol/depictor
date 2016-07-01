@@ -9,6 +9,7 @@ Performs a variety of checks against the present votes and consensus.
 import os
 import sys
 import time
+import sqlite3
 import datetime
 import operator
 import traceback
@@ -44,6 +45,8 @@ downloader = stem.descriptor.remote.DescriptorDownloader(
 def directory_authorities():
 	return dict((k, v) for (k, v) in DIRECTORY_AUTHORITIES.items() if k not in CONFIG['ignored_authorities'])
 
+def unix_time(dt):
+    return (dt - datetime.datetime.utcfromtimestamp(0)).total_seconds() * 1000.0
 
 def main():
 	# loads configuration data
@@ -58,6 +61,37 @@ def main():
 	for ds in consensus_fetching_runtimes:
 		f.write("%s,%i,%i\n" % (ds, time.time() * 1000, int(consensus_fetching_runtimes[ds] * 1000)))
 	f.close()
+
+	dbc = sqlite3.connect(os.path.join('data', 'historical.db'))
+
+	#Calculate the number of known and measured relays for each dirauth and insert it into the database
+	databaseDirAuths = "faravahar, gabelmoo, dizum, moria1, urras, maatuska, longclaw, tor26, dannenberg, turtles".split(", ")
+	data = {}
+	for dirauth_nickname in votes:
+		vote = votes[dirauth_nickname]
+				
+		runningRelays    = 0
+		bandwidthWeights = 0
+		for r in vote.routers.values():
+			if r.measured >= 0L:
+				bandwidthWeights += 1
+			if u'Running' in r.flags:
+				runningRelays += 1
+		data[dirauth_nickname] = {'known' : len(vote.routers.values()), 'running' : runningRelays, 'bwlines' : bandwidthWeights}
+
+	insertValues = [unix_time(consensuses.values()[0].valid_after)]
+	for dirauth_nickname in databaseDirAuths:
+		if dirauth_nickname in votes:
+			insertValues.append(data[dirauth_nickname]['known'])
+			insertValues.append(data[dirauth_nickname]['running'])
+			insertValues.append(data[dirauth_nickname]['bwlines'])
+		else:
+			insertValues.append(None)
+			insertValues.append(None)
+			insertValues.append(None)
+
+	dbc.execute("INSERT OR REPLACE INTO vote_data VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", insertValues)
+	dbc.commit()
 
 	# great for debugging
 	#import pickle
