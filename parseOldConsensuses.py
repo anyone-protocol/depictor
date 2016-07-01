@@ -45,6 +45,8 @@ def get_dirauth_from_filename(filename):
 		return "tor26"
 	elif key == "0232AF901C31A04EE9848595AF9BB7620D4C5B2E" or key == "585769C78764D58426B8B52B6651A5A71137189A":
 		return "dannenberg"
+        elif key == "27B6B5996C426270A5C95488AA5BCEB6BCC86956":
+                return "turtles"
 	else:
 		raise Exception("Unexpcected dirauth key: " + key + " " + filename)
 
@@ -70,16 +72,17 @@ def main(dir):
 	for d in dirAuths:
 		dirauth_columns += d + "_running integer, " + d + "_bwauth integer, "
 		dirauth_columns_questions += ", ?, ?"
-	dbc.execute("CREATE TABLE IF NOT EXISTS vote_data(date integer, " + dirauth_columns + "PRIMARY KEY(date ASC))")
-	dbc.commit()
 
 	votes = {}
 	for root, dirs, files in os.walk(dir):
 		for f in files:
-			print os.path.join(root, f)
+                        filepath = os.path.join(root, f)
+                        print filepath
 
 			if '"' in f:
 				raise Exception("Potentially malicious filename")
+                        elif "votes-" in f and ".tar" in f:
+                                continue
 
 			voteTime = get_time_from_filename(f)
 			if voteTime not in votes:
@@ -91,12 +94,14 @@ def main(dir):
 			elif dirauth not in votes[voteTime]:
 				votes[voteTime][dirauth] = {}
 			else:
-				raise Exception("Found two votes for dirauth " + dirauth + " and time " + filename)
+				print "Found two votes for dirauth " + dirauth + " and time " + filepath
 
 			votes[voteTime][dirauth]['present'] = 1
-			votes[voteTime][dirauth]['bwlines'] = int(subprocess.check_output('grep Measured= "' + os.path.join(root, f) + '" | wc -l', shell=True))
-			votes[voteTime][dirauth]['running'] = int(subprocess.check_output('egrep "^s " "' + os.path.join(root, f) + '" | grep " Running" | wc -l', shell=True))
+			votes[voteTime][dirauth]['bwlines'] = int(subprocess.check_output('grep Measured= "' + filepath + '" | wc -l', shell=True))
+			votes[voteTime][dirauth]['running'] = int(subprocess.check_output('egrep "^s " "' + filepath + '" | grep " Running" | wc -l', shell=True))
 
+	dbc.execute("CREATE TABLE IF NOT EXISTS vote_data(date integer, " + dirauth_columns + "PRIMARY KEY(date ASC))")
+	dbc.commit()
 
 	for t in votes:
 		print t
