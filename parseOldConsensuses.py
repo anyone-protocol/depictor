@@ -20,6 +20,9 @@ import stem.util.enum
 from stem import Flag
 from stem.util.lru_cache import lru_cache
 
+def get_dirauths_in_tables():
+	return "faravahar, gabelmoo, dizum, moria1, urras, maatuska, longclaw, tor26, dannenberg, turtles".split(", ")
+
 
 def get_dirauth_from_filename(filename):
 	key = filename.split('-')
@@ -64,7 +67,7 @@ def get_time_from_filename(filename):
 	return voteTime
 
 def main(dir):
-	dirAuths = "faravahar, gabelmoo, dizum, moria1, urras, maatuska, longclaw, tor26, dannenberg, turtles".split(", ")
+	dirAuths = get_dirauths_in_tables()
 	dbc = sqlite3.connect(os.path.join('data', 'historical.db'))
 
 	dirauth_columns = ""

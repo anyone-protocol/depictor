@@ -282,6 +282,7 @@ class GraphWriter:
 			return d3_dsv.csvParse(text);
 		}).then(function(data) {
 
+		// For each of the configured graphs
 		for(g in GRAPHS_TO_GENERATE)
 		{
 			graph = GRAPHS_TO_GENERATE[g];
@@ -291,30 +292,48 @@ class GraphWriter:
 			else
 				data_subset = data
 
+			// Calculate the Graph Boundaries -----------------------------------------
 			min = 10000;
 			max = 0;
+			total = 0;
+			count = 0;
 			for(d in data_subset)
 			{
 				for(b in BWAUTHS)
 				{
 					data_subset[d][BWAUTHS[b]] = Number(data_subset[d][BWAUTHS[b]]);
-					if(data_subset[d][BWAUTHS[b]] < min && data_subset[d][BWAUTHS[b]] > BWAUTH_LOGICAL_MIN) {
-						min = data_subset[d][BWAUTHS[b]];
-					}
-					if(data_subset[d][BWAUTHS[b]] > max) {
-						max = data_subset[d][BWAUTHS[b]];	
-					}
+					var x = data_subset[d][BWAUTHS[b]];
+					if(x < min && x > BWAUTH_LOGICAL_MIN)
+						min = x;
+					if(x > max)
+						max = x;	
+
+					total += x;
+					count++;
 				}
 			}
-			console.log("Data Length: " + data_subset.length + " Y-Axis Min: " + min + " Max: " + max);
+			avg = total / count;
+			sumvariance = 0;
+			for(d in data_subset)
+			{
+				for(b in BWAUTHS)
+				{
+					var x = data_subset[d][BWAUTHS[b]];
+					sumvariance += (x - avg) * (x - avg);
+				}
+			}
+			variance = sumvariance / count;
+			stddev = Math.sqrt(variance);
+			console.log("Data Length: " + data_subset.length + " Y-Axis Min: " + min + " Max: " + max + " Avg: " + avg + " Var: " + variance + " StdDev: " + stddev);
 
+			// Create the Graph  -----------------------------------------
 			var x = d3.scaleTime()
 				.domain([new Date(Number(data_subset[0].date)), new Date(Number(data_subset[data_subset.length-1].date))])
 			    .range([0, WIDTH])
 			;
 
 			var y = d3.scaleLinear()
-				.domain([min, max])
+				.domain([avg-(stddev), avg+(stddev)])
 			    .range([HEIGHT, 0]);
 
 			var lines = []
@@ -400,9 +419,6 @@ if __name__ == '__main__':
 	g.set_consensuses(c)
 	v = pickle.load(open('votes.p', 'rb'))
 	g.set_votes(v)
-
-	import pdb
-	pdb.set_trace()
 
 	CONFIG = stem.util.conf.config_dict('consensus', {
                                     'ignored_authorities': [],
