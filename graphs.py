@@ -14,6 +14,7 @@ import stem.descriptor.remote
 from base64 import b64decode
 
 from website import WebsiteWriter
+from parseOldConsensuses import get_dirauths_in_tables
 
 class GraphWriter(WebsiteWriter):
 	def write_website(self, filename):
@@ -59,31 +60,31 @@ class GraphWriter(WebsiteWriter):
 			+ "    	font-size: 16px;\n"
 			+ "    	text-decoration: underline;\n"
 			+ "    }\n"
-			+ "    .faravahar_bwauth {\n"
+			+ "    .faravahar {\n"
 			+ "      fill: none;\n"
 			+ "      stroke: steelblue;\n"
 			+ "      background-color: steelblue;\n"
 			+ "      stroke-width: 1.5px;\n"
 			+ "    }\n"
-			+ "    .gabelmoo_bwauth {\n"
+			+ "    .gabelmoo {\n"
 			+ "      fill: none;\n"
 			+ "      stroke: orange;\n"
 			+ "      background-color: orange;\n"
 			+ "      stroke-width: 1.5px;\n"
 			+ "    }\n"
-			+ "    .moria1_bwauth {\n"
+			+ "    .moria1 {\n"
 			+ "      fill: none;\n"
 			+ "      stroke: yellow;\n"
 			+ "      background-color: yellow;\n"
 			+ "      stroke-width: 1.5px;\n"
 			+ "    }\n"
-			+ "    .maatuska_bwauth {\n"
+			+ "    .maatuska {\n"
 			+ "      fill: none;\n"
 			+ "      stroke: green;\n"
 			+ "      background-color: green;\n"
 			+ "      stroke-width: 1.5px;\n"
 			+ "    }\n"
-			+ "    .longclaw_bwauth {\n"
+			+ "    .longclaw {\n"
 			+ "      fill: none;\n"
 			+ "      stroke: red;\n"
 			+ "      background-color: red;\n"
@@ -104,11 +105,11 @@ class GraphWriter(WebsiteWriter):
 		self.site.write("  <tr>\n"
 		+ "    <td>\n"
 		+ "      <div id=\"" + str(divName) + "\" style=\"text-align:center\">\n"
-		+ "        <span class=\"moria1_bwauth\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Moria\n"
-		+ "        <span class=\"faravahar_bwauth\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Faravahar\n"
-		+ "        <span class=\"gabelmoo_bwauth\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Gabelmoo\n"
-		+ "        <span class=\"maatuska_bwauth\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Maatuska\n"
-		+ "        <span class=\"longclaw_bwauth\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Longclaw\n"
+		+ "        <span class=\"moria1\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Moria\n"
+		+ "        <span class=\"faravahar\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Faravahar\n"
+		+ "        <span class=\"gabelmoo\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Gabelmoo\n"
+		+ "        <span class=\"maatuska\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Maatuska\n"
+		+ "        <span class=\"longclaw\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Longclaw\n"
 		+ "      </div>\n"
 		+ "    </td>\n"
 		+ "  </tr>\n")
@@ -134,18 +135,26 @@ class GraphWriter(WebsiteWriter):
 		self._write_bandwidth_scanner_graphs_spot("bwauth_measured_4")
 		self.site.write("</table>\n")
 
+	def _write_graph_javascript(self):
 		s = """<script>
 		var BWAUTH_LOGICAL_MIN = 125
-		var BWAUTHS = ["faravahar_bwauth","gabelmoo_bwauth","moria1_bwauth","maatuska_bwauth","longclaw_bwauth"];
 		var WIDTH = 800,
 		    HEIGHT = 500,
 			MARGIN = {top: 40, right: 40, bottom: 40, left: 40};
 
+		var bwauths = ["faravahar","gabelmoo","moria1","maatuska","longclaw"];
+		var dirauths = """ + str(get_dirauths_in_tables()) + """;
+		var _getBandwidthDataValue = function(d, dirauth) { d[dirauth + "_bwauth"] = Number(d[dirauth + "_bwauth"]); return d[dirauth + "_bwauth"]; }
+
 		var GRAPHS_TO_GENERATE = [
-			{ title: "BWAuth Measured Relays, Past 30 Days", data_slice: 720 },
-			{ title: "BWAuth Measured Relays, Past 90 Days", data_slice: 1000 },
-			{ title: "BWAuth Measured Relays, Past Year", data_slice: 8760 },
-			{ title: "BWAuth Measured Relays, Past 2 Years", data_slice: 17520 },
+			{ title: "BWAuth Measured Relays, Past 30 Days", data_slice: 720, div: "bwauth_measured_1", 
+				data_func: _getBandwidthDataValue, authorities: bwauths },
+			{ title: "BWAuth Measured Relays, Past 90 Days", data_slice: 1000, div: "bwauth_measured_2", 
+				data_func: _getBandwidthDataValue, authorities: bwauths },
+			{ title: "BWAuth Measured Relays, Past Year", data_slice: 8760, div: "bwauth_measured_3", 
+				data_func: _getBandwidthDataValue, authorities: bwauths },
+			{ title: "BWAuth Measured Relays, Past 2 Years", data_slice: 17520, div: "bwauth_measured_4", 
+				data_func: _getBandwidthDataValue, authorities: bwauths },
 		];
 
 		fetch("https://ritter.vg/misc/stuff/bwauth_data.txt").then(function(response) {
@@ -171,10 +180,9 @@ class GraphWriter(WebsiteWriter):
 			count = 0;
 			for(d in data_subset)
 			{
-				for(b in BWAUTHS)
+				for(a in graph.authorities)
 				{
-					data_subset[d][BWAUTHS[b]] = Number(data_subset[d][BWAUTHS[b]]);
-					var x = data_subset[d][BWAUTHS[b]];
+					var x = graph.data_func(data_subset[d], graph.authorities[a]);
 					if(x < min && x > BWAUTH_LOGICAL_MIN)
 						min = x;
 					if(x > max)
@@ -188,9 +196,9 @@ class GraphWriter(WebsiteWriter):
 			sumvariance = 0;
 			for(d in data_subset)
 			{
-				for(b in BWAUTHS)
+				for(a in graph.authorities)
 				{
-					var x = data_subset[d][BWAUTHS[b]];
+					var x = graph.data_func(data_subset[d], graph.authorities[a]);
 					sumvariance += (x - avg) * (x - avg);
 				}
 			}
@@ -209,18 +217,18 @@ class GraphWriter(WebsiteWriter):
 			    .range([HEIGHT, 0]);
 
 			var lines = []
-			for(bwauth in BWAUTHS)
+			for(auth in graph.authorities)
 			{
-				this_bwauth = BWAUTHS[bwauth];
-				lines.push({bwauth: this_bwauth, line: (function(tmp) {
+				this_auth = graph.authorities[auth];
+				lines.push({auth: this_auth, line: (function(dirAuthClosure) {
 					return d3.line()
-					    .defined(function(d) { return d[tmp] && d[tmp] > BWAUTH_LOGICAL_MIN; })
+					    .defined(function(d) { return graph.data_func(d, dirAuthClosure) && graph.data_func(d, dirAuthClosure) > BWAUTH_LOGICAL_MIN; })
 			    		.x(function(d) { return x(new Date(Number(d.date))); })
-				    	.y(function(d) { return y(d[tmp]); });
-				    })(this_bwauth)});
+				    	.y(function(d) { return y(graph.data_func(d, dirAuthClosure)); });
+				    })(this_auth)});
 			}
 
-			var svg = d3.select("#graphspot").append("svg")
+			var svg = d3.select("#" + graph.div).append("svg")
 			    .datum(data_subset)
 			    .attr("width", WIDTH + MARGIN.left + MARGIN.right)
 			    .attr("height", HEIGHT + MARGIN.top + MARGIN.bottom)
@@ -239,7 +247,7 @@ class GraphWriter(WebsiteWriter):
 			for(l in lines)
 			{
 				svg.append("path")
-			    	.attr("class", lines[l].bwauth)
+			    	.attr("class", lines[l].auth)
 				    .attr("d", lines[l].line);
 			}
 
