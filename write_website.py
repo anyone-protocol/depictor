@@ -25,6 +25,7 @@ from stem.util.lru_cache import lru_cache
 
 from website import WebsiteWriter
 from graphs import GraphWriter
+from parseOldConsensuses import get_dirauths_in_tables
 
 DIRECTORY_AUTHORITIES = stem.descriptor.remote.get_authorities()
 
@@ -62,9 +63,8 @@ def main():
 		f.write("%s,%i,%i\n" % (ds, time.time() * 1000, int(consensus_fetching_runtimes[ds] * 1000)))
 	f.close()
 
-	dbc = sqlite3.connect(os.path.join('data', 'historical.db'))
 
-	#Calculate the number of known and measured relays for each dirauth and insert it into the database
+	# Calculate the number of known and measured relays for each dirauth and insert it into the database
 	databaseDirAuths = "faravahar, gabelmoo, dizum, moria1, urras, maatuska, longclaw, tor26, dannenberg, turtles".split(", ")
 	data = {}
 	for dirauth_nickname in votes:
@@ -90,8 +90,23 @@ def main():
 			insertValues.append(None)
 			insertValues.append(None)
 
-	dbc.execute("INSERT OR REPLACE INTO vote_data VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", insertValues)
+	dbc = sqlite3.connect(os.path.join('data', 'historical.db'))
+	dbc.execute("INSERT OR REPLACE INTO vote_data VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", insertValues)
 	dbc.commit()
+
+	# Write out the updated csv file for the graphs
+	vote_data = dbc.execute("SELECT * from vote_data ORDER BY date DESC LIMIT 17520")
+	f = open(os.path.join(os.path.dirname(__file__), 'out', 'vote-stats.csv'), 'w')
+	f.write("date")
+	for d in get_dirauths_in_tables():
+		s = "," + d + "_known, " + d + "_running, " + d + "_bwauth"
+		f.write(s)
+	f.write("\n")
+	for r in vote_data.fetchall():
+		for v in r:
+			f.write(("0" if v == None else str(v)) + ",")
+		f.write("\n")
+	f.close()
 
 	# great for debugging
 	#import pickle
