@@ -32,7 +32,7 @@ class WebsiteWriter:
 		self._write_recommended_versions()
 		self._write_consensus_parameters()
 		self._write_authority_keys()
-		self._write_bandwidth_scanner_status()
+		self._write_bandwidth_scanner_status(True)
 		self._write_authority_versions()
 		self._write_download_statistics()
 		self._write_relay_flags_summary()
@@ -525,7 +525,7 @@ class WebsiteWriter:
 			+ "</p>\n")
 
 	#-----------------------------------------------------------------------------------------
-	def _write_bandwidth_scanner_status(self):
+	def _write_bandwidth_scanner_status(self, linkToGraph):
 		"""
 		Write the status of bandwidth scanners and results being contained in votes.
 		"""
@@ -533,9 +533,14 @@ class WebsiteWriter:
 		+ " <!-- ================================================================= -->"
 		+ "<a name=\"bwauthstatus\">\n"
 		+ "<h3><a href=\"#bwauthstatus\" class=\"anchor\">"
-		+ "Bandwidth scanner status</a></h3>\n"
-		+ "<br>\n"
-		+ "<table border=\"0\" cellpadding=\"4\" cellspacing=\"0\" summary=\"\">\n"
+		+ "Bandwidth scanner status</a></h3>\n")
+		if linkToGraph:
+			self.site.write("<p>\n"
+			+ "  You can also view <a href=\"graphs.html\">historical Bandwidth Authority graphs</a>.\n"
+			+ "</p>\n")
+		else:
+			self.site.write("<br />\n")
+		self.site.write("<table border=\"0\" cellpadding=\"4\" cellspacing=\"0\" summary=\"\">\n"
 		+ "  <colgroup>\n"
 		+ "    <col width=\"160\">\n"
 		+ "    <col width=\"640\">\n"

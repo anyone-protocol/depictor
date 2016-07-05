@@ -13,40 +13,19 @@ import datetime
 import stem.descriptor.remote
 from base64 import b64decode
 
-class GraphWriter:
-	consensus = None
-	votes = None
-	known_authorities = []
-	consensus_expirey = datetime.timedelta(hours=3)
-	directory_key_warning_time = datetime.timedelta(days=14)
-	known_params = []
+from website import WebsiteWriter
+
+class GraphWriter(WebsiteWriter):
 	def write_website(self, filename):
 		self.site = open(filename, 'w')
 		self._write_page_header()
 		self._write_valid_after_time()
 		self._write_number_of_relays_voted_about()
-		self._write_bandwidth_scanner_status()
+		self._write_bandwidth_scanner_status(False)
 		self._write_bandwidth_scanner_graphs()
+		self._write_graph_javascript()
 		self._write_page_footer()
 		self.site.close()
-
-	def set_consensuses(self, c):
-		self.consensuses = c
-		self.consensus = max(c.itervalues(), key=operator.attrgetter('valid_after'))
-		self.known_authorities = set([r.nickname for r in self.consensus.routers.values() if 'Authority' in r.flags and r.nickname != "Tonga"])
-		self.known_authorities.update([r.nickname for r in self.consensus.directory_authorities])
-		self.known_authorities.update([r for r in stem.descriptor.remote.get_authorities().keys() if r != "Tonga"])
-	def set_votes(self, v):
-		self.votes = v
-	def set_consensus_expirey(self, timedelta):
-		self.consensus_expirey = timedelta
-	def set_directory_key_warning_time(self, timedelta):
-		self.directory_key_warning_time = timedelta
-	def set_config(self, config):
-		self.known_params = config['known_params']
-		self.bandwidth_authorities = config['bandwidth_authorities']
-	def get_consensus_time(self):
-		return self.consensus.valid_after
 
 	#-----------------------------------------------------------------------------------------
 	def _write_page_header(self):
@@ -121,119 +100,19 @@ class GraphWriter:
 		self.site.write("</p>\n")
 		
 	#-----------------------------------------------------------------------------------------
-	def _write_valid_after_time(self):
-		"""
-		Write the valid-after time of the downloaded consensus.
-		"""
-		self.site.write("<br>\n\n\n"
-		+ " <!-- ================================================================= -->"
-		+ "<a name=\"validafter\">\n" \
-		+ "<h3><a href=\"#validafter\" class=\"anchor\">" \
-		+ "Valid-after time</a></h3>\n" \
-		+ "<br>\n" \
-		+ "<p>Consensus was published ")
-
-		if self.consensus.valid_after + self.consensus_expirey < datetime.datetime.now():
-			self.site.write('<span class="oiv">'
-			+ self.consensus.valid_after.isoformat().replace("T", " ")
-			+ '</span>')
-		else:
-			self.site.write(self.consensus.valid_after.isoformat().replace("T", " "))
-
-		self.site.write(". <i>Note that it takes up to 15 minutes to learn "
-		+ "about new consensus and votes and process them.</i></p>\n")
-
-	#-----------------------------------------------------------------------------------------
-	def _write_number_of_relays_voted_about(self):
-		"""
-		Write the number of relays voted about.
-		"""
-		self.site.write("<br>\n\n\n"
-		+ " <!-- ================================================================= -->"
-		+ "<a name=\"numberofrelays\">\n"
-		+ "<h3><a href=\"#numberofrelays\" class=\"anchor\">"
-		+ "Number of relays voted about</a></h3>\n"
-		+	 "<br>\n"
-		+ "<table border=\"0\" cellpadding=\"4\" cellspacing=\"0\" summary=\"\">\n"
-		+ "  <colgroup>\n"
-		+ "    <col width=\"160\">\n"
-		+ "    <col width=\"320\">\n"
-		+ "    <col width=\"320\">\n"
-		+ "  </colgroup>\n")
-		if not self.votes:
-		  self.site.write("  <tr><td>(No votes.)</td><td></td><td></td></tr>\n")
-		else:
-			for dirauth_nickname in self.known_authorities:
-				if dirauth_nickname in self.votes:
-					vote = self.votes[dirauth_nickname]
-					runningRelays = 0
-					for r in vote.routers.values():
-						if u'Running' in r.flags:
-							runningRelays += 1
-					self.site.write("  <tr>\n"
-					+ "    <td>" + dirauth_nickname + "</td>\n"
-					+ "    <td>" + str(len(vote.routers)) + " total</td>\n"
-					+ "    <td>" + str(runningRelays) + " Running</td>\n"
-					+ "  </tr>\n")
-				else:
-					self.site.write("  <tr>\n"
-					+ "    <td>" + dirauth_nickname + "</td>\n"
-					+ "    <td colspan=\"2\"><span class=\"oiv\">Vote Not Present<span></td>\n"
-					+ "  </tr>\n")
-		runningRelays = 0
-		for r in self.consensus.routers.values():
-			if u'Running' in r.flags:
-				runningRelays += 1
+	def _write_bandwidth_scanner_graphs_spot(self, divName):
 		self.site.write("  <tr>\n"
-		+  "    <td class=\"ic\">consensus</td>\n"
-		+  "    <td/>\n"
-		+  "    <td class=\"ic\">" + str(runningRelays) + " Running</td>\n"
-		+  "  </tr>\n"
-		+  "</table>\n")		
+		+ "    <td>\n"
+		+ "      <div id=\"" + str(divName) + "\" style=\"text-align:center\">\n"
+		+ "        <span class=\"moria1_bwauth\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Moria\n"
+		+ "        <span class=\"faravahar_bwauth\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Faravahar\n"
+		+ "        <span class=\"gabelmoo_bwauth\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Gabelmoo\n"
+		+ "        <span class=\"maatuska_bwauth\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Maatuska\n"
+		+ "        <span class=\"longclaw_bwauth\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Longclaw\n"
+		+ "      </div>\n"
+		+ "    </td>\n"
+		+ "  </tr>\n")
 
-	#-----------------------------------------------------------------------------------------
-	def _write_bandwidth_scanner_status(self):
-		"""
-		Write the status of bandwidth scanners and results being contained in votes.
-		"""
-		self.site.write("<br>\n\n\n"
-		+ " <!-- ================================================================= -->"
-		+ "<a name=\"bwauthstatus\">\n"
-		+ "<h3><a href=\"#bwauthstatus\" class=\"anchor\">"
-		+ "Bandwidth scanner status</a></h3>\n"
-		+ "<br>\n"
-		+ "<table border=\"0\" cellpadding=\"4\" cellspacing=\"0\" summary=\"\">\n"
-		+ "  <colgroup>\n"
-		+ "    <col width=\"160\">\n"
-		+ "    <col width=\"640\">\n"
-		+ "  </colgroup>\n")
-		if not self.votes:
-			self.site.write("  <tr><td>(No votes.)</td><td></td></tr>\n")
-		else:
-			for dirauth_nickname in self.votes:
-				vote = self.votes[dirauth_nickname]
-				
-				bandwidthWeights = 0
-				for r in vote.routers.values():
-					if r.measured >= 0L:
-						bandwidthWeights += 1
-				
-				if bandwidthWeights > 0:
-					self.site.write("  <tr>\n"
-					+ "    <td>" + dirauth_nickname + "</td>\n"
-					+ "    <td>" + str(bandwidthWeights)
-					+ " Measured values in w lines</td>\n"
-					+ "  </tr>\n")
-			for dirauth_nickname in self.bandwidth_authorities:
-				if dirauth_nickname not in self.votes:
-					self.site.write("  <tr>\n"
-					+ "    <td>" + dirauth_nickname + "</td>\n"
-					+ "    <td class=\"oiv\">Missing vote</td>\n"
-					+ "  </tr>\n")
-
-		self.site.write("</table>\n")
-
-	#-----------------------------------------------------------------------------------------
 	def _write_bandwidth_scanner_graphs(self):
 		"""
 		Write the graphs of the bandwidth scanners
@@ -242,25 +121,18 @@ class GraphWriter:
 		+ " <!-- ================================================================= -->"
 		+ "<a name=\"bwauthgraphs\">\n"
 		+ "<h3><a href=\"#bwauthstatus\" class=\"anchor\">"
-		+ "Bandwidth scanner graphs</a></h3>\n"
+		+ "Bandwidth scanner measured relays</a></h3>\n"
 		+ "<br>\n"
 		+ "<table border=\"0\" cellpadding=\"4\" cellspacing=\"0\" summary=\"\">\n"
 		+ "  <colgroup>\n"
 		+ "    <col width=\"160\">\n"
 		+ "    <col width=\"640\">\n"
-		+ "  </colgroup>\n"
-		+ "  <tr>\n"
-		+ "    <td>\n"
-		+ "      <div id=\"graphspot\" style=\"text-align:center\">\n"
-		+ "        <span class=\"moria1_bwauth\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Moria\n"
-		+ "        <span class=\"faravahar_bwauth\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Faravahar\n"
-		+ "        <span class=\"gabelmoo_bwauth\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Gabelmoo\n"
-		+ "        <span class=\"maatuska_bwauth\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Maatuska\n"
-		+ "        <span class=\"longclaw_bwauth\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Longclaw\n"
-		+ "      </div>\n"
-		+ "    </td>\n"
-		+ "  </tr>\n"
-		+ "</table>\n")
+		+ "  </colgroup>\n")
+		self._write_bandwidth_scanner_graphs_spot("bwauth_measured_1")
+		self._write_bandwidth_scanner_graphs_spot("bwauth_measured_2")
+		self._write_bandwidth_scanner_graphs_spot("bwauth_measured_3")
+		self._write_bandwidth_scanner_graphs_spot("bwauth_measured_4")
+		self.site.write("</table>\n")
 
 		s = """<script>
 		var BWAUTH_LOGICAL_MIN = 125
@@ -382,23 +254,6 @@ class GraphWriter:
 
 		</script>"""
 		self.site.write(s)
-
-	#-----------------------------------------------------------------------------------------
-	def _write_page_footer(self):
-		"""
-		Write the footer of the HTML page containing the blurb that is on
-		every page of the metrics website.
-   		"""
-		#XXX Write the git version and stem version the page was generated with
-		self.site.write("</div>\n"
-		+ "</div>\n"
-		+ "<div class=\"bottom\" id=\"bottom\">\n"
-		+ "<p>\"Tor\" and the \"Onion Logo\" are <a "
-		+ "href=\"https://www.torproject.org/docs/trademark-faq.html.en\">"
-		+ "registered trademarks</a> of The Tor Project, Inc.</p>\n"
-		+ "</div>\n"
-		+ "</body>\n"
-		+ "</html>")
 
 if __name__ == '__main__':
 	"""
