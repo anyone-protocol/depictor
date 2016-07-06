@@ -21,7 +21,7 @@ class GraphWriter(WebsiteWriter):
 		self.site = open(filename, 'w')
 		self._write_page_header()
 		self._write_valid_after_time()
-		self._write_number_of_relays_voted_about()
+		self._write_number_of_relays_voted_about(False)
 		self._write_number_of_relays_voted_about_graphs()
 		self._write_bandwidth_scanner_status(False)
 		self._write_bandwidth_scanner_graphs()
@@ -61,7 +61,7 @@ class GraphWriter(WebsiteWriter):
 			+ "    }\n"
 			+ "    .graphbox {\n"
 			+ "      text-align: center;\n"
-			#+ "      display: none;\n"
+			+ "      display: none;\n"
 			+ "    }\n"
 			+ "    .faravahar {\n"
 			+ "      fill: none;\n"
@@ -144,10 +144,8 @@ class GraphWriter(WebsiteWriter):
 		+ "        <span class=\"maatuska\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Maatuska\n"
 		+ "        <span class=\"longclaw\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Longclaw\n"
 		+ "        <span class=\"tor26\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> tor26\n"
-		+ "        <span class=\"urras\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> urras\n"
 		+ "        <span class=\"dizum\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> dizum\n"
 		+ "        <span class=\"dannenberg\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> dannenberg\n"
-		+ "        <span class=\"turtles\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> turtles\n"
 		+ "      </div>\n"
 		+ "    </td>\n"
 		+ "  </tr>\n")
@@ -165,7 +163,14 @@ class GraphWriter(WebsiteWriter):
 		+ "  <colgroup>\n"
 		+ "    <col width=\"160\">\n"
 		+ "    <col width=\"640\">\n"
-		+ "  </colgroup>\n")
+		+ "  </colgroup>\n"
+		+ "  <tr class=\"graphplaceholder\">\n"
+		+ "    <td>\n"
+		+ "      <div style=\"text-align:center\">\n"
+		+ "        Generating Graph... (requires SVG and Javascript support)\n"
+		+ "      </div>\n"
+		+ "    </td>\n"
+		+ "  </tr>\n")
 		self._write_number_of_relays_voted_about_graphs_spot("voted_total_1")
 		self._write_number_of_relays_voted_about_graphs_spot("voted_total_2")
 		self._write_number_of_relays_voted_about_graphs_spot("voted_total_3")
@@ -207,7 +212,14 @@ class GraphWriter(WebsiteWriter):
 		+ "  <colgroup>\n"
 		+ "    <col width=\"160\">\n"
 		+ "    <col width=\"640\">\n"
-		+ "  </colgroup>\n")
+		+ "  </colgroup>\n"
+		+ "  <tr class=\"graphplaceholder\">\n"
+		+ "    <td>\n"
+		+ "      <div style=\"text-align:center\">\n"
+		+ "        Generating Graph... (requires SVG and Javascript support)\n"
+		+ "      </div>\n"
+		+ "    </td>\n"
+		+ "  </tr>\n")
 		self._write_bandwidth_scanner_graphs_spot("bwauth_measured_1")
 		self._write_bandwidth_scanner_graphs_spot("bwauth_measured_2")
 		self._write_bandwidth_scanner_graphs_spot("bwauth_measured_3")
@@ -397,6 +409,17 @@ class GraphWriter(WebsiteWriter):
 			        .attr("text-anchor", "middle")  
 			        .attr("class", "graph-title") 
 			        .text(graph.title);
+			}
+
+			var toShow = document.getElementsByClassName('graphbox');
+			for(i=0; i<toShow.length; i++) {
+				console.log(toShow[i]);
+				toShow[i].style.display = 'block';
+			}
+			var toHide = document.getElementsByClassName('graphplaceholder');
+			for(i=0; i<toHide.length; i++) {
+				console.log(toHide[i]);
+				toHide[i].style.display = 'none';
 			}
 		});
 

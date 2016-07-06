@@ -95,7 +95,7 @@ def main():
 	dbc.commit()
 
 	# Write out the updated csv file for the graphs
-	vote_data = dbc.execute("SELECT * from vote_data ORDER BY date DESC LIMIT 17520")
+	vote_data = dbc.execute("SELECT * from vote_data ORDER BY date DESC LIMIT 2160")
 	f = open(os.path.join(os.path.dirname(__file__), 'out', 'vote-stats.csv'), 'w')
 	f.write("date")
 	for d in get_dirauths_in_tables():

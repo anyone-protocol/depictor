@@ -27,7 +27,7 @@ class WebsiteWriter:
 		self._write_valid_after_time()
 		self._write_signatures()
 		self._write_known_flags()
-		self._write_number_of_relays_voted_about()
+		self._write_number_of_relays_voted_about(True)
 		self._write_consensus_methods()
 		self._write_recommended_versions()
 		self._write_consensus_parameters()
@@ -228,7 +228,7 @@ class WebsiteWriter:
 		+ "</table>\n")
 
 	#-----------------------------------------------------------------------------------------
-	def _write_number_of_relays_voted_about(self):
+	def _write_number_of_relays_voted_about(self, linkToGraph):
 		"""
 		Write the number of relays voted about.
 		"""
@@ -236,9 +236,14 @@ class WebsiteWriter:
 		+ " <!-- ================================================================= -->"
 		+ "<a name=\"numberofrelays\">\n"
 		+ "<h3><a href=\"#numberofrelays\" class=\"anchor\">"
-		+ "Number of relays voted about</a></h3>\n"
-		+	 "<br>\n"
-		+ "<table border=\"0\" cellpadding=\"4\" cellspacing=\"0\" summary=\"\">\n"
+		+ "Number of relays voted about</a></h3>\n")
+		if linkToGraph:
+			self.site.write("<p>\n"
+			+ "  You can also view <a href=\"graphs.html\">historical voting graphs</a>.\n"
+			+ "</p>\n")
+		else:
+			self.site.write("<br />\n")
+		self.site.write("<table border=\"0\" cellpadding=\"4\" cellspacing=\"0\" summary=\"\">\n"
 		+ "  <colgroup>\n"
 		+ "    <col width=\"160\">\n"
 		+ "    <col width=\"320\">\n"
