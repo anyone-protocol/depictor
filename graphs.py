@@ -232,13 +232,17 @@ class GraphWriter(WebsiteWriter):
 
 	def _write_graph_javascript(self):
 		s = """<script>
-		var AUTH_LOGICAL_MIN = 125
+		var AUTH_LOGICAL_MIN = 125,
+		    AUTH_LOGICAL_MAX = 25000;
 		var WIDTH = 800,
 		    HEIGHT = 500,
-			MARGIN = {top: 40, right: 40, bottom: 40, left: 40};
+		    MARGIN = {top: 40, right: 40, bottom: 40, left: 40};
 
 		var bwauths = ["faravahar","gabelmoo","moria1","maatuska","longclaw"];
 		var dirauths = """ + str(get_dirauths_in_tables()) + """;
+		dirauths.splice(dirauths.indexOf('urras'), 1);
+		dirauths.splice(dirauths.indexOf('turtles'), 1);
+
 		var _getBandwidthDataValue = function(d, dirauth) { return d[dirauth + "_bwauth"]; }
 		var _getRunningDataValue = function(d, dirauth) { return d[dirauth + "_running"]; }
 		var _getTotalDataValue =  function(d, dirauth) { return d[dirauth + "_known"]; }
@@ -247,53 +251,53 @@ class GraphWriter(WebsiteWriter):
 
 		var GRAPHS_TO_GENERATE = [
 			{ title: "Voted About Relays (Running), Past 7 Days", data_slice: 168, div: "voted_running_1", 
-				data_func: _getRunningDataValue, authorities: dirauths, ignore_limit:AUTH_LOGICAL_MIN },
+				data_func: _getRunningDataValue, authorities: dirauths, min_ignore_limit:AUTH_LOGICAL_MIN, max_ignore_limit:AUTH_LOGICAL_MAX },
 			{ title: "Voted About Relays (Running), Past 14 Days", data_slice: 336, div: "voted_running_2", 
-				data_func: _getRunningDataValue, authorities: dirauths, ignore_limit:AUTH_LOGICAL_MIN },
+				data_func: _getRunningDataValue, authorities: dirauths, min_ignore_limit:AUTH_LOGICAL_MIN, max_ignore_limit:AUTH_LOGICAL_MAX },
 			{ title: "Voted About Relays (Running), Past 30 Days", data_slice: 720, div: "voted_running_3", 
-				data_func: _getRunningDataValue, authorities: dirauths, ignore_limit:AUTH_LOGICAL_MIN },
+				data_func: _getRunningDataValue, authorities: dirauths, min_ignore_limit:AUTH_LOGICAL_MIN, max_ignore_limit:AUTH_LOGICAL_MAX },
 			{ title: "Voted About Relays (Running), Past 90 Days", data_slice: 2160, div: "voted_running_4", 
-				data_func: _getRunningDataValue, authorities: dirauths, ignore_limit:AUTH_LOGICAL_MIN },
+				data_func: _getRunningDataValue, authorities: dirauths, min_ignore_limit:AUTH_LOGICAL_MIN, max_ignore_limit:AUTH_LOGICAL_MAX },
 
 			{ title: "Voted About Relays (Total), Past 7 Days", data_slice: 168, div: "voted_total_1", 
-				data_func: _getTotalDataValue, authorities: dirauths, ignore_limit:AUTH_LOGICAL_MIN },
+				data_func: _getTotalDataValue, authorities: dirauths, min_ignore_limit:AUTH_LOGICAL_MIN, max_ignore_limit:AUTH_LOGICAL_MAX },
 			{ title: "Voted About Relays (Total), Past 14 Days", data_slice: 336, div: "voted_total_2", 
-				data_func: _getTotalDataValue, authorities: dirauths, ignore_limit:AUTH_LOGICAL_MIN },
+				data_func: _getTotalDataValue, authorities: dirauths, min_ignore_limit:AUTH_LOGICAL_MIN, max_ignore_limit:AUTH_LOGICAL_MAX },
 			{ title: "Voted About Relays (Total), Past 30 Days", data_slice: 720, div: "voted_total_3", 
-				data_func: _getTotalDataValue, authorities: dirauths, ignore_limit:AUTH_LOGICAL_MIN },
+				data_func: _getTotalDataValue, authorities: dirauths, min_ignore_limit:AUTH_LOGICAL_MIN, max_ignore_limit:AUTH_LOGICAL_MAX },
 			{ title: "Voted About Relays (Total), Past 90 Days", data_slice: 2160, div: "voted_total_4", 
-				data_func: _getTotalDataValue, authorities: dirauths, ignore_limit:AUTH_LOGICAL_MIN },
+				data_func: _getTotalDataValue, authorities: dirauths, min_ignore_limit:AUTH_LOGICAL_MIN, max_ignore_limit:AUTH_LOGICAL_MAX },
 
 			{ title: "Voted About Relays (Not Running), Past 7 Days", data_slice: 168, div: "voted_notrunning_1", 
-				data_func: _getNonRunningDataValue, authorities: dirauths, ignore_limit:0 },
+				data_func: _getNonRunningDataValue, authorities: dirauths, min_ignore_limit:0, max_ignore_limit:4000 },
 			{ title: "Voted About Relays (Not Running), Past 14 Days", data_slice: 336, div: "voted_notrunning_2", 
-				data_func: _getNonRunningDataValue, authorities: dirauths, ignore_limit:0 },
+				data_func: _getNonRunningDataValue, authorities: dirauths, min_ignore_limit:0, max_ignore_limit:4000 },
 			{ title: "Voted About Relays (Not Running), Past 30 Days", data_slice: 720, div: "voted_notrunning_3", 
-				data_func: _getNonRunningDataValue, authorities: dirauths, ignore_limit:0 },
+				data_func: _getNonRunningDataValue, authorities: dirauths, min_ignore_limit:0, max_ignore_limit:4000 },
 			{ title: "Voted About Relays (Not Running), Past 90 Days", data_slice: 2160, div: "voted_notrunning_4", 
-				data_func: _getNonRunningDataValue, authorities: dirauths, ignore_limit:0 },
+				data_func: _getNonRunningDataValue, authorities: dirauths, min_ignore_limit:0, max_ignore_limit:4000 },
 
 			{ title: "BWAuth Measured Relays, Past 7 Days", data_slice: 168, div: "bwauth_measured_1", 
-				data_func: _getBandwidthDataValue, authorities: bwauths, ignore_limit:AUTH_LOGICAL_MIN },
+				data_func: _getBandwidthDataValue, authorities: bwauths, min_ignore_limit:AUTH_LOGICAL_MIN, max_ignore_limit:AUTH_LOGICAL_MAX },
 			{ title: "BWAuth Measured Relays, Past 14 Days", data_slice: 336, div: "bwauth_measured_2", 
-				data_func: _getBandwidthDataValue, authorities: bwauths, ignore_limit:AUTH_LOGICAL_MIN },
+				data_func: _getBandwidthDataValue, authorities: bwauths, min_ignore_limit:AUTH_LOGICAL_MIN, max_ignore_limit:AUTH_LOGICAL_MAX },
 			{ title: "BWAuth Measured Relays, Past 30 Days", data_slice: 720, div: "bwauth_measured_3", 
-				data_func: _getBandwidthDataValue, authorities: bwauths, ignore_limit:AUTH_LOGICAL_MIN },
+				data_func: _getBandwidthDataValue, authorities: bwauths, min_ignore_limit:AUTH_LOGICAL_MIN, max_ignore_limit:AUTH_LOGICAL_MAX },
 			{ title: "BWAuth Measured Relays, Past 90 Days", data_slice: 2160, div: "bwauth_measured_4", 
-				data_func: _getBandwidthDataValue, authorities: bwauths, ignore_limit:AUTH_LOGICAL_MIN },
+				data_func: _getBandwidthDataValue, authorities: bwauths, min_ignore_limit:AUTH_LOGICAL_MIN, max_ignore_limit:AUTH_LOGICAL_MAX },
 /* These graphs are very misleading and not helpful
 			{ title: "BWAuth Running Unmeasured Relays, Past 30 Days", data_slice: 720, div: "bwauth_running_unmeasured_1", 
-				data_func: _getRunningUnmeasuredDataValue, authorities: bwauths, ignore_limit:-1000 },
+				data_func: _getRunningUnmeasuredDataValue, authorities: bwauths, min_ignore_limit:-1000, max_ignore_limit:AUTH_LOGICAL_MAX },
 			{ title: "BWAuth Running Unmeasured Relays, Past 90 Days", data_slice: 2160, div: "bwauth_running_unmeasured_2", 
-				data_func: _getRunningUnmeasuredDataValue, authorities: bwauths, ignore_limit:-1000 },
+				data_func: _getRunningUnmeasuredDataValue, authorities: bwauths, min_ignore_limit:-1000, max_ignore_limit:AUTH_LOGICAL_MAX },
 			{ title: "BWAuth Running Unmeasured Relays, Past Year", data_slice: 8760, div: "bwauth_running_unmeasured_3", 
-				data_func: _getRunningUnmeasuredDataValue, authorities: bwauths, ignore_limit:-1000 },
+				data_func: _getRunningUnmeasuredDataValue, authorities: bwauths, min_ignore_limit:-1000, max_ignore_limit:AUTH_LOGICAL_MAX },
 			{ title: "BWAuth Running Unmeasured Relays, Past 2 Years", data_slice: 17520, div: "bwauth_running_unmeasured_4", 
-				data_func: _getRunningUnmeasuredDataValue, authorities: bwauths, ignore_limit:-1000 },
+				data_func: _getRunningUnmeasuredDataValue, authorities: bwauths, min_ignore_limit:-1000, max_ignore_limit:AUTH_LOGICAL_MAX },
 */
 		];
 
-		fetch("https://ritter.vg/misc/stuff/vote-stats.csv").then(function(response) {
+		fetch("vote-stats.csv").then(function(response) {
 			return response.text();
 		}).then(function(text) {
 			return d3.csvParse(text, function(d) {
@@ -332,11 +336,11 @@ class GraphWriter(WebsiteWriter):
 					var x = graph.data_func(data_subset[d], graph.authorities[a]);
 					if(isNaN(x))
 						console.log("Error, NAN:", data_subset[d], graph.authorities[a], x);
-					if(x < min && x > graph.ignore_limit)
+					if(x < min && x > graph.min_ignore_limit)
 						min = x;
-					if(x > max)
+					if(x > max && x < graph.max_ignore_limit)
 						max = x;	
-					if(x > graph.ignore_limit) {
+					if(x > graph.min_ignore_limit && x < graph.max_ignore_limit) {
 						total += x;
 						count++;
 					}
@@ -349,7 +353,7 @@ class GraphWriter(WebsiteWriter):
 				for(a in graph.authorities)
 				{
 					var x = graph.data_func(data_subset[d], graph.authorities[a]);
-					if(x > graph.ignore_limit) {
+					if(x > graph.min_ignore_limit && x < graph.max_ignore_limit) {
 						sumvariance += (x - avg) * (x - avg);
 					}
 				}
@@ -374,7 +378,10 @@ class GraphWriter(WebsiteWriter):
 				this_auth = graph.authorities[auth];
 				lines.push({auth: this_auth, line: (function(dirAuthClosure) {
 					return d3.line()
-					    .defined(function(d) { return d && graph.data_func(d, dirAuthClosure) && graph.data_func(d, dirAuthClosure) > graph.ignore_limit; })
+					    .defined(function(d) { 
+						return d && graph.data_func(d, dirAuthClosure) && 
+						graph.data_func(d, dirAuthClosure) > graph.min_ignore_limit &&
+						graph.data_func(d, dirAuthClosure) < graph.max_ignore_limit; })
 			    		.x(function(d) { return x(d.date); })
 				    	.y(function(d) { return y(graph.data_func(d, dirAuthClosure)); });
 				    })(this_auth)});
