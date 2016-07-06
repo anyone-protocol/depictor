@@ -22,6 +22,7 @@ class GraphWriter(WebsiteWriter):
 		self._write_page_header()
 		self._write_valid_after_time()
 		self._write_number_of_relays_voted_about()
+		self._write_number_of_relays_voted_about_graphs()
 		self._write_bandwidth_scanner_status(False)
 		self._write_bandwidth_scanner_graphs()
 		self._write_graph_javascript()
@@ -60,6 +61,10 @@ class GraphWriter(WebsiteWriter):
 			+ "    	font-size: 16px;\n"
 			+ "    	text-decoration: underline;\n"
 			+ "    }\n"
+			+ "    .graphbox {\n"
+			+ "      text-align: center;\n"
+			#+ "      display: none;\n"
+			+ "    }\n"
 			+ "    .faravahar {\n"
 			+ "      fill: none;\n"
 			+ "      stroke: steelblue;\n"
@@ -90,6 +95,36 @@ class GraphWriter(WebsiteWriter):
 			+ "      background-color: red;\n"
 			+ "      stroke-width: 1.5px;\n"
 			+ "    }\n"
+			+ "    .tor26 {\n"
+			+ "      fill: none;\n"
+			+ "      stroke: purple;\n"
+			+ "      background-color: purple;\n"
+			+ "      stroke-width: 1.5px;\n"
+			+ "    }\n"
+			+ "    .urras {\n"
+			+ "      fill: none;\n"
+			+ "      stroke: black;\n"
+			+ "      background-color: black;\n"
+			+ "      stroke-width: 1.5px;\n"
+			+ "    }\n"
+			+ "    .turtles {\n"
+			+ "      fill: none;\n"
+			+ "      stroke: #0000FF;\n"
+			+ "      background-color: #0000FF;\n"
+			+ "      stroke-width: 1.5px;\n"
+			+ "    }\n"
+			+ "    .dizum {\n"
+			+ "      fill: none;\n"
+			+ "      stroke: limegreen;\n"
+			+ "      background-color: limegreen;\n"
+			+ "      stroke-width: 1.5px;\n"
+			+ "    }\n"
+			+ "    .dannenberg {\n"
+			+ "      fill: none;\n"
+			+ "      stroke: pink;\n"
+			+ "      background-color: pink;\n"
+			+ "      stroke-width: 1.5px;\n"
+			+ "    }\n"
 			+ "  </style>\n"
 			+ "    <div class=\"center\">\n"
 			+ "      <div class=\"main-column\">\n"
@@ -101,10 +136,57 @@ class GraphWriter(WebsiteWriter):
 		self.site.write("</p>\n")
 		
 	#-----------------------------------------------------------------------------------------
+	def _write_number_of_relays_voted_about_graphs_spot(self, divName):
+		self.site.write("  <tr>\n"
+		+ "    <td>\n"
+		+ "      <div id=\"" + str(divName) + "\" class=\"graphbox\">\n"
+		+ "        <span class=\"moria1\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Moria\n"
+		+ "        <span class=\"faravahar\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Faravahar\n"
+		+ "        <span class=\"gabelmoo\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Gabelmoo\n"
+		+ "        <span class=\"maatuska\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Maatuska\n"
+		+ "        <span class=\"longclaw\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Longclaw\n"
+		+ "        <span class=\"tor26\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> tor26\n"
+		+ "        <span class=\"urras\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> urras\n"
+		+ "        <span class=\"dizum\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> dizum\n"
+		+ "        <span class=\"dannenberg\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> dannenberg\n"
+		+ "        <span class=\"turtles\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> turtles\n"
+		+ "      </div>\n"
+		+ "    </td>\n"
+		+ "  </tr>\n")
+	def _write_number_of_relays_voted_about_graphs(self):
+		"""
+		Write the graphs of the number of relays voted about
+		"""
+		self.site.write("<br>\n\n\n"
+		+ " <!-- ================================================================= -->"
+		+ "<a name=\"votedaboutgraphs\">\n"
+		+ "<h3><a href=\"#votedaboutgraphs\" class=\"anchor\">"
+		+ "Number of relays voted about graphs</a></h3>\n"
+		+ "<br>\n"
+		+ "<table border=\"0\" cellpadding=\"4\" cellspacing=\"0\" summary=\"\">\n"
+		+ "  <colgroup>\n"
+		+ "    <col width=\"160\">\n"
+		+ "    <col width=\"640\">\n"
+		+ "  </colgroup>\n")
+		self._write_number_of_relays_voted_about_graphs_spot("voted_total_1")
+		self._write_number_of_relays_voted_about_graphs_spot("voted_total_2")
+		self._write_number_of_relays_voted_about_graphs_spot("voted_total_3")
+		self._write_number_of_relays_voted_about_graphs_spot("voted_total_4")
+		self._write_number_of_relays_voted_about_graphs_spot("voted_running_1")
+		self._write_number_of_relays_voted_about_graphs_spot("voted_running_2")
+		self._write_number_of_relays_voted_about_graphs_spot("voted_running_3")
+		self._write_number_of_relays_voted_about_graphs_spot("voted_running_4")
+		self._write_number_of_relays_voted_about_graphs_spot("voted_notrunning_1")
+		self._write_number_of_relays_voted_about_graphs_spot("voted_notrunning_2")
+		self._write_number_of_relays_voted_about_graphs_spot("voted_notrunning_3")
+		self._write_number_of_relays_voted_about_graphs_spot("voted_notrunning_4")
+		self.site.write("</table>\n")
+
+	#-----------------------------------------------------------------------------------------
 	def _write_bandwidth_scanner_graphs_spot(self, divName):
 		self.site.write("  <tr>\n"
 		+ "    <td>\n"
-		+ "      <div id=\"" + str(divName) + "\" style=\"text-align:center\">\n"
+		+ "      <div id=\"" + str(divName) + "\" class=\"graphbox\">\n"
 		+ "        <span class=\"moria1\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Moria\n"
 		+ "        <span class=\"faravahar\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Faravahar\n"
 		+ "        <span class=\"gabelmoo\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Gabelmoo\n"
@@ -113,7 +195,6 @@ class GraphWriter(WebsiteWriter):
 		+ "      </div>\n"
 		+ "    </td>\n"
 		+ "  </tr>\n")
-
 	def _write_bandwidth_scanner_graphs(self):
 		"""
 		Write the graphs of the bandwidth scanners
@@ -121,7 +202,7 @@ class GraphWriter(WebsiteWriter):
 		self.site.write("<br>\n\n\n"
 		+ " <!-- ================================================================= -->"
 		+ "<a name=\"bwauthgraphs\">\n"
-		+ "<h3><a href=\"#bwauthstatus\" class=\"anchor\">"
+		+ "<h3><a href=\"#bwauthgraphs\" class=\"anchor\">"
 		+ "Bandwidth scanner measured relays</a></h3>\n"
 		+ "<br>\n"
 		+ "<table border=\"0\" cellpadding=\"4\" cellspacing=\"0\" summary=\"\">\n"
@@ -133,34 +214,87 @@ class GraphWriter(WebsiteWriter):
 		self._write_bandwidth_scanner_graphs_spot("bwauth_measured_2")
 		self._write_bandwidth_scanner_graphs_spot("bwauth_measured_3")
 		self._write_bandwidth_scanner_graphs_spot("bwauth_measured_4")
+		#self._write_bandwidth_scanner_graphs_spot("bwauth_running_unmeasured_1")
+		#self._write_bandwidth_scanner_graphs_spot("bwauth_running_unmeasured_2")
+		#self._write_bandwidth_scanner_graphs_spot("bwauth_running_unmeasured_3")
+		#self._write_bandwidth_scanner_graphs_spot("bwauth_running_unmeasured_4")
 		self.site.write("</table>\n")
 
 	def _write_graph_javascript(self):
 		s = """<script>
-		var BWAUTH_LOGICAL_MIN = 125
+		var AUTH_LOGICAL_MIN = 125
 		var WIDTH = 800,
 		    HEIGHT = 500,
 			MARGIN = {top: 40, right: 40, bottom: 40, left: 40};
 
 		var bwauths = ["faravahar","gabelmoo","moria1","maatuska","longclaw"];
 		var dirauths = """ + str(get_dirauths_in_tables()) + """;
-		var _getBandwidthDataValue = function(d, dirauth) { d[dirauth + "_bwauth"] = Number(d[dirauth + "_bwauth"]); return d[dirauth + "_bwauth"]; }
+		var _getBandwidthDataValue = function(d, dirauth) { return d[dirauth + "_bwauth"]; }
+		var _getRunningDataValue = function(d, dirauth) { return d[dirauth + "_running"]; }
+		var _getTotalDataValue =  function(d, dirauth) { return d[dirauth + "_known"]; }
+		var _getNonRunningDataValue = function(d, dirauth) { return d[dirauth + "_known"] - d[dirauth + "_running"]; }
+		var _getRunningUnmeasuredDataValue = function(d, dirauth) { return d[dirauth + "_running"] - d[dirauth + "_bwauth"]; }
 
 		var GRAPHS_TO_GENERATE = [
-			{ title: "BWAuth Measured Relays, Past 30 Days", data_slice: 720, div: "bwauth_measured_1", 
-				data_func: _getBandwidthDataValue, authorities: bwauths },
-			{ title: "BWAuth Measured Relays, Past 90 Days", data_slice: 1000, div: "bwauth_measured_2", 
-				data_func: _getBandwidthDataValue, authorities: bwauths },
-			{ title: "BWAuth Measured Relays, Past Year", data_slice: 8760, div: "bwauth_measured_3", 
-				data_func: _getBandwidthDataValue, authorities: bwauths },
-			{ title: "BWAuth Measured Relays, Past 2 Years", data_slice: 17520, div: "bwauth_measured_4", 
-				data_func: _getBandwidthDataValue, authorities: bwauths },
+			{ title: "Voted About Relays (Running), Past 7 Days", data_slice: 168, div: "voted_running_1", 
+				data_func: _getRunningDataValue, authorities: dirauths, ignore_limit:AUTH_LOGICAL_MIN },
+			{ title: "Voted About Relays (Running), Past 14 Days", data_slice: 336, div: "voted_running_2", 
+				data_func: _getRunningDataValue, authorities: dirauths, ignore_limit:AUTH_LOGICAL_MIN },
+			{ title: "Voted About Relays (Running), Past 30 Days", data_slice: 720, div: "voted_running_3", 
+				data_func: _getRunningDataValue, authorities: dirauths, ignore_limit:AUTH_LOGICAL_MIN },
+			{ title: "Voted About Relays (Running), Past 90 Days", data_slice: 2160, div: "voted_running_4", 
+				data_func: _getRunningDataValue, authorities: dirauths, ignore_limit:AUTH_LOGICAL_MIN },
+
+			{ title: "Voted About Relays (Total), Past 7 Days", data_slice: 168, div: "voted_total_1", 
+				data_func: _getTotalDataValue, authorities: dirauths, ignore_limit:AUTH_LOGICAL_MIN },
+			{ title: "Voted About Relays (Total), Past 14 Days", data_slice: 336, div: "voted_total_2", 
+				data_func: _getTotalDataValue, authorities: dirauths, ignore_limit:AUTH_LOGICAL_MIN },
+			{ title: "Voted About Relays (Total), Past 30 Days", data_slice: 720, div: "voted_total_3", 
+				data_func: _getTotalDataValue, authorities: dirauths, ignore_limit:AUTH_LOGICAL_MIN },
+			{ title: "Voted About Relays (Total), Past 90 Days", data_slice: 2160, div: "voted_total_4", 
+				data_func: _getTotalDataValue, authorities: dirauths, ignore_limit:AUTH_LOGICAL_MIN },
+
+			{ title: "Voted About Relays (Not Running), Past 7 Days", data_slice: 168, div: "voted_notrunning_1", 
+				data_func: _getNonRunningDataValue, authorities: dirauths, ignore_limit:0 },
+			{ title: "Voted About Relays (Not Running), Past 14 Days", data_slice: 336, div: "voted_notrunning_2", 
+				data_func: _getNonRunningDataValue, authorities: dirauths, ignore_limit:0 },
+			{ title: "Voted About Relays (Not Running), Past 30 Days", data_slice: 720, div: "voted_notrunning_3", 
+				data_func: _getNonRunningDataValue, authorities: dirauths, ignore_limit:0 },
+			{ title: "Voted About Relays (Not Running), Past 90 Days", data_slice: 2160, div: "voted_notrunning_4", 
+				data_func: _getNonRunningDataValue, authorities: dirauths, ignore_limit:0 },
+
+			{ title: "BWAuth Measured Relays, Past 7 Days", data_slice: 168, div: "bwauth_measured_1", 
+				data_func: _getBandwidthDataValue, authorities: bwauths, ignore_limit:AUTH_LOGICAL_MIN },
+			{ title: "BWAuth Measured Relays, Past 14 Days", data_slice: 336, div: "bwauth_measured_2", 
+				data_func: _getBandwidthDataValue, authorities: bwauths, ignore_limit:AUTH_LOGICAL_MIN },
+			{ title: "BWAuth Measured Relays, Past 30 Days", data_slice: 720, div: "bwauth_measured_3", 
+				data_func: _getBandwidthDataValue, authorities: bwauths, ignore_limit:AUTH_LOGICAL_MIN },
+			{ title: "BWAuth Measured Relays, Past 90 Days", data_slice: 2160, div: "bwauth_measured_4", 
+				data_func: _getBandwidthDataValue, authorities: bwauths, ignore_limit:AUTH_LOGICAL_MIN },
+/* These graphs are very misleading and not helpful
+			{ title: "BWAuth Running Unmeasured Relays, Past 30 Days", data_slice: 720, div: "bwauth_running_unmeasured_1", 
+				data_func: _getRunningUnmeasuredDataValue, authorities: bwauths, ignore_limit:-1000 },
+			{ title: "BWAuth Running Unmeasured Relays, Past 90 Days", data_slice: 2160, div: "bwauth_running_unmeasured_2", 
+				data_func: _getRunningUnmeasuredDataValue, authorities: bwauths, ignore_limit:-1000 },
+			{ title: "BWAuth Running Unmeasured Relays, Past Year", data_slice: 8760, div: "bwauth_running_unmeasured_3", 
+				data_func: _getRunningUnmeasuredDataValue, authorities: bwauths, ignore_limit:-1000 },
+			{ title: "BWAuth Running Unmeasured Relays, Past 2 Years", data_slice: 17520, div: "bwauth_running_unmeasured_4", 
+				data_func: _getRunningUnmeasuredDataValue, authorities: bwauths, ignore_limit:-1000 },
+*/
 		];
 
-		fetch("https://ritter.vg/misc/stuff/bwauth_data.txt").then(function(response) {
+		fetch("https://ritter.vg/misc/stuff/vote-stats.csv").then(function(response) {
 			return response.text();
 		}).then(function(text) {
-			return d3_dsv.csvParse(text);
+			return d3_dsv.csvParse(text, function(d) {
+				for(i in d) {
+					if(i == "date")
+						d[i] = new Date(Number(d[i]));
+					else
+						d[i] = Number(d[i]);
+				}
+				return d;
+			});
 		}).then(function(data) {
 
 		// For each of the configured graphs
@@ -168,10 +302,13 @@ class GraphWriter(WebsiteWriter):
 		{
 			graph = GRAPHS_TO_GENERATE[g];
 
-			if(data.length-graph.data_slice > 0)
-				data_subset = data.slice(data.length-graph.data_slice);
+			if(graph.data_slice+1 > data.length) {
+				data_subset = data.slice(1);
+				console.log("("+graph.title+") Requested " + (graph.data_slice+1) + " but there are only " + data.length + " items...");
+			}
 			else
-				data_subset = data
+				data_subset = data.slice(1, graph.data_slice+1);
+			data_subset.reverse();
 
 			// Calculate the Graph Boundaries -----------------------------------------
 			min = 10000;
@@ -183,13 +320,16 @@ class GraphWriter(WebsiteWriter):
 				for(a in graph.authorities)
 				{
 					var x = graph.data_func(data_subset[d], graph.authorities[a]);
-					if(x < min && x > BWAUTH_LOGICAL_MIN)
+					if(isNaN(x))
+						console.log("Error, NAN:", data_subset[d], graph.authorities[a], x);
+					if(x < min && x > graph.ignore_limit)
 						min = x;
 					if(x > max)
 						max = x;	
-
-					total += x;
-					count++;
+					if(x > graph.ignore_limit) {
+						total += x;
+						count++;
+					}
 				}
 			}
 			avg = total / count;
@@ -199,21 +339,23 @@ class GraphWriter(WebsiteWriter):
 				for(a in graph.authorities)
 				{
 					var x = graph.data_func(data_subset[d], graph.authorities[a]);
-					sumvariance += (x - avg) * (x - avg);
+					if(x > graph.ignore_limit) {
+						sumvariance += (x - avg) * (x - avg);
+					}
 				}
 			}
 			variance = sumvariance / count;
 			stddev = Math.sqrt(variance);
-			console.log("Data Length: " + data_subset.length + " Y-Axis Min: " + min + " Max: " + max + " Avg: " + avg + " Var: " + variance + " StdDev: " + stddev);
+			console.log("("+graph.title+") Data Length: " + data_subset.length + " Y-Axis Min: " + min + " Max: " + max + " Avg: " + avg + " Var: " + variance + " StdDev: " + stddev);
 
 			// Create the Graph  -----------------------------------------
 			var x = d3.scaleTime()
-				.domain([new Date(Number(data_subset[0].date)), new Date(Number(data_subset[data_subset.length-1].date))])
+				.domain([data_subset[0].date, data_subset[data_subset.length-1].date])
 			    .range([0, WIDTH])
 			;
 
 			var y = d3.scaleLinear()
-				.domain([avg-(stddev), avg+(stddev)])
+				.domain([avg-(5*stddev), avg+(5*stddev)])
 			    .range([HEIGHT, 0]);
 
 			var lines = []
@@ -222,8 +364,8 @@ class GraphWriter(WebsiteWriter):
 				this_auth = graph.authorities[auth];
 				lines.push({auth: this_auth, line: (function(dirAuthClosure) {
 					return d3.line()
-					    .defined(function(d) { return graph.data_func(d, dirAuthClosure) && graph.data_func(d, dirAuthClosure) > BWAUTH_LOGICAL_MIN; })
-			    		.x(function(d) { return x(new Date(Number(d.date))); })
+					    .defined(function(d) { return d && graph.data_func(d, dirAuthClosure) && graph.data_func(d, dirAuthClosure) > graph.ignore_limit; })
+			    		.x(function(d) { return x(d.date); })
 				    	.y(function(d) { return y(graph.data_func(d, dirAuthClosure)); });
 				    })(this_auth)});
 			}

@@ -99,7 +99,7 @@ def main():
 	f = open(os.path.join(os.path.dirname(__file__), 'out', 'vote-stats.csv'), 'w')
 	f.write("date")
 	for d in get_dirauths_in_tables():
-		s = "," + d + "_known, " + d + "_running, " + d + "_bwauth"
+		s = "," + d + "_known," + d + "_running," + d + "_bwauth"
 		f.write(s)
 	f.write("\n")
 	for r in vote_data.fetchall():
