@@ -42,7 +42,7 @@ class GraphWriter(WebsiteWriter):
 			+ "    <meta http-equiv=\"content-type\" content=\"text/html; charset=ISO-8859-1\">\n"
 			+ "    <link href=\"stylesheet-ltr.css\" type=\"text/css\" rel=\"stylesheet\">\n"
 			+ "    <link href=\"favicon.ico\" type=\"image/x-icon\" rel=\"shortcut icon\">\n"
-			+ "    <script src=\"https://d3js.org/d3.v4.min.js\"></script>\n"
+			+ "    <script src=\"d3.v4.min.js\"></script>\n"
 			+ "  </head>\n"
 			+ "  <body>\n"
 			+ "  <style>\n"
