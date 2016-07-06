@@ -42,9 +42,7 @@ class GraphWriter(WebsiteWriter):
 			+ "    <meta http-equiv=\"content-type\" content=\"text/html; charset=ISO-8859-1\">\n"
 			+ "    <link href=\"stylesheet-ltr.css\" type=\"text/css\" rel=\"stylesheet\">\n"
 			+ "    <link href=\"favicon.ico\" type=\"image/x-icon\" rel=\"shortcut icon\">\n"
-			+ "    <script src=\"https://d3js.org/d3.v4.0.0-alpha.4.min.js\"></script>\n"
-			+ "    <script src=\"https://d3js.org/d3-dsv.v0.3.min.js\"></script>\n"
-			+ "    <script src=\"https://cdnjs.cloudflare.com/ajax/libs/d3-legend/1.10.0/d3-legend.min.js\"></script>\n"
+			+ "    <script src=\"https://d3js.org/d3.v4.min.js\"></script>\n"
 			+ "  </head>\n"
 			+ "  <body>\n"
 			+ "  <style>\n"
@@ -286,7 +284,7 @@ class GraphWriter(WebsiteWriter):
 		fetch("https://ritter.vg/misc/stuff/vote-stats.csv").then(function(response) {
 			return response.text();
 		}).then(function(text) {
-			return d3_dsv.csvParse(text, function(d) {
+			return d3.csvParse(text, function(d) {
 				for(i in d) {
 					if(i == "date")
 						d[i] = new Date(Number(d[i]));

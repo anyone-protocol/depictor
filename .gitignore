@@ -4,5 +4,6 @@
 stem
 out/index.html
 out/graphs.html
+out/vote-stats.csv
 out/consensus-health*
 out/download-stats.csv
