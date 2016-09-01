@@ -46,9 +46,9 @@ class WebsiteWriter:
 	def set_consensuses(self, c):
 		self.consensuses = c
 		self.consensus = max(c.itervalues(), key=operator.attrgetter('valid_after'))
-		self.known_authorities = set([r.nickname for r in self.consensus.routers.values() if 'Authority' in r.flags and r.nickname != "Tonga"])
+		self.known_authorities = set([r.nickname for r in self.consensus.routers.values() if 'Authority' in r.flags and r.nickname != "Tonga" and r.nickname != "Bifroest"])
 		self.known_authorities.update([r.nickname for r in self.consensus.directory_authorities])
-		self.known_authorities.update([r for r in stem.descriptor.remote.get_authorities().keys() if r != "Tonga"])
+		self.known_authorities.update([r for r in stem.descriptor.remote.get_authorities().keys() if r != "Tonga" and r != "Bifroest"])
 	def set_votes(self, v):
 		self.votes = v
 	def set_consensus_expirey(self, timedelta):
