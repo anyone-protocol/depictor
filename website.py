@@ -900,8 +900,7 @@ class WebsiteWriter:
 		+ relay_nickname \
 		+ " <br /><span class=\"agt\"><a href=\"https://atlas.torproject.org/#details/" \
 		+ relay_fp + "\">Atlas</a> | " \
-		+ "<a href=\"https://globe.torproject.org/#/relay/" + relay_fp \
-		+ "\">Globe</a> | <a href=\"consensus-health-" \
+		+ "<a href=\"consensus-health-" \
 		+ (self.get_consensus_time() - datetime.timedelta(hours=1)).strftime("%Y-%m-%d-%H-%M")
 		+ ".html#" + relay_fp + "\">&#8668;</a></span>" \
 		+ "</td>\n")

@@ -7,3 +7,4 @@ out/graphs.html
 out/vote-stats.csv
 out/consensus-health*
 out/download-stats.csv
+data/historical.db
