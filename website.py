@@ -21,9 +21,9 @@ class WebsiteWriter:
 	consensus_expirey = datetime.timedelta(hours=3)
 	directory_key_warning_time = datetime.timedelta(days=14)
 	known_params = []
-	def write_website(self, filename, include_relay_flags=True):
+	def write_website(self, filename, include_relay_info=True):
 		self.site = open(filename, 'w')
-		self._write_page_header(include_relay_flags)
+		self._write_page_header(include_relay_info)
 		self._write_valid_after_time()
 		self._write_signatures()
 		self._write_known_flags()
@@ -35,11 +35,11 @@ class WebsiteWriter:
 		self._write_bandwidth_scanner_status(True)
 		self._write_authority_versions()
 		self._write_download_statistics()
-		self._write_relay_flags_summary()
-		if include_relay_flags:
-			self._write_relay_flags_table()
+		self._write_relay_info_summary()
+		if include_relay_info:
+			self._write_relay_info_table()
 		else:
-			self._write_relay_flags_pointer()
+			self._write_relay_info_pointer()
 		self._write_page_footer()
 		self.site.close()
 
@@ -62,7 +62,7 @@ class WebsiteWriter:
 		return self.consensus.valid_after
 
 	#-----------------------------------------------------------------------------------------
-	def _write_page_header(self, include_relay_flags):
+	def _write_page_header(self, include_relay_info):
 		"""
 		Write the HTML page header including the metrics website navigation.
 		"""
@@ -105,10 +105,10 @@ class WebsiteWriter:
 			+ "        <p>This page shows statistics about the current "
 			+ "consensus and votes to facilitate debugging of the "
 			+ "directory consensus process.")
-		if not include_relay_flags:
+		if not include_relay_info:
 			self.site.write("<br />This is the abbreviated page. The "
 			+ "<a href=\"/consensus-health.html\">detailed page</a> "
-			+ "which includes the (large) relay flags table is also "
+			+ "which includes the (large) relay info table is also "
 			+ "available.")
 		self.site.write("</p>\n")
 		
@@ -691,7 +691,7 @@ class WebsiteWriter:
 		self.site.write("</table>\n");
 
 	#-----------------------------------------------------------------------------------------
-	def _write_relay_flags_summary(self):
+	def _write_relay_info_summary(self):
 		"""
 		Write the relay flag summary
 		"""
@@ -803,26 +803,26 @@ class WebsiteWriter:
 		self.site.write("</table>\n")
 
 	#-----------------------------------------------------------------------------------------
-	def _write_relay_flags_pointer(self):
+	def _write_relay_info_pointer(self):
 		"""
 		Write a pointer to where the huge table is located
 		"""
 		self.site.write("<br>\n\n\n"
 		+ " <!-- ================================================================= -->"
-		+ "<a name=\"relayflags\">\n"
-		+ "<h3><a href=\"#relayflags\" class=\"anchor\">Relay flags</a></h3>\n"
+		+ "<a name=\"relayinfo\">\n"
+		+ "<h3><a href=\"#relayinfo\" class=\"anchor\">Relay info</a></h3>\n"
 		+ "<br>\n"
-		+ "<p>Looking for the (huge) relay flags table? It's been moved to the <a "
+		+ "<p>Looking for the (huge) relay info table? It's been moved to the <a "
 		+ "href=\"/consensus-health.html\">detailed page</a> to speed up this page.</p>\n")
-	def _write_relay_flags_table(self):
+	def _write_relay_info_table(self):
 		"""
-		Write the (huge) table containing relay flags contained in votes and
+		Write the (huge) table containing relay info contained in votes and
 		the consensus for each relay.
 		"""
 		self.site.write("<br>\n\n\n"
 		+ " <!-- ================================================================= -->"
-		+ "<a name=\"relayflags\">\n"
-		+ "<h3><a href=\"#relayflags\" class=\"anchor\">Relay flags</a></h3>\n"
+		+ "<a name=\"relayinfo\">\n"
+		+ "<h3><a href=\"#relayinfo\" class=\"anchor\">Relay info</a></h3>\n"
 		+ "<br>\n"
 		+ "<p>The semantics of flags written in the table is similar to the table above:</p>\n"
 		+ "<ul>\n"
@@ -857,14 +857,14 @@ class WebsiteWriter:
 		sortedKeys.sort()
 		for relay_fp in sortedKeys:
 			if linesWritten % 10 == 0:
-				self._write_relay_flags_tableHeader()
+				self._write_relay_info_tableHeader()
 			linesWritten += 1
-			self._write_relay_flags_tableRow(relay_fp, allRelays[relay_fp])
+			self._write_relay_info_tableRow(relay_fp, allRelays[relay_fp])
 
 		self.site.write("</table>\n")
 
 	#-----------------------------------------------------------------------------------------	
-	def _write_relay_flags_tableHeader(self):
+	def _write_relay_info_tableHeader(self):
 		"""
 		Write the table header that is repeated every ten relays and that
 		contains the directory authority names.
@@ -876,9 +876,9 @@ class WebsiteWriter:
 		self.site.write("    <th>consensus</th>\n  </tr>\n")
 
 	#-----------------------------------------------------------------------------------------
-	def _write_relay_flags_tableRow(self, relay_fp, relay_nickname):
+	def _write_relay_info_tableRow(self, relay_fp, relay_nickname):
 		"""
-		Write a single row in the table of relay flags.
+		Write a single row in the table of relay info.
 		"""
 		self.site.write("  <tr>\n")
 		if relay_fp in self.consensus.routers and \
