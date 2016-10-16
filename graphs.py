@@ -21,6 +21,8 @@ class GraphWriter(WebsiteWriter):
 		self.site = open(filename, 'w')
 		self._write_page_header()
 		self._write_valid_after_time()
+		self._write_fallback_directory_status(False)
+		self._write_fallback_directory_status_graphs()
 		self._write_number_of_relays_voted_about(False)
 		self._write_number_of_relays_voted_about_graphs()
 		self._write_bandwidth_scanner_status(False)
@@ -69,11 +71,14 @@ class GraphWriter(WebsiteWriter):
 			+ "      background-color: steelblue;\n"
 			+ "      stroke-width: 1.5px;\n"
 			+ "    }\n"
-			+ "    .gabelmoo {\n"
+			+ "    .gabelmoo, .orange {\n"
 			+ "      fill: none;\n"
 			+ "      stroke: orange;\n"
 			+ "      background-color: orange;\n"
 			+ "      stroke-width: 1.5px;\n"
+			+ "    }\n"
+			+ "    .orange {\n"
+			+ "      fill: orange;"
 			+ "    }\n"
 			+ "    .moria1 {\n"
 			+ "      fill: none;\n"
@@ -81,17 +86,23 @@ class GraphWriter(WebsiteWriter):
 			+ "      background-color: yellow;\n"
 			+ "      stroke-width: 1.5px;\n"
 			+ "    }\n"
-			+ "    .maatuska {\n"
+			+ "    .maatuska, .green {\n"
 			+ "      fill: none;\n"
 			+ "      stroke: green;\n"
 			+ "      background-color: green;\n"
 			+ "      stroke-width: 1.5px;\n"
 			+ "    }\n"
-			+ "    .longclaw {\n"
+			+ "    .green {\n"
+			+ "      fill: green;"
+			+ "    }\n"
+			+ "    .longclaw, .red {\n"
 			+ "      fill: none;\n"
 			+ "      stroke: red;\n"
 			+ "      background-color: red;\n"
 			+ "      stroke-width: 1.5px;\n"
+			+ "    }\n"
+			+ "    .red {\n"
+			+ "      fill: red;"
 			+ "    }\n"
 			+ "    .tor26 {\n"
 			+ "      fill: none;\n"
@@ -133,6 +144,46 @@ class GraphWriter(WebsiteWriter):
 			+ "directory consensus process.")
 		self.site.write("</p>\n")
 		
+	#-----------------------------------------------------------------------------------------
+	def _write_fallback_directory_status_graphs_spot(self, divName):
+		self.site.write("  <tr>\n"
+		+ "    <td>\n"
+		+ "      <div id=\"" + str(divName) + "\" class=\"graphbox\">\n"
+        + "         <span class=\"green\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Running\n"
+        + "         <span class=\"orange\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Not Running\n"
+        + "         <span class=\"red\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Missing From Consensus\n"
+		+ "      </div>\n"
+		+ "    </td>\n"
+		+ "  </tr>\n")
+	def _write_fallback_directory_status_graphs(self):
+		"""
+		Write the graphs of the fallback directory mirrors
+		"""
+		self.site.write("<br>\n\n\n"
+		+ " <!-- ================================================================= -->"
+		+ "<a name=\"fallbackdirgraphs\">\n"
+		+ "<h3><a href=\"#fallbackdirgraphs\" class=\"anchor\">"
+		+ "Fallback Directory graphs</a></h3>\n"
+		+ "<br>\n"
+		+ "<table border=\"0\" cellpadding=\"4\" cellspacing=\"0\" summary=\"\">\n"
+		+ "  <colgroup>\n"
+		+ "    <col width=\"160\">\n"
+		+ "    <col width=\"640\">\n"
+		+ "  </colgroup>\n"
+		+ "  <tr class=\"graphplaceholder\">\n"
+		+ "    <td>\n"
+		+ "      <div style=\"text-align:center\">\n"
+		+ "        Generating Graph... (requires SVG and Javascript support)\n"
+		+ "      </div>\n"
+		+ "    </td>\n"
+		+ "  </tr>\n")
+		#self._write_fallback_directory_status_graphs_spot("fallbackdirs_pie")
+		self._write_fallback_directory_status_graphs_spot("fallbackdirs_1")
+		self._write_fallback_directory_status_graphs_spot("fallbackdirs_2")
+		self._write_fallback_directory_status_graphs_spot("fallbackdirs_3")
+		self._write_fallback_directory_status_graphs_spot("fallbackdirs_4")
+		self.site.write("</table>\n")
+
 	#-----------------------------------------------------------------------------------------
 	def _write_number_of_relays_voted_about_graphs_spot(self, divName):
 		self.site.write("  <tr>\n"
@@ -297,6 +348,19 @@ class GraphWriter(WebsiteWriter):
 */
 		];
 
+	    var FALLBACK_GRAPHS_TO_GENERATE = [
+	      { title: "Fallback Directories Running, Past 7 Days", data_slice: 168, div: "fallbackdirs_1", 
+	        data_func: _getRunningDataValue, authorities: dirauths, min_ignore_limit:AUTH_LOGICAL_MIN, max_ignore_limit:AUTH_LOGICAL_MAX },
+	      { title: "Fallback Directories Running, Past 14 Days", data_slice: 336, div: "fallbackdirs_2", 
+	        data_func: _getRunningDataValue, authorities: dirauths, min_ignore_limit:AUTH_LOGICAL_MIN, max_ignore_limit:AUTH_LOGICAL_MAX },
+	      { title: "Fallback Directories Running, Past 30 Days", data_slice: 720, div: "fallbackdirs_3", 
+	        data_func: _getRunningDataValue, authorities: dirauths, min_ignore_limit:AUTH_LOGICAL_MIN, max_ignore_limit:AUTH_LOGICAL_MAX },
+	      { title: "Fallback Directories Running, Past 90 Days", data_slice: 2160, div: "fallbackdirs_4", 
+	        data_func: _getRunningDataValue, authorities: dirauths, min_ignore_limit:AUTH_LOGICAL_MIN, max_ignore_limit:AUTH_LOGICAL_MAX },
+	    ];
+
+	    relays_done = false;
+	    fallbackdirs_done = false;
 		fetch("vote-stats.csv").then(function(response) {
 			return response.text();
 		}).then(function(text) {
@@ -339,7 +403,7 @@ class GraphWriter(WebsiteWriter):
 					if(x < min && x > graph.min_ignore_limit)
 						min = x;
 					if(x > max && x < graph.max_ignore_limit)
-						max = x;	
+						max = x;
 					if(x > graph.min_ignore_limit && x < graph.max_ignore_limit) {
 						total += x;
 						count++;
@@ -411,22 +475,155 @@ class GraphWriter(WebsiteWriter):
 			}
 
 			svg.append("text")
-			        .attr("x", (WIDTH / 2))             
+			        .attr("x", (WIDTH / 2))
 			        .attr("y", 0 - (MARGIN.top / 2))
-			        .attr("text-anchor", "middle")  
-			        .attr("class", "graph-title") 
+			        .attr("text-anchor", "middle")
+			        .attr("class", "graph-title")
 			        .text(graph.title);
-			}
+		}
 
+		relays_done = true;
+		if(fallbackdirs_done) {
 			var toShow = document.getElementsByClassName('graphbox');
 			for(i=0; i<toShow.length; i++) {
-				console.log(toShow[i]);
 				toShow[i].style.display = 'block';
 			}
 			var toHide = document.getElementsByClassName('graphplaceholder');
 			for(i=0; i<toHide.length; i++) {
-				console.log(toHide[i]);
 				toHide[i].style.display = 'none';
+			}
+		}
+
+		});
+
+		fetch("fallback-dir-stats.csv").then(function(response) {
+			return response.text();
+		}).then(function(text) {
+			return d3.csvParse(text, function(d) {
+				for(i in d) {
+					if(i == "date")
+						d[i] = new Date(Number(d[i]));
+					else
+						d[i] = Number(d[i]);
+				}
+				return d;
+			});
+		}).then(function(data) {
+			var key_to_color = function(k) { return k == 'fallback_dirs_running' ? 'green' : k == 'fallback_dirs_notrunning' ? 'orange' : 'red' };
+			/*Pie Graph
+			data_subset = data.slice(0);
+			data_subset = [
+				{'label' : 'fallback_dirs_running', 'value': data_subset[0]['fallback_dirs_running']},
+				{'label' : 'fallback_dirs_notrunning', 'value': data_subset[0]['fallback_dirs_notrunning']},
+				{'label' : 'fallback_dirs_missing', 'value': data_subset[0]['fallback_dirs_missing']},
+			];
+			var data_func = function(d) { return d.value; };
+			var arcs = d3.pie()
+				.sort(null)
+				.value(data_func)(data_subset);
+
+			var svg = d3.select('#fallbackdirs_pie')
+				.append('svg')
+				.attr('width', WIDTH)
+				.attr('height', HEIGHT)
+				.append('g')
+				.attr('transform', 'translate(' + (WIDTH / 2) +	',' + (HEIGHT / 2) + ')');
+
+			var arc = d3.arc()
+				.innerRadius(0)
+				.outerRadius(100);
+
+			var path = svg.selectAll('path')
+				.data(arcs)
+				.enter()
+				.append('path')
+				.attr('d', arc)
+				.attr('class', function(d, i) {
+					return key_to_color(d.data.label);
+				});*/
+
+			//Line Graphs
+			for(g in FALLBACK_GRAPHS_TO_GENERATE)
+			{
+				graph = FALLBACK_GRAPHS_TO_GENERATE[g];
+
+				if(graph.data_slice+1 > data.length) {
+					data_subset = data.slice(0);
+					console.log("("+graph.title+") Requested " + (graph.data_slice+1) + " but there are only " + data.length + " items...");
+				}
+				else
+					data_subset = data.slice(0, graph.data_slice);
+				data_subset.reverse();
+			
+				max = 0
+				for(d in data_subset) {
+					x = data_subset[d]['fallback_dirs_running'] + data_subset[d]['fallback_dirs_notrunning'] + data_subset[d]['fallback_dirs_missing'];
+					if(x > max)
+						max = x;
+				}
+
+				var x = d3.scaleTime()
+					.domain([data_subset[0].date, data_subset[data_subset.length-1].date])
+					.range([0, WIDTH]);
+
+				var y = d3.scaleLinear()
+					.domain([0, max])
+					.range([HEIGHT, 0]);
+
+				var stack = d3.stack()
+					.keys(["fallback_dirs_missing", "fallback_dirs_notrunning", "fallback_dirs_running"])
+					.order(d3.stackOrderNone)
+					.offset(d3.stackOffsetNone);
+
+				var area = d3.area()
+					.x(function(d, i) { return x(d.data.date); })
+					.y0(function(d) { return y(d[0]); })
+					.y1(function(d) { return y(d[1]); });
+
+				var svg = d3.select("#" + graph.div).append("svg")
+					.attr("width", WIDTH + MARGIN.left + MARGIN.right)
+					.attr("height", HEIGHT + MARGIN.top + MARGIN.bottom)
+					.append("g")
+					.attr("transform", "translate(" + MARGIN.left + "," + MARGIN.top + ")");
+
+				var layer = svg.selectAll(".layer")
+					.data(stack(data_subset))
+					.enter().append("g")
+					//.attr("class", "layer");
+
+				layer.append("path")
+					//.attr("class", "area")
+					.attr("class", function(d) { return key_to_color(d.key); })
+					.attr("d", area);
+
+				svg.append("g")
+					.attr("class", "axis axis--x")
+					.attr("transform", "translate(0," + HEIGHT + ")")
+					.call(d3.axisBottom().scale(x));
+
+				svg.append("g")
+					.attr("class", "axis axis--y")
+					.call(d3.axisLeft().scale(y));
+
+				svg.append("text")
+					.attr("x", (WIDTH / 2))
+					.attr("y", 0 - (MARGIN.top / 2))
+					.attr("text-anchor", "middle")
+					.attr("class", "graph-title")
+					.text(graph.title);
+			}
+
+			
+			fallbackdirs_done = true;
+			if(relays_done) {
+				var toShow = document.getElementsByClassName('graphbox');
+				for(i=0; i<toShow.length; i++) {
+					toShow[i].style.display = 'block';
+				}
+				var toHide = document.getElementsByClassName('graphplaceholder');
+				for(i=0; i<toHide.length; i++) {
+					toHide[i].style.display = 'none';
+				}
 			}
 		});
 
@@ -452,6 +649,9 @@ if __name__ == '__main__':
 	g.set_consensuses(c)
 	v = pickle.load(open('votes.p', 'rb'))
 	g.set_votes(v)
+	f = pickle.load(open('fallback_dirs.p', 'rb'))
+	g.set_fallback_dirs(f)
+
 
 	CONFIG = stem.util.conf.config_dict('consensus', {
                                     'ignored_authorities': [],
@@ -461,5 +661,4 @@ if __name__ == '__main__':
 	config = stem.util.conf.get_config("consensus")
 	config.load(os.path.join(os.path.dirname(__file__), 'data', 'consensus.cfg'))
 	g.set_config(CONFIG)
-
 	g.write_website(os.path.join(os.path.dirname(__file__), 'out', 'graphs.html'))

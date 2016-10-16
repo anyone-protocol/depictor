@@ -107,6 +107,42 @@ def main():
 	#import pickle
 	#pickle.dump(fallback_dirs, open('fallback_dirs.p', 'wb'))
 
+	# Calculate the number of fallback directory authorities present in the consensus and insert it into the database
+	fallback_dirs_running = 0
+	fallback_dirs_notrunning = 0
+	for relay_fp in consensuses.values()[0].routers:
+		if relay_fp in fallback_dirs and 'Running' in consensuses.values()[0].routers[relay_fp].flags:
+			fallback_dirs_running += 1
+		elif relay_fp in fallback_dirs:
+			fallback_dirs_notrunning += 1
+				
+	insertValues = [unix_time(consensuses.values()[0].valid_after)]
+	insertValues.append(fallback_dirs_running)
+	insertValues.append(fallback_dirs_notrunning)
+	insertValues.append(len(fallback_dirs) - fallback_dirs_running - fallback_dirs_notrunning)
+
+	dbc = sqlite3.connect(os.path.join('data', 'historical.db'))
+
+	dbc.execute("CREATE TABLE IF NOT EXISTS fallback_dir_data (date integer, fallback_dirs_running integer, fallback_dirs_notrunning integer, fallback_dirs_missing integer, PRIMARY KEY(date ASC));")
+	dbc.commit()
+
+	dbc.execute("INSERT OR REPLACE INTO fallback_dir_data VALUES (?,?,?,?)", insertValues)
+	dbc.commit()
+
+	# Write out the updated csv file for the graphs
+	fallback_dir_data = dbc.execute("SELECT * from fallback_dir_data ORDER BY date DESC LIMIT 2160")
+	f = open(os.path.join(os.path.dirname(__file__), 'out', 'fallback-dir-stats.csv'), 'w')
+	f.write("date")
+	f.write(",fallback_dirs_running")
+	f.write(",fallback_dirs_notrunning")
+	f.write(",fallback_dirs_missing")
+	f.write("\n")
+	for r in fallback_dir_data.fetchall():
+		for v in r:
+			f.write(("0" if v == None else str(v)) + ",")
+		f.write("\n")
+	f.close()
+
 	# Calculate the number of known and measured relays for each dirauth and insert it into the database
 	databaseDirAuths = "faravahar, gabelmoo, dizum, moria1, urras, maatuska, longclaw, tor26, dannenberg, turtles".split(", ")
 	data = {}
@@ -172,6 +208,7 @@ def main():
 	g = GraphWriter()
 	g.set_consensuses(consensuses)
 	g.set_votes(votes)
+	g.set_fallback_dirs(fallback_dirs)
 	g.set_config(CONFIG)
 	g.write_website(os.path.join(os.path.dirname(__file__), 'out', 'graphs.html'))
 

@@ -580,6 +580,56 @@ class WebsiteWriter:
 		self.site.write("</table>\n")
 
 	#-----------------------------------------------------------------------------------------
+	def _write_fallback_directory_status(self, linkToGraph):
+		"""
+		Write the status of the fallback directory mirrors
+		"""
+		self.site.write("<br>\n\n\n"
+		+ " <!-- ================================================================= -->"
+		+ "<a name=\"fallbackdirstatus\">\n"
+		+ "<h3><a href=\"#fallbackdirstatus\" class=\"anchor\">"
+		+ "Fallback Directory status</a></h3>\n")
+		if linkToGraph:
+			self.site.write("<p>\n"
+			+ "  You can also view <a href=\"graphs.html\">historical Fallback Directory graphs</a>.\n"
+			+ "</p>\n")
+		else:
+			self.site.write("<br />\n")
+		self.site.write("<table border=\"0\" cellpadding=\"4\" cellspacing=\"0\" summary=\"\">\n"
+		+ "  <colgroup>\n"
+		+ "    <col width=\"160\">\n"
+		+ "    <col width=\"640\">\n"
+		+ "  </colgroup>\n")
+		if not self.consensus:
+			self.site.write("  <tr><td>(No consensus.)</td><td></td></tr>\n")
+		else:
+			fallback_dirs_running = 0
+			fallback_dirs_notrunning = 0
+			fallback_dirs_missing = 0
+
+			for relay_fp in self.consensus.routers:
+				if relay_fp in self.fallback_dirs and self.consensus.routers[relay_fp].flags and 'Running' in self.consensus.routers[relay_fp].flags:
+					fallback_dirs_running += 1
+				elif relay_fp in self.fallback_dirs:
+					fallback_dirs_notrunning += 1
+			fallback_dirs_missing = len(self.fallback_dirs) - fallback_dirs_notrunning - fallback_dirs_running
+				
+			self.site.write("  <tr>\n"
+			+ "    <td>Running</td>\n"
+			+ "    <td>" + str(fallback_dirs_running) + "</td>\n"
+			+ "  </tr>\n")
+			self.site.write("  <tr>\n"
+			+ "    <td>Not Running</td>\n"
+			+ "    <td>" + str(fallback_dirs_notrunning) + "</td>\n"
+			+ "  </tr>\n")
+			self.site.write("  <tr>\n"
+			+ "    <td>Missing</td>\n"
+			+ "    <td>" + str(fallback_dirs_missing) + "</td>\n"
+			+ "  </tr>\n")
+
+		self.site.write("</table>\n")
+
+	#-----------------------------------------------------------------------------------------
 	def _write_authority_versions(self):
 		"""
 		Write directory authority versions.
