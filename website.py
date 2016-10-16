@@ -934,6 +934,10 @@ class WebsiteWriter:
 					elif consensusFlags and flag in vote.known_flags and flag in consensusFlags:
 						self.site.write(  "<span class=\"oic\">" + flag + "</span>")
 				
+				if vote.routers[relay_fp].measured >= 0L:
+					self.site.write(" <br />" if flagsWritten > 0 else "")
+					self.site.write("bw=" + str(vote.routers[relay_fp].measured))
+
 				self.site.write("</td>\n");
 			else:
 				self.site.write("    <td></td>\n")
@@ -948,6 +952,11 @@ class WebsiteWriter:
 		
 				if flag in consensusFlags:
 					self.site.write(flag)
+
+			if self.consensus.routers[relay_fp].bandwidth >= 0L:
+				self.site.write(" <br />" if flagsWritten > 0 else "")
+				self.site.write("bw=" + str(self.consensus.routers[relay_fp].bandwidth))
+
 			self.site.write("</td>\n")
 		else:
 			self.site.write("    <td></td>\n")
