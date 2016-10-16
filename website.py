@@ -34,6 +34,7 @@ class WebsiteWriter:
 		self._write_consensus_parameters()
 		self._write_authority_keys()
 		self._write_bandwidth_scanner_status(True)
+		self._write_fallback_directory_status(True)
 		self._write_authority_versions()
 		self._write_download_statistics()
 		self._write_relay_info_summary()
@@ -1015,8 +1016,6 @@ class WebsiteWriter:
 			if relay_fp in self.fallback_dirs:
 				self.site.write(" <br />" if flagsWritten > 0 else "")
 				self.site.write("FallbackDir")
-				if 'disappeared_version' in self.fallback_dirs[relay_fp]:
-					self.site.write('(<' + self.fallback_dirs[relay_fp]['disappeared_version'] + ')')
 				flagsWritten += 1
 
 			self.site.write("</td>\n")

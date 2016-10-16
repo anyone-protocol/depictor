@@ -64,45 +64,8 @@ def main():
 	f.close()
 
 	# Calculate the fallback directory info
-	import re
-	import urllib
-
-	GITWEB_FALLBACK_DIR_URL = 'https://gitweb.torproject.org/tor.git/plain/src/or/fallback_dirs.inc'
-	fallback_lines = urllib.urlopen(GITWEB_FALLBACK_DIR_URL).read()
-
-	fallback_dirs, attr = {}, {}
-	for line in fallback_lines.splitlines():
-		if line.startswith('"') or line.startswith('/*') or line.startswith(' *'):
-			if line.startswith('"'):
-				info_line_match = False
-				addr_line_match = re.match('"([\d\.]+):(\d+) orport=(\d+) id=([\dA-F]{40}).*', line)
-				ipv6_line_match = re.match('" ipv6=\[([\da-f:]+)\]:(\d+)"', line)
-			else:
-				info_line_match = re.match('\/\* Fallback was on (.+) list, but (.*) before (.+)', line)
-				addr_line_match = re.match(' * "([\d\.]+):(\d+) orport=(\d+) id=([\dA-F]{40}).*', line)
-				ipv6_line_match = re.match(' * " ipv6=\[([\da-f:]+)\]:(\d+)"', line)
-
-			if info_line_match:
-				appeared_version, removed_reason, disappeared_version = info_line_match.groups()	
-
-				attr['appeared_version'] = appeared_version
-				attr['removed_reason'] = removed_reason
-				attr['disappeared_version'] = disappeared_version
-			elif addr_line_match:
-				address, dir_port, or_port, fingerprint = addr_line_match.groups()
-
-				attr['address'] = address
-				attr['or_port'] = int(or_port)
-				attr['dir_port'] = int(dir_port)
-				attr['fingerprint'] = fingerprint
-			elif ipv6_line_match:
-				address, port = ipv6_line_match.groups()
-
-				attr['orport_v6'] = (address, int(port))
-			elif '" weight=' in line and 'fingerprint' in attr:
-				fallback_dirs[attr.get('fingerprint')] = attr
-
-				attr = {}
+	from stem.descriptor.remote import FallbackDirectory
+	fallback_dirs = stem.descriptor.remote.FallbackDirectory.from_remote()
 	# great for debugging
 	#import pickle
 	#pickle.dump(fallback_dirs, open('fallback_dirs.p', 'wb'))
