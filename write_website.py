@@ -145,6 +145,8 @@ def main():
 	#subprocess.call(["gzip", "-9", archived])
 	#subprocess.call(["ln", "-s", archived + ".gz", archived])
 
+        subprocess.call(["cp", os.path.join('data', 'historical.db'), os.path.join('out', 'historical.db')])
+
 	# remove old files
 	weeks_to_keep = 3
 	files = [f for f in os.listdir(os.path.join(os.path.dirname(__file__), 'out'))]
