@@ -17,6 +17,7 @@ from Crypto.PublicKey import RSA
 class WebsiteWriter:
 	consensus = None
 	votes = None
+	fallback_dirs = None
 	known_authorities = []
 	consensus_expirey = datetime.timedelta(hours=3)
 	directory_key_warning_time = datetime.timedelta(days=14)
@@ -58,6 +59,8 @@ class WebsiteWriter:
 	def set_config(self, config):
 		self.known_params = config['known_params']
 		self.bandwidth_authorities = config['bandwidth_authorities']
+	def set_fallback_dirs(self, fallback_dirs):
+		self.fallback_dirs = fallback_dirs
 	def get_consensus_time(self):
 		return self.consensus.valid_after
 
@@ -937,6 +940,7 @@ class WebsiteWriter:
 				if vote.routers[relay_fp].measured >= 0L:
 					self.site.write(" <br />" if flagsWritten > 0 else "")
 					self.site.write("bw=" + str(vote.routers[relay_fp].measured))
+					flagsWritten += 1
 
 				self.site.write("</td>\n");
 			else:
@@ -956,6 +960,14 @@ class WebsiteWriter:
 			if self.consensus.routers[relay_fp].bandwidth >= 0L:
 				self.site.write(" <br />" if flagsWritten > 0 else "")
 				self.site.write("bw=" + str(self.consensus.routers[relay_fp].bandwidth))
+				flagsWritten += 1
+
+			if relay_fp in self.fallback_dirs:
+				self.site.write(" <br />" if flagsWritten > 0 else "")
+				self.site.write("FallbackDir")
+				if 'disappeared_version' in self.fallback_dirs[relay_fp]:
+					self.site.write('(<' + self.fallback_dirs[relay_fp]['disappeared_version'] + ')')
+				flagsWritten += 1
 
 			self.site.write("</td>\n")
 		else:
@@ -998,6 +1010,9 @@ if __name__ == '__main__':
 	w.set_consensuses(c)
 	v = pickle.load(open('votes.p', 'rb'))
 	w.set_votes(v)
+	f = pickle.load(open('fallback_dirs.p', 'rb'))
+	w.set_fallback_dirs(f)
+		
 
 	CONFIG = stem.util.conf.config_dict('consensus', {
                                     'ignored_authorities': [],
