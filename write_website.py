@@ -33,6 +33,8 @@ CONFIG = stem.util.conf.config_dict('consensus', {
 	'ignored_authorities': [],
 	'bandwidth_authorities': [],
 	'known_params': [],
+	'historical_dirauths' : [],
+	'historical_bridge_authorities' : []
 })
 
 downloader = stem.descriptor.remote.DescriptorDownloader(
@@ -107,7 +109,6 @@ def main():
 	f.close()
 
 	# Calculate the number of known and measured relays for each dirauth and insert it into the database
-	databaseDirAuths = "faravahar, gabelmoo, dizum, moria1, urras, maatuska, longclaw, tor26, dannenberg, turtles".split(", ")
 	data = {}
 	for dirauth_nickname in votes:
 		vote = votes[dirauth_nickname]
@@ -122,7 +123,9 @@ def main():
 		data[dirauth_nickname] = {'known' : len(vote.routers.values()), 'running' : runningRelays, 'bwlines' : bandwidthWeights}
 
 	insertValues = [unix_time(consensuses.values()[0].valid_after)]
-	for dirauth_nickname in databaseDirAuths:
+	createColumns = ""
+	for dirauth_nickname in CONFIG['historical_dirauths']:
+		createColumns += dirauth_nickname + "_known integer, " + dirauth_nickname + "_running integer, " + dirauth_nickname + "_bwauth integer, "
 		if dirauth_nickname in votes:
 			insertValues.append(data[dirauth_nickname]['known'])
 			insertValues.append(data[dirauth_nickname]['running'])
@@ -132,7 +135,9 @@ def main():
 			insertValues.append(None)
 			insertValues.append(None)
 
-	dbc = sqlite3.connect(os.path.join('data', 'historical.db'))
+	dbc.execute("CREATE TABLE IF NOT EXISTS vote_data(date integer, " + createColumns + " PRIMARY KEY(date ASC));")
+	dbc.commit()
+
 	dbc.execute("INSERT OR REPLACE INTO vote_data VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", insertValues)
 	dbc.commit()
 
@@ -157,10 +162,10 @@ def main():
 
 	# produces the website
 	w = WebsiteWriter()
+	w.set_config(CONFIG)
 	w.set_consensuses(consensuses)
 	w.set_votes(votes)
 	w.set_fallback_dirs(fallback_dirs)
-	w.set_config(CONFIG)
 	w.write_website(os.path.join(os.path.dirname(__file__), 'out', 'consensus-health.html'), True)
 	w.write_website(os.path.join(os.path.dirname(__file__), 'out', 'index.html'), False)
 
@@ -169,10 +174,10 @@ def main():
 
 	# produces the website
 	g = GraphWriter()
+	g.set_config(CONFIG)
 	g.set_consensuses(consensuses)
 	g.set_votes(votes)
 	g.set_fallback_dirs(fallback_dirs)
-	g.set_config(CONFIG)
 	g.write_website(os.path.join(os.path.dirname(__file__), 'out', 'graphs.html'))
 
 	del g

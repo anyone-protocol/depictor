@@ -18,7 +18,10 @@ class WebsiteWriter:
 	consensus = None
 	votes = None
 	fallback_dirs = None
+	config_set = False
 	known_authorities = []
+	historical_bridge_authorities = []
+	bandwidth_authorities = []
 	consensus_expirey = datetime.timedelta(hours=3)
 	directory_key_warning_time = datetime.timedelta(days=14)
 	known_params = []
@@ -46,11 +49,13 @@ class WebsiteWriter:
 		self.site.close()
 
 	def set_consensuses(self, c):
+		if not self.config_set:
+			raise Exception("Set config before calling")
 		self.consensuses = c
 		self.consensus = max(c.itervalues(), key=operator.attrgetter('valid_after'))
-		self.known_authorities = set([r.nickname for r in self.consensus.routers.values() if 'Authority' in r.flags and r.nickname != "Tonga" and r.nickname != "Bifroest"])
+		self.known_authorities = set([r.nickname for r in self.consensus.routers.values() if 'Authority' in r.flags and r.nickname not in self.historical_bridge_authorities])
 		self.known_authorities.update([r.nickname for r in self.consensus.directory_authorities])
-		self.known_authorities.update([r for r in stem.descriptor.remote.get_authorities().keys() if r != "Tonga" and r != "Bifroest"])
+		self.known_authorities.update([r for r in stem.descriptor.remote.get_authorities().keys() if r not in self.historical_bridge_authorities])
 	def set_votes(self, v):
 		self.votes = v
 	def set_consensus_expirey(self, timedelta):
@@ -58,7 +63,9 @@ class WebsiteWriter:
 	def set_directory_key_warning_time(self, timedelta):
 		self.directory_key_warning_time = timedelta
 	def set_config(self, config):
+		self.config_set = True
 		self.known_params = config['known_params']
+		self.historical_bridge_authorities = config['historical_bridge_authorities']
 		self.bandwidth_authorities = config['bandwidth_authorities']
 	def set_fallback_dirs(self, fallback_dirs):
 		self.fallback_dirs = fallback_dirs
