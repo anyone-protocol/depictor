@@ -124,8 +124,10 @@ def main():
 
 	insertValues = [unix_time(consensuses.values()[0].valid_after)]
 	createColumns = ""
+	insertQuestions = ""
 	for dirauth_nickname in CONFIG['historical_dirauths']:
 		createColumns += dirauth_nickname + "_known integer, " + dirauth_nickname + "_running integer, " + dirauth_nickname + "_bwauth integer, "
+		insertQuestions += ",?,?,?"
 		if dirauth_nickname in votes:
 			insertValues.append(data[dirauth_nickname]['known'])
 			insertValues.append(data[dirauth_nickname]['running'])
@@ -138,7 +140,7 @@ def main():
 	dbc.execute("CREATE TABLE IF NOT EXISTS vote_data(date integer, " + createColumns + " PRIMARY KEY(date ASC));")
 	dbc.commit()
 
-	dbc.execute("INSERT OR REPLACE INTO vote_data VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", insertValues)
+	dbc.execute("INSERT OR REPLACE INTO vote_data VALUES (?" + insertQuestions + ")", insertValues)
 	dbc.commit()
 
 	# Write out the updated csv file for the graphs
