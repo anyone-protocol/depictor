@@ -33,7 +33,6 @@ CONFIG = stem.util.conf.config_dict('consensus', {
 	'ignored_authorities': [],
 	'bandwidth_authorities': [],
 	'known_params': [],
-	'historical_dirauths' : [],
 	'historical_bridge_authorities' : []
 })
 
@@ -122,25 +121,37 @@ def main():
 				runningRelays += 1
 		data[dirauth_nickname] = {'known' : len(vote.routers.values()), 'running' : runningRelays, 'bwlines' : bandwidthWeights}
 
+	vote_data_columns = set()
+	vote_data_schema = dbc.execute("PRAGMA table_info(vote_data)")
+	for c in vote_data_schema:
+		vote_data_columns.add(c[1].replace("_known", "").replace("_running", "").replace("_bwauth", "").lower())
+
 	insertValues = [unix_time(consensuses.values()[0].valid_after)]
 	createColumns = ""
+	insertColumns = "date"
 	insertQuestions = ""
-	for dirauth_nickname in CONFIG['historical_dirauths']:
+	import pdb
+	pdb.set_trace()
+	for dirauth_nickname in directory_authorities():
+		dirauth_nickname = dirauth_nickname.lower()
+		if vote_data_columns and dirauth_nickname not in vote_data_columns:
+			dbc.execute("ALTER TABLE vote_data ADD COLUMN " + dirauth_nickname + "_known integer")
+			dbc.execute("ALTER TABLE vote_data ADD COLUMN " + dirauth_nickname + "_running integer")
+			dbc.execute("ALTER TABLE vote_data ADD COLUMN " + dirauth_nickname + "_bwauth integer")
+			dbc.commit()
 		createColumns += dirauth_nickname + "_known integer, " + dirauth_nickname + "_running integer, " + dirauth_nickname + "_bwauth integer, "
-		insertQuestions += ",?,?,?"
 		if dirauth_nickname in votes:
+			insertColumns += ", " + dirauth_nickname + "_known" + ", " + dirauth_nickname + "_running" + ", " + dirauth_nickname + "_bwauth"
+			insertQuestions += ",?,?,?"
 			insertValues.append(data[dirauth_nickname]['known'])
 			insertValues.append(data[dirauth_nickname]['running'])
 			insertValues.append(data[dirauth_nickname]['bwlines'])
-		else:
-			insertValues.append(None)
-			insertValues.append(None)
-			insertValues.append(None)
 
-	dbc.execute("CREATE TABLE IF NOT EXISTS vote_data(date integer, " + createColumns + " PRIMARY KEY(date ASC));")
-	dbc.commit()
+	if not vote_data_columns:
+		dbc.execute("CREATE TABLE IF NOT EXISTS vote_data(date integer, " + createColumns + " PRIMARY KEY(date ASC));")
+		dbc.commit()
 
-	dbc.execute("INSERT OR REPLACE INTO vote_data VALUES (?" + insertQuestions + ")", insertValues)
+	dbc.execute("INSERT OR REPLACE INTO vote_data(" + insertColumns + ") VALUES (?" + insertQuestions + ")", insertValues)
 	dbc.commit()
 
 	# Write out the updated csv file for the graphs
