@@ -14,7 +14,7 @@ import stem.descriptor.remote
 from base64 import b64decode
 
 from website import WebsiteWriter
-from parseOldConsensuses import get_dirauths_in_tables
+from utility import get_dirauths, get_bwauths
 
 class GraphWriter(WebsiteWriter):
 	def write_website(self, filename):
@@ -65,13 +65,14 @@ class GraphWriter(WebsiteWriter):
 			+ "      text-align: center;\n"
 			+ "      display: none;\n"
 			+ "    }\n"
-			+ "    .faravahar {\n"
+
+			+ "    .auth1 {\n"
 			+ "      fill: none;\n"
 			+ "      stroke: steelblue;\n"
 			+ "      background-color: steelblue;\n"
 			+ "      stroke-width: 1.5px;\n"
 			+ "    }\n"
-			+ "    .gabelmoo, .orange {\n"
+			+ "    .auth2, .orange {\n"
 			+ "      fill: none;\n"
 			+ "      stroke: orange;\n"
 			+ "      background-color: orange;\n"
@@ -80,13 +81,13 @@ class GraphWriter(WebsiteWriter):
 			+ "    .orange {\n"
 			+ "      fill: orange;"
 			+ "    }\n"
-			+ "    .moria1 {\n"
+			+ "    .auth3 {\n"
 			+ "      fill: none;\n"
 			+ "      stroke: yellow;\n"
 			+ "      background-color: yellow;\n"
 			+ "      stroke-width: 1.5px;\n"
 			+ "    }\n"
-			+ "    .maatuska, .green {\n"
+			+ "    .auth4, .green {\n"
 			+ "      fill: none;\n"
 			+ "      stroke: green;\n"
 			+ "      background-color: green;\n"
@@ -95,7 +96,7 @@ class GraphWriter(WebsiteWriter):
 			+ "    .green {\n"
 			+ "      fill: green;"
 			+ "    }\n"
-			+ "    .longclaw, .red {\n"
+			+ "    .auth5, .red {\n"
 			+ "      fill: none;\n"
 			+ "      stroke: red;\n"
 			+ "      background-color: red;\n"
@@ -104,36 +105,37 @@ class GraphWriter(WebsiteWriter):
 			+ "    .red {\n"
 			+ "      fill: red;"
 			+ "    }\n"
-			+ "    .tor26 {\n"
+			+ "    .auth6 {\n"
 			+ "      fill: none;\n"
 			+ "      stroke: purple;\n"
 			+ "      background-color: purple;\n"
 			+ "      stroke-width: 1.5px;\n"
 			+ "    }\n"
-			+ "    .urras {\n"
+			+ "    .auth7 {\n"
 			+ "      fill: none;\n"
 			+ "      stroke: black;\n"
 			+ "      background-color: black;\n"
 			+ "      stroke-width: 1.5px;\n"
 			+ "    }\n"
-			+ "    .turtles {\n"
+			+ "    .auth8 {\n"
 			+ "      fill: none;\n"
 			+ "      stroke: #0000FF;\n"
 			+ "      background-color: #0000FF;\n"
 			+ "      stroke-width: 1.5px;\n"
 			+ "    }\n"
-			+ "    .dizum {\n"
+			+ "    .auth9 {\n"
 			+ "      fill: none;\n"
 			+ "      stroke: limegreen;\n"
 			+ "      background-color: limegreen;\n"
 			+ "      stroke-width: 1.5px;\n"
 			+ "    }\n"
-			+ "    .dannenberg {\n"
+			+ "    .auth10 {\n"
 			+ "      fill: none;\n"
 			+ "      stroke: pink;\n"
 			+ "      background-color: pink;\n"
 			+ "      stroke-width: 1.5px;\n"
 			+ "    }\n"
+
 			+ "  </style>\n"
 			+ "    <div class=\"center\">\n"
 			+ "      <div class=\"main-column\">\n"
@@ -159,6 +161,9 @@ class GraphWriter(WebsiteWriter):
 		"""
 		Write the graphs of the fallback directory mirrors
 		"""
+		if self.config['ignore_fallback_authorities']:
+			return
+
 		self.site.write("<br>\n\n\n"
 		+ " <!-- ================================================================= -->"
 		+ "<a name=\"fallbackdirgraphs\">\n"
@@ -167,8 +172,7 @@ class GraphWriter(WebsiteWriter):
 		+ "<br>\n"
 		+ "<table border=\"0\" cellpadding=\"4\" cellspacing=\"0\" summary=\"\">\n"
 		+ "  <colgroup>\n"
-		+ "    <col width=\"160\">\n"
-		+ "    <col width=\"640\">\n"
+		+ "    <col width=\"800\">\n"
 		+ "  </colgroup>\n"
 		+ "  <tr class=\"graphplaceholder\">\n"
 		+ "    <td>\n"
@@ -185,19 +189,17 @@ class GraphWriter(WebsiteWriter):
 		self.site.write("</table>\n")
 
 	#-----------------------------------------------------------------------------------------
-	def _write_number_of_relays_voted_about_graphs_spot(self, divName):
+	def _write_number_of_relays_voted_about_graphs_spot(self, divName, dirAuths):
 		self.site.write("  <tr>\n"
 		+ "    <td>\n"
-		+ "      <div id=\"" + str(divName) + "\" class=\"graphbox\">\n"
-		+ "        <span class=\"moria1\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Moria\n"
-		+ "        <span class=\"faravahar\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Faravahar\n"
-		+ "        <span class=\"gabelmoo\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Gabelmoo\n"
-		+ "        <span class=\"maatuska\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Maatuska\n"
-		+ "        <span class=\"longclaw\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Longclaw\n"
-		+ "        <span class=\"tor26\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> tor26\n"
-		+ "        <span class=\"dizum\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> dizum\n"
-		+ "        <span class=\"dannenberg\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> dannenberg\n"
-		+ "      </div>\n"
+		+ "      <div id=\"" + str(divName) + "\" class=\"graphbox\">\n")
+
+		i = 0
+		for d in dirAuths:
+			i += 1
+			self.site.write("        <span class=\"auth" + str(i) + "\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> " + d + "\n")
+
+		self.site.write("      </div>\n"
 		+ "    </td>\n"
 		+ "  </tr>\n")
 	def _write_number_of_relays_voted_about_graphs(self):
@@ -212,8 +214,7 @@ class GraphWriter(WebsiteWriter):
 		+ "<br>\n"
 		+ "<table border=\"0\" cellpadding=\"4\" cellspacing=\"0\" summary=\"\">\n"
 		+ "  <colgroup>\n"
-		+ "    <col width=\"160\">\n"
-		+ "    <col width=\"640\">\n"
+		+ "    <col width=\"800\">\n"
 		+ "  </colgroup>\n"
 		+ "  <tr class=\"graphplaceholder\">\n"
 		+ "    <td>\n"
@@ -222,31 +223,32 @@ class GraphWriter(WebsiteWriter):
 		+ "      </div>\n"
 		+ "    </td>\n"
 		+ "  </tr>\n")
-		self._write_number_of_relays_voted_about_graphs_spot("voted_total_1")
-		self._write_number_of_relays_voted_about_graphs_spot("voted_total_2")
-		self._write_number_of_relays_voted_about_graphs_spot("voted_total_3")
-		self._write_number_of_relays_voted_about_graphs_spot("voted_total_4")
-		self._write_number_of_relays_voted_about_graphs_spot("voted_running_1")
-		self._write_number_of_relays_voted_about_graphs_spot("voted_running_2")
-		self._write_number_of_relays_voted_about_graphs_spot("voted_running_3")
-		self._write_number_of_relays_voted_about_graphs_spot("voted_running_4")
-		self._write_number_of_relays_voted_about_graphs_spot("voted_notrunning_1")
-		self._write_number_of_relays_voted_about_graphs_spot("voted_notrunning_2")
-		self._write_number_of_relays_voted_about_graphs_spot("voted_notrunning_3")
-		self._write_number_of_relays_voted_about_graphs_spot("voted_notrunning_4")
+		self._write_number_of_relays_voted_about_graphs_spot("voted_total_1", get_dirauths())
+		self._write_number_of_relays_voted_about_graphs_spot("voted_total_2", get_dirauths())
+		self._write_number_of_relays_voted_about_graphs_spot("voted_total_3", get_dirauths())
+		self._write_number_of_relays_voted_about_graphs_spot("voted_total_4", get_dirauths())
+		self._write_number_of_relays_voted_about_graphs_spot("voted_running_1", get_dirauths())
+		self._write_number_of_relays_voted_about_graphs_spot("voted_running_2", get_dirauths())
+		self._write_number_of_relays_voted_about_graphs_spot("voted_running_3", get_dirauths())
+		self._write_number_of_relays_voted_about_graphs_spot("voted_running_4", get_dirauths())
+		self._write_number_of_relays_voted_about_graphs_spot("voted_notrunning_1", get_dirauths())
+		self._write_number_of_relays_voted_about_graphs_spot("voted_notrunning_2", get_dirauths())
+		self._write_number_of_relays_voted_about_graphs_spot("voted_notrunning_3", get_dirauths())
+		self._write_number_of_relays_voted_about_graphs_spot("voted_notrunning_4", get_dirauths())
 		self.site.write("</table>\n")
 
 	#-----------------------------------------------------------------------------------------
-	def _write_bandwidth_scanner_graphs_spot(self, divName):
+	def _write_bandwidth_scanner_graphs_spot(self, divName, bwAuths):
 		self.site.write("  <tr>\n"
 		+ "    <td>\n"
-		+ "      <div id=\"" + str(divName) + "\" class=\"graphbox\">\n"
-		+ "        <span class=\"moria1\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Moria\n"
-		+ "        <span class=\"faravahar\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Faravahar\n"
-		+ "        <span class=\"gabelmoo\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Gabelmoo\n"
-		+ "        <span class=\"maatuska\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Maatuska\n"
-		+ "        <span class=\"longclaw\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Longclaw\n"
-		+ "      </div>\n"
+		+ "      <div id=\"" + str(divName) + "\" class=\"graphbox\">\n")
+
+		i = 0
+		for d in bwAuths:
+			i += 1
+			self.site.write("        <span class=\"auth" + str(i) + "\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> " + d + "\n")
+
+		self.site.write("      </div>\n"
 		+ "    </td>\n"
 		+ "  </tr>\n")
 	def _write_bandwidth_scanner_graphs(self):
@@ -261,8 +263,7 @@ class GraphWriter(WebsiteWriter):
 		+ "<br>\n"
 		+ "<table border=\"0\" cellpadding=\"4\" cellspacing=\"0\" summary=\"\">\n"
 		+ "  <colgroup>\n"
-		+ "    <col width=\"160\">\n"
-		+ "    <col width=\"640\">\n"
+		+ "    <col width=\"800\">\n"
 		+ "  </colgroup>\n"
 		+ "  <tr class=\"graphplaceholder\">\n"
 		+ "    <td>\n"
@@ -271,10 +272,10 @@ class GraphWriter(WebsiteWriter):
 		+ "      </div>\n"
 		+ "    </td>\n"
 		+ "  </tr>\n")
-		self._write_bandwidth_scanner_graphs_spot("bwauth_measured_1")
-		self._write_bandwidth_scanner_graphs_spot("bwauth_measured_2")
-		self._write_bandwidth_scanner_graphs_spot("bwauth_measured_3")
-		self._write_bandwidth_scanner_graphs_spot("bwauth_measured_4")
+		self._write_bandwidth_scanner_graphs_spot("bwauth_measured_1", get_bwauths())
+		self._write_bandwidth_scanner_graphs_spot("bwauth_measured_2", get_bwauths())
+		self._write_bandwidth_scanner_graphs_spot("bwauth_measured_3", get_bwauths())
+		self._write_bandwidth_scanner_graphs_spot("bwauth_measured_4", get_bwauths())
 		#self._write_bandwidth_scanner_graphs_spot("bwauth_running_unmeasured_1")
 		#self._write_bandwidth_scanner_graphs_spot("bwauth_running_unmeasured_2")
 		#self._write_bandwidth_scanner_graphs_spot("bwauth_running_unmeasured_3")
@@ -289,10 +290,9 @@ class GraphWriter(WebsiteWriter):
 		    HEIGHT = 500,
 		    MARGIN = {top: 40, right: 40, bottom: 40, left: 40};
 
-		var bwauths = ["faravahar","gabelmoo","moria1","maatuska","longclaw"];
-		var dirauths = """ + str(get_dirauths_in_tables()) + """;
-		dirauths.splice(dirauths.indexOf('urras'), 1);
-		dirauths.splice(dirauths.indexOf('turtles'), 1);
+		var bwauths = """ + str(get_bwauths().keys()) + """;
+		var dirauths = """ + str(get_dirauths().keys()) + """;
+		var ignore_fallback_dirs = """ + str(self.config['ignore_fallback_authorities']).lower() + """;
 
 		var _getBandwidthDataValue = function(d, dirauth) { return d[dirauth + "_bwauth"]; }
 		var _getRunningDataValue = function(d, dirauth) { return d[dirauth + "_running"]; }
@@ -360,7 +360,7 @@ class GraphWriter(WebsiteWriter):
 	    ];
 
 	    relays_done = false;
-	    fallbackdirs_done = false;
+	    fallbackdirs_done = ignore_fallback_dirs;
 		fetch("vote-stats.csv").then(function(response) {
 			return response.text();
 		}).then(function(text) {
@@ -381,11 +381,11 @@ class GraphWriter(WebsiteWriter):
 			graph = GRAPHS_TO_GENERATE[g];
 
 			if(graph.data_slice+1 > data.length) {
-				data_subset = data.slice(1);
+				data_subset = data.slice(0);
 				console.log("("+graph.title+") Requested " + (graph.data_slice+1) + " but there are only " + data.length + " items...");
 			}
 			else
-				data_subset = data.slice(1, graph.data_slice+1);
+				data_subset = data.slice(0, graph.data_slice+1);
 			data_subset.reverse();
 
 			// Calculate the Graph Boundaries -----------------------------------------
@@ -436,11 +436,12 @@ class GraphWriter(WebsiteWriter):
 				.domain([avg-(5*stddev), avg+(5*stddev)])
 			    .range([HEIGHT, 0]);
 
+			var i = 1;
 			var lines = []
 			for(auth in graph.authorities)
 			{
 				this_auth = graph.authorities[auth];
-				lines.push({auth: this_auth, line: (function(dirAuthClosure) {
+				lines.push({authIndex: i, line: (function(dirAuthClosure) {
 					return d3.line()
 					    .defined(function(d) { 
 						return d && graph.data_func(d, dirAuthClosure) && 
@@ -449,6 +450,7 @@ class GraphWriter(WebsiteWriter):
 			    		.x(function(d) { return x(d.date); })
 				    	.y(function(d) { return y(graph.data_func(d, dirAuthClosure)); });
 				    })(this_auth)});
+			    i++;
 			}
 
 			var svg = d3.select("#" + graph.div).append("svg")
@@ -470,7 +472,7 @@ class GraphWriter(WebsiteWriter):
 			for(l in lines)
 			{
 				svg.append("path")
-			    	.attr("class", lines[l].auth)
+			    	.attr("class", "auth" + lines[l].authIndex)
 				    .attr("d", lines[l].line);
 			}
 
@@ -496,136 +498,139 @@ class GraphWriter(WebsiteWriter):
 
 		});
 
-		fetch("fallback-dir-stats.csv").then(function(response) {
-			return response.text();
-		}).then(function(text) {
-			return d3.csvParse(text, function(d) {
-				for(i in d) {
-					if(i == "date")
-						d[i] = new Date(Number(d[i]));
+		if(!ignore_fallback_dirs) {
+
+			fetch("fallback-dir-stats.csv").then(function(response) {
+				return response.text();
+			}).then(function(text) {
+				return d3.csvParse(text, function(d) {
+					for(i in d) {
+						if(i == "date")
+							d[i] = new Date(Number(d[i]));
+						else
+							d[i] = Number(d[i]);
+					}
+					return d;
+				});
+			}).then(function(data) {
+				var key_to_color = function(k) { return k == 'fallback_dirs_running' ? 'green' : k == 'fallback_dirs_notrunning' ? 'orange' : 'red' };
+				/*Pie Graph
+				data_subset = data.slice(0);
+				data_subset = [
+					{'label' : 'fallback_dirs_running', 'value': data_subset[0]['fallback_dirs_running']},
+					{'label' : 'fallback_dirs_notrunning', 'value': data_subset[0]['fallback_dirs_notrunning']},
+					{'label' : 'fallback_dirs_missing', 'value': data_subset[0]['fallback_dirs_missing']},
+				];
+				var data_func = function(d) { return d.value; };
+				var arcs = d3.pie()
+					.sort(null)
+					.value(data_func)(data_subset);
+
+				var svg = d3.select('#fallbackdirs_pie')
+					.append('svg')
+					.attr('width', WIDTH)
+					.attr('height', HEIGHT)
+					.append('g')
+					.attr('transform', 'translate(' + (WIDTH / 2) +	',' + (HEIGHT / 2) + ')');
+
+				var arc = d3.arc()
+					.innerRadius(0)
+					.outerRadius(100);
+
+				var path = svg.selectAll('path')
+					.data(arcs)
+					.enter()
+					.append('path')
+					.attr('d', arc)
+					.attr('class', function(d, i) {
+						return key_to_color(d.data.label);
+					});*/
+
+				//Line Graphs
+				for(g in FALLBACK_GRAPHS_TO_GENERATE)
+				{
+					graph = FALLBACK_GRAPHS_TO_GENERATE[g];
+
+					if(graph.data_slice+1 > data.length) {
+						data_subset = data.slice(0);
+						console.log("("+graph.title+") Requested " + (graph.data_slice+1) + " but there are only " + data.length + " items...");
+					}
 					else
-						d[i] = Number(d[i]);
+						data_subset = data.slice(0, graph.data_slice);
+					data_subset.reverse();
+				
+					max = 0
+					for(d in data_subset) {
+						x = data_subset[d]['fallback_dirs_running'] + data_subset[d]['fallback_dirs_notrunning'] + data_subset[d]['fallback_dirs_missing'];
+						if(x > max)
+							max = x;
+					}
+
+					var x = d3.scaleTime()
+						.domain([data_subset[0].date, data_subset[data_subset.length-1].date])
+						.range([0, WIDTH]);
+
+					var y = d3.scaleLinear()
+						.domain([0, max])
+						.range([HEIGHT, 0]);
+
+					var stack = d3.stack()
+						.keys(["fallback_dirs_missing", "fallback_dirs_notrunning", "fallback_dirs_running"])
+						.order(d3.stackOrderNone)
+						.offset(d3.stackOffsetNone);
+
+					var area = d3.area()
+						.x(function(d, i) { return x(d.data.date); })
+						.y0(function(d) { return y(d[0]); })
+						.y1(function(d) { return y(d[1]); });
+
+					var svg = d3.select("#" + graph.div).append("svg")
+						.attr("width", WIDTH + MARGIN.left + MARGIN.right)
+						.attr("height", HEIGHT + MARGIN.top + MARGIN.bottom)
+						.append("g")
+						.attr("transform", "translate(" + MARGIN.left + "," + MARGIN.top + ")");
+
+					var layer = svg.selectAll(".layer")
+						.data(stack(data_subset))
+						.enter().append("g")
+						//.attr("class", "layer");
+
+					layer.append("path")
+						//.attr("class", "area")
+						.attr("class", function(d) { return key_to_color(d.key); })
+						.attr("d", area);
+
+					svg.append("g")
+						.attr("class", "axis axis--x")
+						.attr("transform", "translate(0," + HEIGHT + ")")
+						.call(d3.axisBottom().scale(x));
+
+					svg.append("g")
+						.attr("class", "axis axis--y")
+						.call(d3.axisLeft().scale(y));
+
+					svg.append("text")
+						.attr("x", (WIDTH / 2))
+						.attr("y", 0 - (MARGIN.top / 2))
+						.attr("text-anchor", "middle")
+						.attr("class", "graph-title")
+						.text(graph.title);
 				}
-				return d;
+
+				
+				fallbackdirs_done = true;
+				if(relays_done) {
+					var toShow = document.getElementsByClassName('graphbox');
+					for(i=0; i<toShow.length; i++) {
+						toShow[i].style.display = 'block';
+					}
+					var toHide = document.getElementsByClassName('graphplaceholder');
+					for(i=0; i<toHide.length; i++) {
+						toHide[i].style.display = 'none';
+					}
+				}
 			});
-		}).then(function(data) {
-			var key_to_color = function(k) { return k == 'fallback_dirs_running' ? 'green' : k == 'fallback_dirs_notrunning' ? 'orange' : 'red' };
-			/*Pie Graph
-			data_subset = data.slice(0);
-			data_subset = [
-				{'label' : 'fallback_dirs_running', 'value': data_subset[0]['fallback_dirs_running']},
-				{'label' : 'fallback_dirs_notrunning', 'value': data_subset[0]['fallback_dirs_notrunning']},
-				{'label' : 'fallback_dirs_missing', 'value': data_subset[0]['fallback_dirs_missing']},
-			];
-			var data_func = function(d) { return d.value; };
-			var arcs = d3.pie()
-				.sort(null)
-				.value(data_func)(data_subset);
-
-			var svg = d3.select('#fallbackdirs_pie')
-				.append('svg')
-				.attr('width', WIDTH)
-				.attr('height', HEIGHT)
-				.append('g')
-				.attr('transform', 'translate(' + (WIDTH / 2) +	',' + (HEIGHT / 2) + ')');
-
-			var arc = d3.arc()
-				.innerRadius(0)
-				.outerRadius(100);
-
-			var path = svg.selectAll('path')
-				.data(arcs)
-				.enter()
-				.append('path')
-				.attr('d', arc)
-				.attr('class', function(d, i) {
-					return key_to_color(d.data.label);
-				});*/
-
-			//Line Graphs
-			for(g in FALLBACK_GRAPHS_TO_GENERATE)
-			{
-				graph = FALLBACK_GRAPHS_TO_GENERATE[g];
-
-				if(graph.data_slice+1 > data.length) {
-					data_subset = data.slice(0);
-					console.log("("+graph.title+") Requested " + (graph.data_slice+1) + " but there are only " + data.length + " items...");
-				}
-				else
-					data_subset = data.slice(0, graph.data_slice);
-				data_subset.reverse();
-			
-				max = 0
-				for(d in data_subset) {
-					x = data_subset[d]['fallback_dirs_running'] + data_subset[d]['fallback_dirs_notrunning'] + data_subset[d]['fallback_dirs_missing'];
-					if(x > max)
-						max = x;
-				}
-
-				var x = d3.scaleTime()
-					.domain([data_subset[0].date, data_subset[data_subset.length-1].date])
-					.range([0, WIDTH]);
-
-				var y = d3.scaleLinear()
-					.domain([0, max])
-					.range([HEIGHT, 0]);
-
-				var stack = d3.stack()
-					.keys(["fallback_dirs_missing", "fallback_dirs_notrunning", "fallback_dirs_running"])
-					.order(d3.stackOrderNone)
-					.offset(d3.stackOffsetNone);
-
-				var area = d3.area()
-					.x(function(d, i) { return x(d.data.date); })
-					.y0(function(d) { return y(d[0]); })
-					.y1(function(d) { return y(d[1]); });
-
-				var svg = d3.select("#" + graph.div).append("svg")
-					.attr("width", WIDTH + MARGIN.left + MARGIN.right)
-					.attr("height", HEIGHT + MARGIN.top + MARGIN.bottom)
-					.append("g")
-					.attr("transform", "translate(" + MARGIN.left + "," + MARGIN.top + ")");
-
-				var layer = svg.selectAll(".layer")
-					.data(stack(data_subset))
-					.enter().append("g")
-					//.attr("class", "layer");
-
-				layer.append("path")
-					//.attr("class", "area")
-					.attr("class", function(d) { return key_to_color(d.key); })
-					.attr("d", area);
-
-				svg.append("g")
-					.attr("class", "axis axis--x")
-					.attr("transform", "translate(0," + HEIGHT + ")")
-					.call(d3.axisBottom().scale(x));
-
-				svg.append("g")
-					.attr("class", "axis axis--y")
-					.call(d3.axisLeft().scale(y));
-
-				svg.append("text")
-					.attr("x", (WIDTH / 2))
-					.attr("y", 0 - (MARGIN.top / 2))
-					.attr("text-anchor", "middle")
-					.attr("class", "graph-title")
-					.text(graph.title);
-			}
-
-			
-			fallbackdirs_done = true;
-			if(relays_done) {
-				var toShow = document.getElementsByClassName('graphbox');
-				for(i=0; i<toShow.length; i++) {
-					toShow[i].style.display = 'block';
-				}
-				var toHide = document.getElementsByClassName('graphplaceholder');
-				for(i=0; i<toHide.length; i++) {
-					toHide[i].style.display = 'none';
-				}
-			}
-		});
+		}
 
 		</script>"""
 		self.site.write(s)
@@ -654,9 +659,8 @@ if __name__ == '__main__':
 
 
 	CONFIG = stem.util.conf.config_dict('consensus', {
-                                    'ignored_authorities': [],
-                                    'bandwidth_authorities': [],
                                     'known_params': [],
+                                    'ignore_fallback_authorities': False,
                                     })
 	config = stem.util.conf.get_config("consensus")
 	config.load(os.path.join(os.path.dirname(__file__), 'data', 'consensus.cfg'))

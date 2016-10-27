@@ -20,35 +20,34 @@ import stem.descriptor.remote
 import stem.util.conf
 import stem.util.enum
 
-from stem import Flag
-from stem.util.lru_cache import lru_cache
+from stem.descriptor.remote import FallbackDirectory
+from stem.descriptor.remote import DirectoryAuthority
 
+from utility import *
 from website import WebsiteWriter
 from graphs import GraphWriter
-from parseOldConsensuses import get_dirauths_in_tables
 
-DIRECTORY_AUTHORITIES = stem.descriptor.remote.get_authorities()
+
+#If you're running your own test network, you define your DirAuths here
+# dir-source line: dir-source authority_name v3ident hostname ip  DirPort  OrPort
+# r line: r nickname base64(fingerprint + "=")   -> python -c "x = ''; import sys; import base64; sys.stdout.write(''.join('{:02x}'.format(ord(c)) for c in base64.b64decode(x)))"
+
+#stem.descriptor.remote.DIRECTORY_AUTHORITIES = {
+#'Faravahar': DirectoryAuthority(
+#    nickname = 'Faravahar',
+#    address = '154.35.175.225',
+#    or_port = 443,
+#    dir_port = 80,
+#    is_bandwidth_authority = True,
+#    fingerprint = 'CF6D0AAFB385BE71B8E111FC5CFF4B47923733BC',
+#    v3ident = 'EFCBE720AB3A82B99F9E953CD5BF50F7EEFC7B97',
+#  ),	
+#}
 
 CONFIG = stem.util.conf.config_dict('consensus', {
-	'ignored_authorities': [],
-	'bandwidth_authorities': [],
 	'known_params': [],
-	'historical_bridge_authorities' : []
+	'ignore_fallback_authorities' : False
 })
-
-downloader = stem.descriptor.remote.DescriptorDownloader(
-	timeout = 60,
-	fall_back_to_authority = False,
-	document_handler = stem.descriptor.DocumentHandler.DOCUMENT,
-)
-
-
-@lru_cache()
-def directory_authorities():
-	return dict((k, v) for (k, v) in DIRECTORY_AUTHORITIES.items() if k not in CONFIG['ignored_authorities'])
-
-def unix_time(dt):
-    return (dt - datetime.datetime.utcfromtimestamp(0)).total_seconds() * 1000.0
 
 def main():
 	# loads configuration data
@@ -65,47 +64,54 @@ def main():
 	f.close()
 
 	# Calculate the fallback directory info
-	from stem.descriptor.remote import FallbackDirectory
-	fallback_dirs = stem.descriptor.remote.FallbackDirectory.from_remote()
+	if not CONFIG['ignore_fallback_authorities']:
+		fallback_dirs = stem.descriptor.remote.FallbackDirectory.from_remote()
+	else:
+		fallback_dirs = []
+	
 	# great for debugging
 	#import pickle
+	#pickle.dump(consensuses, open('consensus.p', 'wb'))
+	#pickle.dump(votes, open('votes.p', 'wb'))
 	#pickle.dump(fallback_dirs, open('fallback_dirs.p', 'wb'))
 
-	# Calculate the number of fallback directory authorities present in the consensus and insert it into the database
-	fallback_dirs_running = 0
-	fallback_dirs_notrunning = 0
-	for relay_fp in consensuses.values()[0].routers:
-		if relay_fp in fallback_dirs and 'Running' in consensuses.values()[0].routers[relay_fp].flags:
-			fallback_dirs_running += 1
-		elif relay_fp in fallback_dirs:
-			fallback_dirs_notrunning += 1
-				
-	insertValues = [unix_time(consensuses.values()[0].valid_after)]
-	insertValues.append(fallback_dirs_running)
-	insertValues.append(fallback_dirs_notrunning)
-	insertValues.append(len(fallback_dirs) - fallback_dirs_running - fallback_dirs_notrunning)
 
 	dbc = sqlite3.connect(os.path.join('data', 'historical.db'))
 
-	dbc.execute("CREATE TABLE IF NOT EXISTS fallback_dir_data (date integer, fallback_dirs_running integer, fallback_dirs_notrunning integer, fallback_dirs_missing integer, PRIMARY KEY(date ASC));")
-	dbc.commit()
+	# Calculate the number of fallback directory authorities present in the consensus and insert it into the database
+	if not CONFIG['ignore_fallback_authorities']:
+		fallback_dirs_running = 0
+		fallback_dirs_notrunning = 0
+		for relay_fp in consensuses.values()[0].routers:
+			if relay_fp in fallback_dirs and 'Running' in consensuses.values()[0].routers[relay_fp].flags:
+				fallback_dirs_running += 1
+			elif relay_fp in fallback_dirs:
+				fallback_dirs_notrunning += 1
+					
+		insertValues = [unix_time(consensuses.values()[0].valid_after)]
+		insertValues.append(fallback_dirs_running)
+		insertValues.append(fallback_dirs_notrunning)
+		insertValues.append(len(fallback_dirs) - fallback_dirs_running - fallback_dirs_notrunning)
 
-	dbc.execute("INSERT OR REPLACE INTO fallback_dir_data VALUES (?,?,?,?)", insertValues)
-	dbc.commit()
+		dbc.execute("CREATE TABLE IF NOT EXISTS fallback_dir_data (date integer, fallback_dirs_running integer, fallback_dirs_notrunning integer, fallback_dirs_missing integer, PRIMARY KEY(date ASC));")
+		dbc.commit()
 
-	# Write out the updated csv file for the graphs
-	fallback_dir_data = dbc.execute("SELECT * from fallback_dir_data ORDER BY date DESC LIMIT 2160")
-	f = open(os.path.join(os.path.dirname(__file__), 'out', 'fallback-dir-stats.csv'), 'w')
-	f.write("date")
-	f.write(",fallback_dirs_running")
-	f.write(",fallback_dirs_notrunning")
-	f.write(",fallback_dirs_missing")
-	f.write("\n")
-	for r in fallback_dir_data.fetchall():
-		for v in r:
-			f.write(("0" if v == None else str(v)) + ",")
+		dbc.execute("INSERT OR REPLACE INTO fallback_dir_data VALUES (?,?,?,?)", insertValues)
+		dbc.commit()
+
+		# Write out the updated csv file for the graphs
+		fallback_dir_data = dbc.execute("SELECT * from fallback_dir_data ORDER BY date DESC LIMIT 2160")
+		f = open(os.path.join(os.path.dirname(__file__), 'out', 'fallback-dir-stats.csv'), 'w')
+		f.write("date")
+		f.write(",fallback_dirs_running")
+		f.write(",fallback_dirs_notrunning")
+		f.write(",fallback_dirs_missing")
 		f.write("\n")
-	f.close()
+		for r in fallback_dir_data.fetchall():
+			for v in r:
+				f.write(("0" if v == None else str(v)) + ",")
+			f.write("\n")
+		f.close()
 
 	# Calculate the number of known and measured relays for each dirauth and insert it into the database
 	data = {}
@@ -130,10 +136,8 @@ def main():
 	createColumns = ""
 	insertColumns = "date"
 	insertQuestions = ""
-	import pdb
-	pdb.set_trace()
-	for dirauth_nickname in directory_authorities():
-		dirauth_nickname = dirauth_nickname.lower()
+
+	for dirauth_nickname in get_dirauths():
 		if vote_data_columns and dirauth_nickname not in vote_data_columns:
 			dbc.execute("ALTER TABLE vote_data ADD COLUMN " + dirauth_nickname + "_known integer")
 			dbc.execute("ALTER TABLE vote_data ADD COLUMN " + dirauth_nickname + "_running integer")
@@ -155,23 +159,21 @@ def main():
 	dbc.commit()
 
 	# Write out the updated csv file for the graphs
+	vote_data_columns = []
+	vote_data_schema = dbc.execute("PRAGMA table_info(vote_data)")
+	for c in vote_data_schema:
+		vote_data_columns.append(c[1])
+
 	vote_data = dbc.execute("SELECT * from vote_data ORDER BY date DESC LIMIT 2160")
 	f = open(os.path.join(os.path.dirname(__file__), 'out', 'vote-stats.csv'), 'w')
-	f.write("date")
-	for d in get_dirauths_in_tables():
-		s = "," + d + "_known," + d + "_running," + d + "_bwauth"
-		f.write(s)
+	for c in vote_data_columns:
+		f.write(c + ",")
 	f.write("\n")
 	for r in vote_data.fetchall():
 		for v in r:
 			f.write(("0" if v == None else str(v)) + ",")
 		f.write("\n")
 	f.close()
-
-	# great for debugging
-	#import pickle
-	#pickle.dump(consensuses, open('consensus.p', 'wb'))
-	#pickle.dump(votes, open('votes.p', 'wb'))
 
 	# produces the website
 	w = WebsiteWriter()
@@ -218,65 +220,6 @@ def main():
 			f_time = datetime.datetime.strptime(f_time, "%Y-%m-%d-%H-%M")
 			if (consensus_time - f_time).days > weeks_to_keep * 7:
 				os.remove(os.path.join(os.path.dirname(__file__), 'out', f))
-
-
-def get_consensuses():
-	"""
-	Provides a mapping of directory authority nicknames to their present consensus.
-
-	:returns: tuple of the form ({authority => consensus}, issues, runtimes)
-	"""
-
-	return _get_documents('consensus', '/tor/status-vote/current/consensus')
-
-
-def get_votes():
-	"""
-	Provides a mapping of directory authority nicknames to their present vote.
-
-	:returns: tuple of the form ({authority => vote}, issues, runtimes)
-	"""
-
-	return _get_documents('vote', '/tor/status-vote/current/authority')
-
-
-def _get_documents(label, resource):
-	documents, issues, runtimes = {}, [], {}
-
-	for authority in directory_authorities().values():
-		if authority.v3ident is None:
-			continue	# not a voting authority
-
-		query = downloader.query(
-			resource,
-			endpoints = [(authority.address, authority.dir_port)],
-			default_params = False,
-		)
-
-		try:
-			start_time = time.time()
-			documents[authority.nickname] = query.run()[0]
-			runtimes[authority.nickname] = time.time() - start_time
-		except Exception, exc:
-			if label == 'vote':
-				# try to download the vote via the other authorities
-
-				v3ident = directory_authorities()[authority.nickname].v3ident
-
-				query = downloader.query(
-					'/tor/status-vote/current/%s' % v3ident,
-					default_params = False,
-				)
-
-				query.run(True)
-
-				if not query.error:
-					documents[authority.nickname] = list(query)[0]
-					continue
-
-			issues.append(('AUTHORITY_UNAVAILABLE', label, authority, query.download_url, exc))
-
-	return documents, issues, runtimes
 
 
 if __name__ == '__main__':

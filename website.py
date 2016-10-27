@@ -10,20 +10,23 @@ import os
 import time
 import operator
 import datetime
-import stem.descriptor.remote
+
 from base64 import b64decode
 from Crypto.PublicKey import RSA
+
+import stem.descriptor.remote
+
+from utility import get_dirauths, get_bwauths
 
 class WebsiteWriter:
 	consensus = None
 	votes = None
 	fallback_dirs = None
-	config_set = False
 	known_authorities = []
-	historical_bridge_authorities = []
 	bandwidth_authorities = []
 	consensus_expirey = datetime.timedelta(hours=3)
 	directory_key_warning_time = datetime.timedelta(days=14)
+	config = {}
 	known_params = []
 	def write_website(self, filename, include_relay_info=True):
 		self.site = open(filename, 'w')
@@ -49,13 +52,10 @@ class WebsiteWriter:
 		self.site.close()
 
 	def set_consensuses(self, c):
-		if not self.config_set:
-			raise Exception("Set config before calling")
 		self.consensuses = c
 		self.consensus = max(c.itervalues(), key=operator.attrgetter('valid_after'))
-		self.known_authorities = set([r.nickname for r in self.consensus.routers.values() if 'Authority' in r.flags and r.nickname not in self.historical_bridge_authorities])
-		self.known_authorities.update([r.nickname for r in self.consensus.directory_authorities])
-		self.known_authorities.update([r for r in stem.descriptor.remote.get_authorities().keys() if r not in self.historical_bridge_authorities])
+		self.known_authorities = get_dirauths().keys()
+		self.bandwidth_authorities = get_bwauths().keys()
 	def set_votes(self, v):
 		self.votes = v
 	def set_consensus_expirey(self, timedelta):
@@ -63,10 +63,8 @@ class WebsiteWriter:
 	def set_directory_key_warning_time(self, timedelta):
 		self.directory_key_warning_time = timedelta
 	def set_config(self, config):
-		self.config_set = True
+		self.config = config
 		self.known_params = config['known_params']
-		self.historical_bridge_authorities = config['historical_bridge_authorities']
-		self.bandwidth_authorities = config['bandwidth_authorities']
 	def set_fallback_dirs(self, fallback_dirs):
 		self.fallback_dirs = fallback_dirs
 	def get_consensus_time(self):
@@ -171,9 +169,9 @@ class WebsiteWriter:
 			+ "    <td>" + dirauth_nickname + "</td>\n")
 			
 			#Try and find a structure that has it's IP & Port
-			authority = [r for r in self.consensus.routers.values() if r.nickname == dirauth_nickname and 'Authority' in r.flags]
+			authority = [r for r in self.consensus.routers.values() if r.nickname.lower() == dirauth_nickname and 'Authority' in r.flags]
 			if not authority:
-				authority = [d for d in self.consensus.directory_authorities if d.nickname == dirauth_nickname]
+				authority = [d for d in self.consensus.directory_authorities if d.nickname.lower() == dirauth_nickname]
 			if authority:
 				authority = authority[0]
 				self.site.write("    <td><a href=\"http://" + authority.address + ":" + str(authority.dir_port)
@@ -183,20 +181,20 @@ class WebsiteWriter:
 			else:
 				self.site.write("    <td colspan=\"2\" class=\"oiv\">Missing entirely from consensus</td>\n")
 				
-			if dirauth_nickname in [d.nickname for d in self.consensus.directory_authorities]:
+			if dirauth_nickname in [d.nickname.lower() for d in self.consensus.directory_authorities]:
 				#The above structure is sufficient for getting the address & port
 				# but we need this structure for the authority's fingerprint
-				authority = [d for d in self.consensus.directory_authorities if d.nickname == dirauth_nickname][0]
+				authority = [d for d in self.consensus.directory_authorities if d.nickname.lower() == dirauth_nickname][0]
 				if authority.fingerprint in signingFPs:
 					self.site.write("    <td>" + signingFPs[authority.fingerprint] + "</td>\n")
-				elif authority.nickname in self.consensuses:
+				elif authority.nickname.lower() in self.consensuses:
 					self.site.write("    <td class=\"oiv\">Missing Signature! "
 					+ "Valid-after time of auth's displayed consensus: "
-					+ self.consensuses[authority.nickname].valid_after.isoformat().replace("T", " ")
+					+ self.consensuses[authority.nickname.lower()].valid_after.isoformat().replace("T", " ")
 					+ "</td>\n")
 				else:
 					self.site.write("    <td class=\"oiv\">Missing Signature, and "
-					+ authority.nickname + " does not have a consensus available</td>\n")
+					+ authority.nickname.lower() + " does not have a consensus available</td>\n")
 			self.site.write("  </tr>\n")
 		self.site.write("</table>\n")
 
@@ -592,6 +590,9 @@ class WebsiteWriter:
 		"""
 		Write the status of the fallback directory mirrors
 		"""
+		if self.config['ignore_fallback_authorities']:
+				return
+
 		self.site.write("<br>\n\n\n"
 		+ " <!-- ================================================================= -->"
 		+ "<a name=\"fallbackdirstatus\">\n"
@@ -649,7 +650,7 @@ class WebsiteWriter:
 		+ "Authority versions</a></h3>\n"
 		+ "<br>\n")
 
-		authorityVersions = [(r.nickname, r.version) for r in self.consensus.routers.values() if 'Authority' in r.flags]
+		authorityVersions = [(r.nickname.lower(), r.version) for r in self.consensus.routers.values() if 'Authority' in r.flags]
 		if not authorityVersions:
 			self.site.write("<p>(No relays with Authority flag found.)</p>\n")
 		else:
@@ -683,6 +684,7 @@ class WebsiteWriter:
 		downloadData = {}
 		for l in lines:
 			parts = l.split(',')
+			parts[0] = parts[0].lower()
 			if int(parts[1]) < cutoff:
 				continue
 			if parts[0] not in downloadData:
@@ -1071,9 +1073,8 @@ if __name__ == '__main__':
 		
 
 	CONFIG = stem.util.conf.config_dict('consensus', {
-                                    'ignored_authorities': [],
-                                    'bandwidth_authorities': [],
                                     'known_params': [],
+                                    'ignore_fallback_authorities': False,
                                     })
 	config = stem.util.conf.get_config("consensus")
 	config.load(os.path.join(os.path.dirname(__file__), 'data', 'consensus.cfg'))
