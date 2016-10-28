@@ -1075,6 +1075,8 @@ if __name__ == '__main__':
 	CONFIG = stem.util.conf.config_dict('consensus', {
                                     'known_params': [],
                                     'ignore_fallback_authorities': False,
+                                    'graph_logical_min': 125,
+                                    'graph_logical_max': 25000
                                     })
 	config = stem.util.conf.get_config("consensus")
 	config.load(os.path.join(os.path.dirname(__file__), 'data', 'consensus.cfg'))
