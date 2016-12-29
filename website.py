@@ -158,8 +158,8 @@ class WebsiteWriter:
 		+ "<table border=\"0\" cellpadding=\"4\" cellspacing=\"0\" summary=\"\">\n"
 		+ "  <colgroup>\n"
 		+ "    <col width=\"160\">\n"
-		+ "    <col width=\"160\">\n"
-		+ "    <col width=\"480\">\n"
+		+ "    <col width=\"230\">\n"
+		+ "    <col width=\"410\">\n"
 		+ "  </colgroup>\n")
    
 		# XXX Should also write if the displayed consensus is out of date
@@ -175,8 +175,9 @@ class WebsiteWriter:
 			if authority:
 				authority = authority[0]
 				self.site.write("    <td><a href=\"http://" + authority.address + ":" + str(authority.dir_port)
-				+ "/tor/status-vote/current/consensus\">consensus</a> <a href=\"http://"
-				+ authority.address + ":" + str(authority.dir_port)
+				+ "/tor/status-vote/current/consensus\">consensus</a> (<a href=\"http://" + authority.address 
+				+ ":" + str(authority.dir_port) + "/tor/status-vote/current/consensus-microdesc\">microdesc</a>)"
+				+ " <a href=\"http://" + authority.address + ":" + str(authority.dir_port)
 				+ "/tor/status-vote/current/authority\">vote</a></td>\n")
 			else:
 				self.site.write("    <td colspan=\"2\" class=\"oiv\">Missing entirely from consensus</td>\n")
