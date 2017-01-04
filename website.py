@@ -24,7 +24,7 @@ class WebsiteWriter:
 	fallback_dirs = None
 	known_authorities = []
 	bandwidth_authorities = []
-	consensus_expirey = datetime.timedelta(hours=3)
+	consensus_expiry = datetime.timedelta(hours=3)
 	directory_key_warning_time = datetime.timedelta(days=14)
 	config = {}
 	known_params = []
@@ -60,8 +60,8 @@ class WebsiteWriter:
 		self.bandwidth_authorities = get_bwauths().keys()
 	def set_votes(self, v):
 		self.votes = v
-	def set_consensus_expirey(self, timedelta):
-		self.consensus_expirey = timedelta
+	def set_consensus_expiry(self, timedelta):
+		self.consensus_expiry = timedelta
 	def set_directory_key_warning_time(self, timedelta):
 		self.directory_key_warning_time = timedelta
 	def set_config(self, config):
@@ -136,7 +136,7 @@ class WebsiteWriter:
 		+ "<br>\n" \
 		+ "<p>Consensus was published ")
 
-		if self.consensus.valid_after + self.consensus_expirey < datetime.datetime.now():
+		if self.consensus.valid_after + self.consensus_expiry < datetime.datetime.now():
 			self.site.write('<span class="oiv">'
 			+ self.consensus.valid_after.isoformat().replace("T", " ")
 			+ '</span>')
@@ -533,7 +533,7 @@ class WebsiteWriter:
 		+ "  </colgroup>\n"
 		+ "  <tr>\n"
 		+ "    <th>Name</th>"
-		+ "    <th>Expirey</th>"
+		+ "    <th>Expiry</th>"
 		+ "    <th>Identity Key Len.</th>"
 		+ "    <th>Signing Key Len.</th>"
 		+ "  </tr>\n")
