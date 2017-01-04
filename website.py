@@ -34,6 +34,7 @@ class WebsiteWriter:
 		self._write_valid_after_time()
 		self._write_signatures()
 		self._write_known_flags()
+		self._write_flag_thresholds()
 		self._write_number_of_relays_voted_about(True)
 		self._write_consensus_methods()
 		self._write_recommended_versions()
@@ -237,6 +238,37 @@ class WebsiteWriter:
 		self.site.write("</td>\n"
 		+ "  </tr>\n"
 		+ "</table>\n")
+
+	#-----------------------------------------------------------------------------------------
+	def _write_flag_thresholds(self):
+		"""
+		Write each dirauth's flag thresholds
+		"""
+		self.site.write("<br>\n\n\n"
+		+ " <!-- ================================================================= -->"
+		+ "<a name=\"flagthresholds\">\n"
+		+ "<h3><a href=\"#flagthresholds\" class=\"anchor\">Flag Thresholds</a></h3>\n"
+		+ "<br>\n"
+		+ "<table border=\"0\" cellpadding=\"4\" cellspacing=\"0\" summary=\"\">\n"
+		+ "  <colgroup>\n"
+		+ "    <col width=\"160\">\n"
+		+ "    <col width=\"640\">\n"
+		+ "  </colgroup>\n")
+		for dirauth_nickname in self.known_authorities:
+			if dirauth_nickname in self.votes:
+				vote = self.votes[dirauth_nickname]
+				self.site.write("  <tr>\n"
+				+ "    <td>" + dirauth_nickname + "</td>\n"
+				+ "    <td>flag-thresholds");
+				for k in vote.flag_thresholds:
+					self.site.write(" " + k + "=" + str(vote.flag_thresholds[k]))
+				self.site.write("</td>\n" + "  </tr>\n")
+			else:
+				self.site.write("  <tr>\n"
+				+ "    <td>" + dirauth_nickname + "</td>\n"
+				+ "    <td><span class=\"oiv\">Vote Not Present<span></td>\n"
+				+ "  </tr>\n")
+		self.site.write("</table>\n")
 
 	#-----------------------------------------------------------------------------------------
 	def _write_number_of_relays_voted_about(self, linkToGraph):
