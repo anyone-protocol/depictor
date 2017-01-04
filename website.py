@@ -39,6 +39,7 @@ class WebsiteWriter:
 		self._write_recommended_versions()
 		self._write_consensus_parameters()
 		self._write_authority_keys()
+		self._write_protocols()
 		self._write_bandwidth_scanner_status(True)
 		self._write_fallback_directory_status(True)
 		self._write_authority_versions()
@@ -538,6 +539,98 @@ class WebsiteWriter:
 			+ "<p><i>Note that expiration dates of any legacy keys are "
 			+ "not included in votes and therefore not listed here!</i>"
 			+ "</p>\n")
+
+	#-----------------------------------------------------------------------------------------
+	def protocolsToString(self, keys, v, c=None):
+		s = ""
+		for k in keys:
+			s += k + "="
+			if c and c[k] != v[k]:
+				s += "<span class=\"oiv\">"
+			s += ",".join([str(i) for i in v[k]])
+			if c and c[k] != v[k]:
+				s += "</span>"
+			s += " "
+		return s
+	def _write_protocols(self):
+		"""
+		Write the recommended and required protocols
+		"""
+		self.site.write("<br>\n\n\n"
+		+ " <!-- ================================================================= -->"
+		+ "<a name=\"protocols\">\n"
+		+ "<h3><a href=\"#protocols\" class=\"anchor\">"
+		+ "Protocols</a></h3>\n"
+		+ "<br>\n"
+		+ "<table border=\"0\" cellpadding=\"4\" cellspacing=\"0\" summary=\"\">\n"
+		+ "  <colgroup>\n"
+		+ "    <col width=\"140\">\n"
+		+ "    <col width=\"180\">\n"
+		+ "    <col width=\"480\">\n"
+		+ "  </colgroup>\n")		
+		if not self.votes:
+			self.site.write("  <tr><td>(No votes.)</td><td></td></tr>\n")
+		else:
+			protocol_keys = set()
+			for dirauth_nickname in self.known_authorities:
+				if dirauth_nickname in self.votes:
+					vote = self.votes[dirauth_nickname]
+					protocol_keys = protocol_keys.union(vote.recommended_client_protocols.keys())
+					protocol_keys = protocol_keys.union(vote.required_client_protocols.keys())
+					protocol_keys = protocol_keys.union(vote.recommended_relay_protocols.keys())
+					protocol_keys = protocol_keys.union(vote.required_relay_protocols.keys())
+			protocol_keys = list(protocol_keys)
+			protocol_keys.sort()
+			for dirauth_nickname in self.known_authorities:
+				if dirauth_nickname in self.votes:
+					vote = self.votes[dirauth_nickname]
+
+					self.site.write("  <tr>\n"
+					+ "    <td>" + dirauth_nickname + "</td>\n"
+					+ "    <td>Recommended Client</td>\n"
+					+ "    <td>" + self.protocolsToString(protocol_keys, vote.recommended_client_protocols, self.consensus.recommended_client_protocols) + "</td>\n"
+					+ "  </tr>\n"
+					+ "  <tr>\n"
+					+ "    <td></td>\n"
+					+ "    <td>Required Client</td>\n"
+					+ "    <td>" + self.protocolsToString(protocol_keys, vote.required_client_protocols, self.consensus.required_client_protocols) + "</td>\n"
+					+ "  </tr>\n"
+					+ "  <tr>\n"
+					+ "    <td></td>\n"
+					+ "    <td>Recommended Relay</td>\n"
+					+ "    <td>" + self.protocolsToString(protocol_keys, vote.recommended_relay_protocols, self.consensus.recommended_relay_protocols) + "</td>\n"
+					+ "  </tr>\n"
+					+ "  <tr>\n"
+					+ "    <td></td>\n"
+					+ "    <td>Required Relay</td>\n"
+					+ "    <td>" + self.protocolsToString(protocol_keys, vote.required_relay_protocols, self.consensus.required_relay_protocols) + "</td>\n"
+					+ "  </tr>\n")
+				else:
+					self.site.write("  <tr>\n"
+					+ "    <td>" + dirauth_nickname + "</td>\n"
+					+ "    <td colspan=\"2\" class=\"oiv\">Vote Not Present</td>\n"	
+					+ "  </tr>\n")
+			self.site.write("  <tr>\n"
+			+ "    <td class=\"ic\">consensus</td>\n"
+			+ "    <td class=\"ic\">Recommended Client</td>\n"
+			+ "    <td class=\"ic\">" + self.protocolsToString(protocol_keys, self.consensus.recommended_client_protocols) + "</td>\n"
+			+ "  </tr>\n"
+			+ "  <tr>\n"
+			+ "    <td></td>\n"
+			+ "    <td class=\"ic\">Required Client</td>\n"
+			+ "    <td class=\"ic\">" + self.protocolsToString(protocol_keys, self.consensus.required_client_protocols) + "</td>\n"
+			+ "  </tr>\n"
+			+ "  <tr>\n"
+			+ "    <td></td>\n"
+			+ "    <td class=\"ic\">Recommended Relay</td>\n"
+			+ "    <td class=\"ic\">" + self.protocolsToString(protocol_keys, self.consensus.recommended_relay_protocols) + "</td>\n"
+			+ "  </tr>\n"
+			+ "  <tr>\n"
+			+ "    <td></td>\n"
+			+ "    <td class=\"ic\">Required Relay</td>\n"
+			+ "    <td class=\"ic\">" + self.protocolsToString(protocol_keys, self.consensus.required_relay_protocols) + "</td>\n"
+			+ "  </tr>\n"
+			+ "</table>\n")
 
 	#-----------------------------------------------------------------------------------------
 	def _write_bandwidth_scanner_status(self, linkToGraph):
