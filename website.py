@@ -228,7 +228,7 @@ class WebsiteWriter:
 			else:
 				self.site.write("  <tr>\n"
 				+ "    <td>" + dirauth_nickname + "</td>\n"
-				+ "    <td><span class=\"oiv\">Vote Not Present<span></td>\n"
+				+ "    <td class=\"oiv\">Vote Not Present</td>\n"
 				+ "  </tr>\n")
 		self.site.write("  <tr>\n"
 		+ "    <td class=\"ic\">consensus</td>\n"
@@ -266,7 +266,7 @@ class WebsiteWriter:
 			else:
 				self.site.write("  <tr>\n"
 				+ "    <td>" + dirauth_nickname + "</td>\n"
-				+ "    <td><span class=\"oiv\">Vote Not Present<span></td>\n"
+				+ "    <td class=\"oiv\">Vote Not Present</td>\n"
 				+ "  </tr>\n")
 		self.site.write("</table>\n")
 
@@ -358,17 +358,17 @@ class WebsiteWriter:
 						+ "  </tr>\n")
 					else:
 						self.site.write("  <tr>\n"
-						+ "    <td><span class=\"oiv\">"
-						+	   dirauth_nickname + "</span></td>\n"
-						+ "    <td><span class=\"oiv\">consensus-methods")
+						+ "    <td class=\"oiv\">"
+						+	   dirauth_nickname + "</td>\n"
+						+ "    <td class=\"oiv\">consensus-methods")
 						for cm in vote.consensus_methods:
 							self.site.write(" " + str(cm))
-						self.site.write("</span></td>\n"
+						self.site.write("</td>\n"
 						+ "  </tr>\n")
 				else:
 					self.site.write("  <tr>\n"
 					+ "    <td>" + dirauth_nickname + "</td>\n"
-					+ "    <td><span class=\"oiv\">Vote Not Present<span></td>\n"	
+					+ "    <td class=\"oiv\">Vote Not Present</td>\n"
 					+ "  </tr>\n")
 		self.site.write("  <tr>\n"
 		+ "    <td class=\"ic\">consensus</td>\n"
@@ -424,7 +424,7 @@ class WebsiteWriter:
 				else:
 					self.site.write("  <tr>\n"
 					+ "    <td>" + dirauth_nickname + "</td>\n"
-					+ "    <td><span class=\"oiv\">Vote Not Present<span></td>\n"
+					+ "    <td class=\"oiv\">Vote Not Present</td>\n"
 					+ "  </tr>\n")
 		self.site.write("  <tr>\n"
 		+ "    <td class=\"ic\">consensus</td>\n"
@@ -473,7 +473,7 @@ class WebsiteWriter:
 					
 					if conflictOrInvalid:
 						self.site.write("  <tr>\n"
-						+ "    <td><span class=\"oiv\">" + dirauth_nickname + "</span></td>\n"
+						+ "    <td class=\"oiv\">" + dirauth_nickname + "</td>\n"
 						+ "    <td>params")
 						for p in vote.params:
 							if p in conflictOrInvalid:
@@ -493,7 +493,7 @@ class WebsiteWriter:
 				else:
 					self.site.write("  <tr>\n"
 					+ "    <td>" + dirauth_nickname + "</td>\n"
-					+ "    <td><span class=\"oiv\">Vote Not Present<span></td>\n"
+					+ "    <td class=\"oiv\">Vote Not Present</td>\n"
 					+ "  </tr>\n")
 
 		self.site.write("  <tr>\n"
@@ -548,9 +548,9 @@ class WebsiteWriter:
 					voteDirKeyExpires = vote.directory_authorities[0].key_certificate.expires
 					if voteDirKeyExpires - self.directory_key_warning_time < datetime.datetime.now():
 						self.site.write("  <tr>\n"
-						+ "    <td><span class=\"oiv\">" + dirauth_nickname + "</span></td>\n"
-						+ "    <td><span class=\"oiv\">"
-						+ voteDirKeyExpires.isoformat().replace("T", " ") + "</span></td>\n")
+						+ "    <td class=\"oiv\">" + dirauth_nickname + "</td>\n"
+						+ "    <td class=\"oiv\">"
+						+ voteDirKeyExpires.isoformat().replace("T", " ") + "</td>\n")
 					else:
 						self.site.write("  <tr>\n"
 						+ "    <td>" + dirauth_nickname + "</td>\n"
@@ -965,9 +965,9 @@ class WebsiteWriter:
 					i += 1
 
 					if dirauth_nickname in flagsLost and kf in flagsLost[dirauth_nickname]:
-						self.site.write("    <td><span class=\"oiv\"> "
+						self.site.write("    <td class=\"oiv\"> "
 						+ str(flagsLost[dirauth_nickname][kf]) + " " + kf
-						+ "</span></td>\n")
+						+ "</td>\n")
 					else:
 						self.site.write("    <td></td>\n")
 
