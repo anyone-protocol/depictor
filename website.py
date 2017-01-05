@@ -146,6 +146,35 @@ class WebsiteWriter:
 		self.site.write(". <i>Note that it takes up to 15 minutes to learn "
 		+ "about new consensus and votes and process them.</i></p>\n")
 
+		wrote_at_least_one_odd_consensus = False
+		for dirauth_nickname in self.known_authorities:
+			if dirauth_nickname not in self.consensuses or \
+				self.consensuses[dirauth_nickname].valid_after != self.consensus.valid_after:
+
+				if wrote_at_least_one_odd_consensus == False:
+					wrote_at_least_one_odd_consensus = True
+
+					self.site.write("<p>Unusual Authorities:</p>\n")
+					self.site.write("<table border=\"0\" cellpadding=\"4\" cellspacing=\"0\" summary=\"\">\n"
+					+ "  <colgroup>\n"
+					+ "    <col width=\"160\">\n"
+					+ "    <col width=\"640\">\n"
+					+ "  </colgroup>\n")
+
+				self.site.write("  <tr>\n"
+				+ "    <td>" + dirauth_nickname + "</td>\n")
+
+				if dirauth_nickname not in self.consensuses:
+					self.site.write("    <td class=\"oiv\">Consensus Not Present</td>\n"
+					+ "  </tr>\n")
+				else:
+					self.site.write("    <td>")
+					self.site.write(self.consensuses[dirauth_nickname].valid_after.isoformat().replace("T", " "))
+					self.site.write("</td>")
+
+				self.site.write("  </tr>\n")
+		self.site.write("</table>\n")
+
 	#-----------------------------------------------------------------------------------------
 	def _write_signatures(self):
 		"""
