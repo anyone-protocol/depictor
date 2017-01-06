@@ -40,6 +40,7 @@ class WebsiteWriter:
 		self._write_recommended_versions()
 		self._write_consensus_parameters()
 		self._write_authority_keys()
+		self._write_shared_random()
 		self._write_protocols()
 		self._write_bandwidth_scanner_status(True)
 		self._write_fallback_directory_status(True)
@@ -600,6 +601,90 @@ class WebsiteWriter:
 			+ "<p><i>Note that expiration dates of any legacy keys are "
 			+ "not included in votes and therefore not listed here!</i>"
 			+ "</p>\n")
+
+	#-----------------------------------------------------------------------------------------
+	def sharedRandomToStr(self, sr):
+		s = "["
+		s += "V:" + str(sr.version) + " "
+		s += "A:" + str(sr.algorithm) + " "
+		s += "C:" + sr.commit + " "
+		s += "R:" + sr.reveal
+		return s + "]"
+	def _write_shared_random(self):
+		"""
+		Write the shared random information of each directory authority
+		"""
+		self.site.write("<br>\n\n\n"
+		+ " <!-- ================================================================= -->"
+		+ "<a name=\"sharedrandom\">\n"
+		+ "<h3><a href=\"#sharedrandom\" class=\"anchor\">"
+		+ "Shared Random</a></h3>\n"
+		+ "<br>\n"
+		+ "<table border=\"0\" cellpadding=\"4\" cellspacing=\"0\" summary=\"\">\n"
+		+ "  <colgroup>\n"
+		+ "    <col width=\"140\">\n"
+		+ "    <col width=\"180\">\n"
+		+ "    <col width=\"480\">\n"
+		+ "  </colgroup>\n")
+		if not self.votes:
+			self.site.write("  <tr><td>(No votes.)</td><td></td></tr>\n")
+		else:
+			for dirauth_nickname in self.known_authorities:
+				if dirauth_nickname in self.votes:
+					vote = self.votes[dirauth_nickname]
+
+					if vote.directory_authorities[0].is_shared_randomness_participate:
+						prev_error = ""
+						cur_error = ""
+						if vote.directory_authorities[0].shared_randomness_previous_reveal_count != self.consensus.shared_randomness_previous_reveal_count or \
+						   vote.directory_authorities[0].shared_randomness_previous_value != self.consensus.shared_randomness_previous_value:
+							prev_error = "oiv"
+						if vote.directory_authorities[0].shared_randomness_current_reveal_count != self.consensus.shared_randomness_current_reveal_count or \
+						   vote.directory_authorities[0].shared_randomness_current_value != self.consensus.shared_randomness_current_value:
+							cur_error = "oiv"
+						self.site.write("  <tr>\n"
+						+ "    <td>" + dirauth_nickname + "</td>\n"
+						+ "    <td>Previous</td>\n"
+						+ "    <td" + prev_error + ">" + str(vote.directory_authorities[0].shared_randomness_previous_reveal_count)
+						+ " " + str(vote.directory_authorities[0].shared_randomness_previous_value) + "</td>\n"
+						+ "  </tr>\n"
+						+ "  <tr>\n"
+						+ "    <td></td>\n"
+						+ "    <td>Current</td>\n"
+						+ "    <td" + cur_error + ">" + str(vote.directory_authorities[0].shared_randomness_current_reveal_count)
+						+ " " + str(vote.directory_authorities[0].shared_randomness_current_value) + "</td>\n"
+						+ "</td>\n"
+						+ "  </tr>\n"
+						+ "  <tr>\n"
+						+ "    <td></td>\n"
+						+ "    <td>Commitments</td>\n"
+						+ "    <td style=\"font-size:x-small\">" + ", <br />".join([self.sharedRandomToStr(x) for x in vote.directory_authorities[0].shared_randomness_commitments]) + "</td>\n"
+						+ "  </tr>\n")
+					else:
+						self.site.write("  <tr>\n"
+						+ "    <td><span class=\"oiv\">"
+						+	   dirauth_nickname + "</span></td>\n"
+						+ "    <td colspan=\"2\"><span class=\"oiv\">Does not participate"
+						+ "</span></td>\n"
+						+ "  </tr>\n")
+				else:
+					self.site.write("  <tr>\n"
+					+ "    <td>" + dirauth_nickname + "</td>\n"
+					+ "    <td colspan=\"2\"><span class=\"oiv\">Vote Not Present<span></td>\n"
+					+ "  </tr>\n")
+		self.site.write("  <tr>\n"
+		+ "    <td class=\"ic\">consensus</td>\n"
+		+ "    <td class=\"ic\">Previous</td>\n"
+		+ "    <td class=\"ic\">" + str(self.consensus.shared_randomness_previous_reveal_count)
+		+ " " + str(self.consensus.shared_randomness_previous_value) + "</td>\n"
+		+ "  </tr>\n"
+		+ "  <tr>\n"
+		+ "    <td></td>\n"
+		+ "    <td class=\"ic\">Current</td>\n"
+		+ "    <td class=\"ic\">" + str(self.consensus.shared_randomness_current_reveal_count)
+		+ " " + str(self.consensus.shared_randomness_current_value) + "</td>\n"
+		+ "  </tr>\n"
+		+ "</table>\n")
 
 	#-----------------------------------------------------------------------------------------
 	def protocolsToString(self, keys, v, c=None):
