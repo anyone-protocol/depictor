@@ -607,8 +607,8 @@ class WebsiteWriter:
 		s = "["
 		s += "V:" + str(sr.version) + " "
 		s += "A:" + str(sr.algorithm) + " "
-		s += "C:" + sr.commit + " "
-		s += "R:" + sr.reveal
+		s += "C:" + sr.commit if sr.commit else "<span class=\"oiv\">(Empty)</span>"
+		s += "R:" + sr.reveal if sr.reveal else "<span class=\"oiv\">(Empty)</span>"
 		return s + "]"
 	def _write_shared_random(self):
 		"""
@@ -638,10 +638,10 @@ class WebsiteWriter:
 						cur_error = ""
 						if vote.directory_authorities[0].shared_randomness_previous_reveal_count != self.consensus.shared_randomness_previous_reveal_count or \
 						   vote.directory_authorities[0].shared_randomness_previous_value != self.consensus.shared_randomness_previous_value:
-							prev_error = "oiv"
+							prev_error = " class=\"oiv\""
 						if vote.directory_authorities[0].shared_randomness_current_reveal_count != self.consensus.shared_randomness_current_reveal_count or \
 						   vote.directory_authorities[0].shared_randomness_current_value != self.consensus.shared_randomness_current_value:
-							cur_error = "oiv"
+							cur_error = " class=\"oiv\""
 						self.site.write("  <tr>\n"
 						+ "    <td>" + dirauth_nickname + "</td>\n"
 						+ "    <td>Previous</td>\n"
