@@ -42,6 +42,7 @@ class WebsiteWriter:
 		self._write_authority_keys()
 		self._write_shared_random()
 		self._write_protocols()
+		self._write_bandwidth_weights()
 		self._write_bandwidth_scanner_status(True)
 		self._write_fallback_directory_status(True)
 		self._write_authority_versions()
@@ -777,6 +778,81 @@ class WebsiteWriter:
 			+ "    <td class=\"ic\">" + self.protocolsToString(protocol_keys, self.consensus.required_relay_protocols) + "</td>\n"
 			+ "  </tr>\n"
 			+ "</table>\n")
+
+	#-----------------------------------------------------------------------------------------
+	def _bandwidthweight_key_to_name(self, k):
+		if k == "Wgg":
+			return "Guard-flagged nodes in the guard position"
+		elif k == "Wgm":
+			return "non-flagged nodes in the guard Position"
+		elif k == "Wgd":
+			return "Guard+Exit-flagged nodes in the guard Position"
+		elif k == "Wmg":
+			return "Guard-flagged nodes in the middle Position"
+		elif k == "Wmm":
+			return "non-flagged nodes in the middle Position"
+		elif k == "Wme":
+			return "Exit-flagged nodes in the middle Position"
+		elif k == "Wmd":
+			return "Guard+Exit flagged nodes in the middle Position"
+		elif k == "Weg":
+			return "Guard flagged nodes in the exit Position"
+		elif k == "Wem":
+			return "non-flagged nodes in the exit Position"
+		elif k == "Wee":
+			return "Exit-flagged nodes in the exit Position"
+		elif k == "Wed":
+			return "Guard+Exit-flagged nodes in the exit Position"
+		elif k == "Wgb":
+			return "BEGIN_DIR-supporting Guard-flagged nodes"
+		elif k == "Wmb":
+			return "BEGIN_DIR-supporting non-flagged nodes"
+		elif k == "Web":
+			return "BEGIN_DIR-supporting Exit-flagged nodes"
+		elif k == "Wdb":
+			return "BEGIN_DIR-supporting Guard+Exit-flagged nodes"
+		elif k == "Wbg":
+			return "Guard flagged nodes for BEGIN_DIR requests"
+		elif k == "Wbm":
+			return "non-flagged nodes for BEGIN_DIR requests"
+		elif k == "Wbe":
+			return "Exit-flagged nodes for BEGIN_DIR requests"
+		elif k == "Wbd":
+			return "Guard+Exit-flagged nodes for BEGIN_DIR requests"
+		else:
+			return "<span class=\"oic\">Unknown key '" + k + "'</span>"
+
+	def _write_bandwidth_weights(self):
+		"""
+		Write the bandwidth scanner weights
+		"""
+		self.site.write("<br>\n\n\n"
+		+ " <!-- ================================================================= -->"
+		+ "<a name=\"bwweights\">\n"
+		+ "<h3><a href=\"#bwweights\" class=\"anchor\">"
+		+ "Bandwidth Scanner Weights</a></h3>\n"
+		+ "<br>\n"
+		+ "<table border=\"0\" cellpadding=\"4\" cellspacing=\"0\" summary=\"\">\n"
+		+ "  <colgroup>\n"
+		+ "    <col width=\"140\">\n"
+		+ "    <col width=\"480\">\n"
+		+ "    <col width=\"180\">\n"
+		+ "  </colgroup>\n")
+		if not self.consensus:
+			self.site.write("  <tr><td>(No consensus.)</td><td></td></tr>\n")
+		else:
+			wrote_first_line = False
+			special_key_order = ["Wgg", "Wgm", "Wgd", "Wmg", "Wmm", "Wme", "Wmd", "Weg", "Wem", "Wee", "Wed", "Wgb", "Wmb", "Web", "Wdb", "Wbg", "Wbm", "Wbe", "Wbd"]
+			for k in special_key_order:
+				if k not in self.consensus.bandwidth_weights:
+					continue
+				self.site.write("  <tr>\n"
+				+ "    <td class=\"ic\">" + ("consensus" if not wrote_first_line else "") + "</td>\n"
+				+ "    <td class=\"ic\">" + self._bandwidthweight_key_to_name(k) + "</td>\n"
+				+ "    <td class=\"ic\">" + str(self.consensus.bandwidth_weights[k]) + "</td>\n"
+				+ "  </tr>\n")
+				wrote_first_line = True
+			self.site.write("</table>\n")
 
 	#-----------------------------------------------------------------------------------------
 	def _write_bandwidth_scanner_status(self, linkToGraph):
