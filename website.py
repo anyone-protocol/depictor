@@ -1255,6 +1255,29 @@ class WebsiteWriter:
 		self.site.write("    <th>consensus</th>\n  </tr>\n")
 
 	#-----------------------------------------------------------------------------------------
+	def __find_assigning_bwauth_for_bw_value(self, relay_fp):
+		"""
+		Given a relay fingerprint, look at it's bw value and return which bwauth assigned the
+		value
+		"""
+		if relay_fp not in self.consensus.routers:
+			return ""
+
+		target_bw = self.consensus.routers[relay_fp].bandwidth
+
+		bwauths = []
+		bwauths_voted = 0
+		for dirauth_nickname in self.votes:
+			if relay_fp in self.votes[dirauth_nickname].routers:
+				if self.votes[dirauth_nickname].routers[relay_fp].measured >= 0L:
+					bwauths_voted += 1
+				if target_bw == self.votes[dirauth_nickname].routers[relay_fp].measured:
+					bwauths.append(dirauth_nickname)
+		if len(bwauths) == bwauths_voted:
+			return ["all"]
+		return bwauths
+
+	#-----------------------------------------------------------------------------------------
 	def _write_relay_info_tableRow(self, relay_fp, relay_nickname):
 		"""
 		Write a single row in the table of relay info.
@@ -1337,6 +1360,16 @@ class WebsiteWriter:
 				self.site.write(" <br />" if flagsWritten > 0 else "")
 				self.site.write("bw=" + str(self.consensus.routers[relay_fp].bandwidth))
 				flagsWritten += 1
+				if self.consensus.routers[relay_fp].is_unmeasured:
+					assigning_bwauths = self.__find_assigning_bwauth_for_bw_value(relay_fp)
+					self.site.write(" <br />" if flagsWritten > 0 else "")
+					self.site.write("unmeasured=1")
+					flagsWritten += 1
+				else:
+					assigning_bwauths = self.__find_assigning_bwauth_for_bw_value(relay_fp)
+					self.site.write(" <br />" if flagsWritten > 0 else "")
+					self.site.write("bwauth=" + ",".join(assigning_bwauths))
+					flagsWritten += 1
 
 			if relay_fp in self.fallback_dirs:
 				self.site.write(" <br />" if flagsWritten > 0 else "")
