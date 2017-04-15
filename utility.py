@@ -84,3 +84,11 @@ def _get_documents(label, resource):
 def unix_time(dt):
     return (dt - datetime.datetime.utcfromtimestamp(0)).total_seconds() * 1000.0
 
+def ut_to_datetime(ut):
+	return datetime.datetime.utcfromtimestamp(ut / 1000)
+
+def ut_to_datetime_format(ut):
+	return consensus_datetime_format(ut_to_datetime(ut))
+
+def consensus_datetime_format(dt):
+	return dt.strftime("%Y-%m-%d-%H-%M-%S")
