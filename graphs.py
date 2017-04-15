@@ -61,16 +61,22 @@ class GraphWriter(WebsiteWriter):
 			+ "    	font-size: 16px;\n"
 			+ "    	text-decoration: underline;\n"
 			+ "    }\n"
+			+ "    .bwauth-graph-title {\n"
+			+ "    	font-size: 12px;\n"
+			+ "    	text-decoration: underline;\n"
+			+ "    }\n"
 			+ "    .graphbox {\n"
 			+ "      text-align: center;\n"
 			+ "      display: none;\n"
 			+ "    }\n"
-
-			+ "    .auth1 {\n"
+			+ "    .auth1, .steelblue {\n"
 			+ "      fill: none;\n"
 			+ "      stroke: steelblue;\n"
 			+ "      background-color: steelblue;\n"
 			+ "      stroke-width: 1.5px;\n"
+			+ "    }\n"
+			+ "    .steelblue {\n"
+			+ "      fill: steelblue;\n"
 			+ "    }\n"
 			+ "    .auth2, .orange {\n"
 			+ "      fill: none;\n"
@@ -79,13 +85,16 @@ class GraphWriter(WebsiteWriter):
 			+ "      stroke-width: 1.5px;\n"
 			+ "    }\n"
 			+ "    .orange {\n"
-			+ "      fill: orange;"
+			+ "      fill: orange;\n"
 			+ "    }\n"
-			+ "    .auth3 {\n"
+			+ "    .auth3, .yellow {\n"
 			+ "      fill: none;\n"
 			+ "      stroke: yellow;\n"
 			+ "      background-color: yellow;\n"
 			+ "      stroke-width: 1.5px;\n"
+			+ "    }\n"
+			+ "    .yellow {\n"
+			+ "      fill: yellow;\n"
 			+ "    }\n"
 			+ "    .auth4, .green {\n"
 			+ "      fill: none;\n"
@@ -94,7 +103,7 @@ class GraphWriter(WebsiteWriter):
 			+ "      stroke-width: 1.5px;\n"
 			+ "    }\n"
 			+ "    .green {\n"
-			+ "      fill: green;"
+			+ "      fill: green;\n"
 			+ "    }\n"
 			+ "    .auth5, .red {\n"
 			+ "      fill: none;\n"
@@ -103,13 +112,16 @@ class GraphWriter(WebsiteWriter):
 			+ "      stroke-width: 1.5px;\n"
 			+ "    }\n"
 			+ "    .red {\n"
-			+ "      fill: red;"
+			+ "      fill: red;\n"
 			+ "    }\n"
-			+ "    .auth6 {\n"
+			+ "    .auth6, .purple {\n"
 			+ "      fill: none;\n"
 			+ "      stroke: purple;\n"
 			+ "      background-color: purple;\n"
 			+ "      stroke-width: 1.5px;\n"
+			+ "    }\n"
+			+ "    .purple {\n"
+			+ "      fill: purple;\n"
 			+ "    }\n"
 			+ "    .auth7 {\n"
 			+ "      fill: none;\n"
@@ -117,25 +129,33 @@ class GraphWriter(WebsiteWriter):
 			+ "      background-color: black;\n"
 			+ "      stroke-width: 1.5px;\n"
 			+ "    }\n"
-			+ "    .auth8 {\n"
+			+ "    .auth8, .blue {\n"
 			+ "      fill: none;\n"
 			+ "      stroke: #0000FF;\n"
 			+ "      background-color: #0000FF;\n"
 			+ "      stroke-width: 1.5px;\n"
 			+ "    }\n"
-			+ "    .auth9 {\n"
+			+ "    .blue {\n"
+			+ "      fill: blue;\n"
+			+ "    }\n"
+			+ "    .auth9, .limegreen {\n"
 			+ "      fill: none;\n"
 			+ "      stroke: limegreen;\n"
 			+ "      background-color: limegreen;\n"
 			+ "      stroke-width: 1.5px;\n"
 			+ "    }\n"
-			+ "    .auth10 {\n"
+			+ "    .limegreen {\n"
+			+ "      fill: limegreen;\n"
+			+ "    }\n"
+			+ "    .auth10, .pink {\n"
 			+ "      fill: none;\n"
 			+ "      stroke: pink;\n"
 			+ "      background-color: pink;\n"
 			+ "      stroke-width: 1.5px;\n"
 			+ "    }\n"
-
+			+ "    .pink {\n"
+			+ "      fill: pink;\n"
+			+ "    }\n"
 			+ "  </style>\n"
 			+ "    <div class=\"center\">\n"
 			+ "      <div class=\"main-column\">\n"
@@ -251,6 +271,20 @@ class GraphWriter(WebsiteWriter):
 		self.site.write("      </div>\n"
 		+ "    </td>\n"
 		+ "  </tr>\n")
+	def _write_bandwidth_scanner_statistics_graphs_spot(self, divName, timeframe):
+		self.site.write("  <tr>\n"
+		+ "    <td>\n"
+		+ "      <div id=\"" + str(divName) + "\" class=\"graphbox\">\n"
+        + "         <span class=\"graph-title\">Bandwidth Auth Statistics, Past " + timeframe + " Days</span>\n"
+        + "         <br />\n"
+        + "         <span class=\"steelblue\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> above\n"
+        + "         <span class=\"purple\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> shared\n"
+        + "         <span class=\"green\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> exclusive\n"
+        + "         <span class=\"orange\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> below\n"
+        + "         <span class=\"blue\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> unmeasured\n"
+		+ "      </div>\n"
+		+ "    </td>\n"
+		+ "  </tr>\n")
 	def _write_bandwidth_scanner_graphs(self):
 		"""
 		Write the graphs of the bandwidth scanners
@@ -276,6 +310,10 @@ class GraphWriter(WebsiteWriter):
 		self._write_bandwidth_scanner_graphs_spot("bwauth_measured_2", get_bwauths())
 		self._write_bandwidth_scanner_graphs_spot("bwauth_measured_3", get_bwauths())
 		self._write_bandwidth_scanner_graphs_spot("bwauth_measured_4", get_bwauths())
+		self._write_bandwidth_scanner_statistics_graphs_spot("bwauths_stats_1", "7")
+		self._write_bandwidth_scanner_statistics_graphs_spot("bwauths_stats_2", "14")
+		self._write_bandwidth_scanner_statistics_graphs_spot("bwauths_stats_3", "30")
+		self._write_bandwidth_scanner_statistics_graphs_spot("bwauths_stats_4", "90")
 		#self._write_bandwidth_scanner_graphs_spot("bwauth_running_unmeasured_1")
 		#self._write_bandwidth_scanner_graphs_spot("bwauth_running_unmeasured_2")
 		#self._write_bandwidth_scanner_graphs_spot("bwauth_running_unmeasured_3")
@@ -286,9 +324,12 @@ class GraphWriter(WebsiteWriter):
 		s = """<script>
 		var AUTH_LOGICAL_MIN = """ + str(self.config['graph_logical_min']) + """,
 		    AUTH_LOGICAL_MAX = """ + str(self.config['graph_logical_max']) + """;
-		var WIDTH = 800,
-		    HEIGHT = 500,
-		    MARGIN = {top: 40, right: 40, bottom: 40, left: 40};
+		var WIDTH = 800,  BWAUTH_WIDTH = 800,
+		    HEIGHT = 500, BWAUTH_HEIGHT = 200,
+		    MARGIN = {top: 40, right: 40, bottom: 40, left: 40},
+		    BWAUTH_MARGIN = {top: 14, right: 40, bottom: 20, left: 40};
+		
+		
 
 		var bwauths = """ + str(get_bwauths().keys()) + """;
 		var dirauths = """ + str(get_dirauths().keys()) + """;
@@ -336,7 +377,8 @@ class GraphWriter(WebsiteWriter):
 				data_func: _getBandwidthDataValue, authorities: bwauths, min_ignore_limit:AUTH_LOGICAL_MIN, max_ignore_limit:AUTH_LOGICAL_MAX },
 			{ title: "BWAuth Measured Relays, Past 90 Days", data_slice: 2160, div: "bwauth_measured_4", 
 				data_func: _getBandwidthDataValue, authorities: bwauths, min_ignore_limit:AUTH_LOGICAL_MIN, max_ignore_limit:AUTH_LOGICAL_MAX },
-/* These graphs are very misleading and not helpful
+
+			/* These graphs are very misleading and not helpful
 			{ title: "BWAuth Running Unmeasured Relays, Past 30 Days", data_slice: 720, div: "bwauth_running_unmeasured_1", 
 				data_func: _getRunningUnmeasuredDataValue, authorities: bwauths, min_ignore_limit:-1000, max_ignore_limit:AUTH_LOGICAL_MAX },
 			{ title: "BWAuth Running Unmeasured Relays, Past 90 Days", data_slice: 2160, div: "bwauth_running_unmeasured_2", 
@@ -345,22 +387,34 @@ class GraphWriter(WebsiteWriter):
 				data_func: _getRunningUnmeasuredDataValue, authorities: bwauths, min_ignore_limit:-1000, max_ignore_limit:AUTH_LOGICAL_MAX },
 			{ title: "BWAuth Running Unmeasured Relays, Past 2 Years", data_slice: 17520, div: "bwauth_running_unmeasured_4", 
 				data_func: _getRunningUnmeasuredDataValue, authorities: bwauths, min_ignore_limit:-1000, max_ignore_limit:AUTH_LOGICAL_MAX },
-*/
+			*/
 		];
 
-	    var FALLBACK_GRAPHS_TO_GENERATE = [
-	      { title: "Fallback Directories Running, Past 7 Days", data_slice: 168, div: "fallbackdirs_1", 
-	        data_func: _getRunningDataValue, authorities: dirauths, min_ignore_limit:AUTH_LOGICAL_MIN, max_ignore_limit:AUTH_LOGICAL_MAX },
-	      { title: "Fallback Directories Running, Past 14 Days", data_slice: 336, div: "fallbackdirs_2", 
-	        data_func: _getRunningDataValue, authorities: dirauths, min_ignore_limit:AUTH_LOGICAL_MIN, max_ignore_limit:AUTH_LOGICAL_MAX },
-	      { title: "Fallback Directories Running, Past 30 Days", data_slice: 720, div: "fallbackdirs_3", 
-	        data_func: _getRunningDataValue, authorities: dirauths, min_ignore_limit:AUTH_LOGICAL_MIN, max_ignore_limit:AUTH_LOGICAL_MAX },
-	      { title: "Fallback Directories Running, Past 90 Days", data_slice: 2160, div: "fallbackdirs_4", 
-	        data_func: _getRunningDataValue, authorities: dirauths, min_ignore_limit:AUTH_LOGICAL_MIN, max_ignore_limit:AUTH_LOGICAL_MAX },
-	    ];
+		var FALLBACK_GRAPHS_TO_GENERATE = [
+			{ title: "Fallback Directories Running, Past 7 Days", data_slice: 168, div: "fallbackdirs_1", 
+				data_func: null, authorities: dirauths, min_ignore_limit:null, max_ignore_limit:null },
+			{ title: "Fallback Directories Running, Past 14 Days", data_slice: 336, div: "fallbackdirs_2", 
+				data_func: null, authorities: dirauths, min_ignore_limit:null, max_ignore_limit:null },
+			{ title: "Fallback Directories Running, Past 30 Days", data_slice: 720, div: "fallbackdirs_3", 
+				data_func: null, authorities: dirauths, min_ignore_limit:null, max_ignore_limit:null },
+			{ title: "Fallback Directories Running, Past 90 Days", data_slice: 2160, div: "fallbackdirs_4", 
+				data_func: null, authorities: dirauths, min_ignore_limit:null, max_ignore_limit:null },
+		];
+
+		var BWAUTH_GRAPHS_TO_GENERATE = [
+			{ title: "Bandwidth Auth Statistics, Past 7 Days", data_slice: 168, div: "bwauths_stats_1", 
+				data_func: null, authorities: bwauths, min_ignore_limit:null, max_ignore_limit:null },
+			{ title: "Bandwidth Auth Statistics, Past 14 Days", data_slice: 336, div: "bwauths_stats_2", 
+				data_func: null, authorities: bwauths, min_ignore_limit:null, max_ignore_limit:null },
+			{ title: "Bandwidth Auth Statistics, Past 30 Days", data_slice: 720, div: "bwauths_stats_3", 
+				data_func: null, authorities: bwauths, min_ignore_limit:null, max_ignore_limit:null },
+			{ title: "Bandwidth Auth Statistics, Past 90 Days", data_slice: 2160, div: "bwauths_stats_4", 
+				data_func: null, authorities: bwauths, min_ignore_limit:null, max_ignore_limit:null },
+		];
 
 	    relays_done = false;
 	    fallbackdirs_done = ignore_fallback_dirs;
+	    bwauth_done = false;
 		fetch("vote-stats.csv").then(function(response) {
 			return response.text();
 		}).then(function(text) {
@@ -485,7 +539,7 @@ class GraphWriter(WebsiteWriter):
 		}
 
 		relays_done = true;
-		if(fallbackdirs_done) {
+		if(fallbackdirs_done && bwauth_done) {
 			var toShow = document.getElementsByClassName('graphbox');
 			for(i=0; i<toShow.length; i++) {
 				toShow[i].style.display = 'block';
@@ -497,6 +551,132 @@ class GraphWriter(WebsiteWriter):
 		}
 
 		});
+
+		// ===========================================================================================
+		// ===========================================================================================
+
+		fetch("bwauth-stats.csv").then(function(response) {
+			return response.text();
+		}).then(function(text) {
+			return d3.csvParse(text, function(d) {
+				for(i in d) {
+					if(i == "date")
+						d[i] = new Date(Number(d[i]));
+					else
+						d[i] = Number(d[i]);
+				}
+				return d;
+			});
+		}).then(function(data) {
+			for(g in BWAUTH_GRAPHS_TO_GENERATE)
+			{
+				graph = BWAUTH_GRAPHS_TO_GENERATE[g];
+
+				var key_to_color = function(k) { 
+					if(k.includes("_above"))
+						return "steelblue";
+					else if(k.includes("_shared"))
+						return "purple";
+					else if(k.includes("_exclusive"))
+						return "green";
+					else if(k.includes("_below"))
+						return "orange";
+					else
+						return "blue";
+				};
+
+				if(graph.data_slice+1 > data.length) {
+					data_subset = data.slice(0);
+					console.log("("+graph.title+") Requested " + (graph.data_slice+1) + " but there are only " + data.length + " items...");
+				}
+				else
+					data_subset = data.slice(0, graph.data_slice);
+				data_subset.reverse();
+
+				for(a in graph.authorities)
+				{
+					a = graph.authorities[a];
+
+					max = 0;
+					for(d in data_subset)
+					{
+						x = data_subset[d][a + "_above"] +
+							data_subset[d][a + "_shared"] +
+							data_subset[d][a + "_exclusive"] +
+							data_subset[d][a + "_below"] +
+							data_subset[d][a + "_unmeasured"];
+						if(x > max)
+							max = x;
+					}
+
+					var x = d3.scaleTime()
+						.domain([data_subset[0].date, data_subset[data_subset.length-1].date])
+						.range([0, BWAUTH_WIDTH]);
+
+					var y = d3.scaleLinear()
+						.domain([0, max])
+						.range([BWAUTH_HEIGHT, 0]);
+
+					var stack = d3.stack()
+						.keys([a + "_unmeasured", a + "_below", a + "_exclusive", a + "_shared", a + "_above"])
+						.order(d3.stackOrderNone)
+						.offset(d3.stackOffsetNone);
+
+					var area = d3.area()
+						.x(function(d, i) { return x(d.data.date); })
+						.y0(function(d) { return y(d[0]); })
+						.y1(function(d) { return y(d[1]); });
+
+					var svg = d3.select("#" + graph.div).append("svg")
+						.attr("width", BWAUTH_WIDTH + BWAUTH_MARGIN.left + BWAUTH_MARGIN.right)
+						.attr("height", BWAUTH_HEIGHT + BWAUTH_MARGIN.top + BWAUTH_MARGIN.bottom)
+						.append("g")
+						.attr("transform", "translate(" + BWAUTH_MARGIN.left + "," + BWAUTH_MARGIN.top + ")");
+
+					var layer = svg.selectAll(".layer")
+						.data(stack(data_subset))
+						.enter().append("g")
+						//.attr("class", "layer");
+
+					layer.append("path")
+						//.attr("class", "area")
+						.attr("class", function(d) { return key_to_color(d.key); })
+						.attr("d", area);
+
+					svg.append("g")
+						.attr("class", "axis axis--x")
+						.attr("transform", "translate(0," + BWAUTH_HEIGHT + ")")
+						.call(d3.axisBottom().scale(x));
+
+					svg.append("g")
+						.attr("class", "axis axis--y")
+						.call(d3.axisLeft().scale(y));
+
+					svg.append("text")
+						.attr("x", (BWAUTH_WIDTH / 2))
+						.attr("y", 5 - (BWAUTH_MARGIN.top / 2))
+						.attr("text-anchor", "middle")
+						.attr("class", "bwauth-graph-title")
+						.text(a);
+					}
+				}
+
+
+				bwauth_done = true;
+				if(relays_done && fallbackdirs_done) {
+					var toShow = document.getElementsByClassName('graphbox');
+					for(i=0; i<toShow.length; i++) {
+						toShow[i].style.display = 'block';
+					}
+					var toHide = document.getElementsByClassName('graphplaceholder');
+					for(i=0; i<toHide.length; i++) {
+						toHide[i].style.display = 'none';
+					}
+				}
+		});
+
+		// ===========================================================================================
+		// ===========================================================================================
 
 		if(!ignore_fallback_dirs) {
 
@@ -619,7 +799,7 @@ class GraphWriter(WebsiteWriter):
 
 				
 				fallbackdirs_done = true;
-				if(relays_done) {
+				if(relays_done && bwauth_done) {
 					var toShow = document.getElementsByClassName('graphbox');
 					for(i=0; i<toShow.length; i++) {
 						toShow[i].style.display = 'block';
