@@ -80,6 +80,26 @@ def main():
 
 	dbc = sqlite3.connect(os.path.join('data', 'historical.db'))
 
+	# Create database placeholders
+	for tbl in ["bwauth_data"]:
+		tbl_exists = dbc.execute("SELECT name FROM sqlite_master WHERE type = 'table' and name = ?", (tbl,))
+		if tbl_exists.fetchone():
+			date_rows = dbc.execute("SELECT date from " + tbl + " ORDER BY date ASC")
+			previous = 0
+			for d in date_rows.fetchall():
+				d = d[0]
+				if previous == 0:
+					pass
+				else:
+					expected = ut_to_datetime(previous) + datetime.timedelta(hours=1)
+					if expected == ut_to_datetime(d):
+						pass
+					else:
+						print "We seem to be missing", consensus_datetime_format(expected)
+						dbc.execute("INSERT OR REPLACE INTO " + tbl + "(date) VALUES (?)", (unix_time(expected),))
+						dbc.commit()
+				previous = d
+
 	# Calculate the number of fallback directory authorities present in the consensus and insert it into the database
 	if not CONFIG['ignore_fallback_authorities']:
 		fallback_dirs_running = 0
@@ -172,6 +192,91 @@ def main():
 		f.write(c + ",")
 	f.write("\n")
 	for r in vote_data.fetchall():
+		for v in r:
+			f.write(("0" if v == None else str(v)) + ",")
+		f.write("\n")
+	f.close()
+
+	#Calculate the bwauth statistics and insert it into the database
+	data = {}
+	for dirauth_nickname in votes:
+		vote = votes[dirauth_nickname]
+		data[dirauth_nickname] = {'unmeasured' : 0, 'above' : 0, 'below' : 0, 'exclusive' : 0 , 'shared' : 0}
+
+		had_any_value = False
+		for r in consensuses.values()[0].routers.values():
+			if r.is_unmeasured:
+				continue
+			elif r.fingerprint not in vote.routers or vote.routers[r.fingerprint].measured == None:
+				data[dirauth_nickname]['unmeasured'] += 1
+			elif r.bandwidth < vote.routers[r.fingerprint].measured:
+				had_any_value = True
+				data[dirauth_nickname]['above'] += 1
+			elif r.bandwidth > vote.routers[r.fingerprint].measured:
+				had_any_value = True
+				data[dirauth_nickname]['below'] += 1
+			elif r.bandwidth == vote.routers[r.fingerprint].measured and \
+				 1 == len([1 for d_i in votes if r.fingerprint in votes[d_i].routers and votes[d_i].routers[r.fingerprint].measured == r.bandwidth]):
+				had_any_value = True
+				data[dirauth_nickname]['exclusive'] += 1
+			elif r.bandwidth == vote.routers[r.fingerprint].measured and \
+				 1 != len([1 for d_i in votes if r.fingerprint in votes[d_i].routers and votes[d_i].routers[r.fingerprint].measured == r.bandwidth]):
+				had_any_value = True
+				data[dirauth_nickname]['shared'] += 1
+			else:
+				print "What case am I in???"
+				sys.exit(1)
+
+		if not had_any_value:
+			del data[dirauth_nickname]
+
+	bwauth_stats_data_columns = set()
+	bwauth_stats_data_schema = dbc.execute("PRAGMA table_info(bwauth_data)")
+	for c in bwauth_stats_data_schema:
+		bwauth_stats_data_columns.add(c[1].replace("_above", "").replace("_shared", "").replace("_exclusive", "").replace("_below", "").replace("_unmeasured", "").lower())
+
+	insertValues = [unix_time(consensuses.values()[0].valid_after)]
+	createColumns = ""
+	insertColumns = "date"
+	insertQuestions = ""
+	for dirauth_nickname in get_dirauths():
+		if bwauth_stats_data_columns and dirauth_nickname not in bwauth_stats_data_columns:
+			dbc.execute("ALTER TABLE bwauth_data ADD COLUMN " + dirauth_nickname + "_above integer")
+			dbc.execute("ALTER TABLE bwauth_data ADD COLUMN " + dirauth_nickname + "_shared integer")
+			dbc.execute("ALTER TABLE bwauth_data ADD COLUMN " + dirauth_nickname + "_exclusive integer")
+			dbc.execute("ALTER TABLE bwauth_data ADD COLUMN " + dirauth_nickname + "_below integer")
+			dbc.execute("ALTER TABLE bwauth_data ADD COLUMN " + dirauth_nickname + "_unmeasured integer")
+			dbc.commit()
+		createColumns += dirauth_nickname + "_above integer, " + dirauth_nickname + "_shared integer, " + dirauth_nickname + "_exclusive integer, " + dirauth_nickname + "_below integer, " + dirauth_nickname + "_unmeasured integer, "
+
+		if dirauth_nickname in votes and dirauth_nickname in data:
+			insertColumns += ", " + dirauth_nickname + "_above, " + dirauth_nickname + "_shared, " + dirauth_nickname + "_exclusive, " + dirauth_nickname + "_below, " + dirauth_nickname + "_unmeasured "
+			insertQuestions += ",?,?,?,?,?"
+			insertValues.append(data[dirauth_nickname]['above'])
+			insertValues.append(data[dirauth_nickname]['shared'])
+			insertValues.append(data[dirauth_nickname]['exclusive'])
+			insertValues.append(data[dirauth_nickname]['below'])
+			insertValues.append(data[dirauth_nickname]['unmeasured'])
+
+	if not bwauth_stats_data_columns:
+		dbc.execute("CREATE TABLE IF NOT EXISTS bwauth_data(date integer, " + createColumns + " PRIMARY KEY(date ASC));")
+		dbc.commit()
+
+	dbc.execute("INSERT OR REPLACE INTO bwauth_data(" + insertColumns + ") VALUES (?" + insertQuestions + ")", insertValues)
+	dbc.commit()
+		
+	# Write out the bwauth csv file
+	bwauth_data_columns = []
+	bwauth_data_schema = dbc.execute("PRAGMA table_info(bwauth_data)")
+	for c in bwauth_data_schema:
+		bwauth_data_columns.append(c[1])
+
+	bwauth_data = dbc.execute("SELECT * from bwauth_data ORDER BY date DESC LIMIT 2160")
+	f = open(os.path.join(os.path.dirname(__file__), 'out', 'bwauth-stats.csv'), 'w')
+	for c in bwauth_data_columns:
+		f.write(c + ",")
+	f.write("\n")
+	for r in bwauth_data.fetchall():
 		for v in r:
 			f.write(("0" if v == None else str(v)) + ",")
 		f.write("\n")
