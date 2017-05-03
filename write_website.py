@@ -282,6 +282,17 @@ def main():
 		f.write("\n")
 	f.close()
 
+	bwauth_data = dbc.execute("SELECT * from bwauth_data ORDER BY date DESC")
+	f = open(os.path.join(os.path.dirname(__file__), 'out', 'bwauth-stats-all.csv'), 'w')
+	for c in bwauth_data_columns:
+		f.write(c + ",")
+	f.write("\n")
+	for r in bwauth_data.fetchall():
+		for v in r:
+			f.write(("0" if v == None else str(v)) + ",")
+		f.write("\n")
+	f.close()
+
 	# produces the website
 	w = WebsiteWriter()
 	w.set_config(CONFIG)
