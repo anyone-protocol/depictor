@@ -16,7 +16,7 @@ from Crypto.PublicKey import RSA
 
 import stem.descriptor.remote
 
-from utility import get_dirauths, get_bwauths
+from utility import get_dirauths, get_bwauths, unix_time
 
 class WebsiteWriter:
 	consensus = None
@@ -608,9 +608,31 @@ class WebsiteWriter:
 		s = "["
 		s += "V:" + str(sr.version) + " "
 		s += "A:" + str(sr.algorithm) + " "
-		s += "C:" + sr.commit if sr.commit else "<span class=\"oiv\">(Empty)</span>"
-		s += "R:" + sr.reveal if sr.reveal else "<span class=\"oiv\">(Empty)</span>"
+		s += "C:" + (sr.commit if sr.commit else "<span class=\"oiv\">(Empty)</span>")
+		s += "R:"
+		if sr.reveal:
+			s += sr.reveal
+		else:
+			errorCondition = self.doICareAboutMissingRevealValues()
+			if errorCondition:
+				s += "<span class=\"oiv\">"
+			s += "(Empty)"
+			if errorCondition:
+				s += "</span>"
 		return s + "]"
+	def doICareAboutMissingRevealValues(self):
+		# Copied from get_sr_protocol_phase()
+		# in https://gitweb.torproject.org/tor.git/tree/src/or/shared_random_state.c#n190
+		SHARED_RANDOM_N_ROUNDS = 12
+		SHARED_RANDOM_N_PHASES = 2
+		total_periods = SHARED_RANDOM_N_ROUNDS / SHARED_RANDOM_N_PHASES
+		voting_interval = self.consensus.fresh_until - self.consensus.valid_after
+		current_slot = (unix_time(self.consensus.valid_after) / 1000 / voting_interval.seconds) % total_periods
+
+		if current_slot < SHARED_RANDOM_N_ROUNDS:
+			return False
+		else:
+			return True
 	def _write_shared_random(self):
 		"""
 		Write the shared random information of each directory authority
