@@ -10,6 +10,7 @@ import os
 import time
 import operator
 import datetime
+import subprocess
 
 from base64 import b64decode
 from Crypto.PublicKey import RSA
@@ -1409,10 +1410,19 @@ class WebsiteWriter:
 		Write the footer of the HTML page containing the blurb that is on
 		every page of the metrics website.
    		"""
-		#XXX Write the git version and stem version the page was generated with
+		depictor_version = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'])
+
+		os.chdir(os.path.join(os.path.dirname(__file__), 'stem'))
+		stem_version = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'])
+		os.chdir(os.path.join(os.path.dirname(__file__)))
+
 		self.site.write("</div>\n"
 		+ "</div>\n"
 		+ "<div class=\"bottom\" id=\"bottom\">\n"
+		+ "<p>This page was generated with <a href=\""
+		+ "https://gitweb.torproject.org/depictor.git/\">depictor</a> version "
+		+ depictor_version + " and <a href=\"https://gitweb.torproject.org/stem.git/"
+		+ "\">stem</a> version " + stem_version + "</p>"
 		+ "<p>\"Tor\" and the \"Onion Logo\" are <a "
 		+ "href=\"https://www.torproject.org/docs/trademark-faq.html.en\">"
 		+ "registered trademarks</a> of The Tor Project, Inc.</p>\n"
