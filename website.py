@@ -1414,7 +1414,7 @@ class WebsiteWriter:
 
 		os.chdir(os.path.join(os.path.dirname(__file__), 'stem'))
 		stem_version = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'])
-		os.chdir(os.path.join(os.path.dirname(__file__)))
+		os.chdir('../../')
 
 		self.site.write("</div>\n"
 		+ "</div>\n"
