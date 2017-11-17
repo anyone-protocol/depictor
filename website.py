@@ -29,7 +29,10 @@ class WebsiteWriter:
 	directory_key_warning_time = datetime.timedelta(days=14)
 	config = {}
 	known_params = []
+	already_added_pseudoflags = False
 	def write_website(self, filename, include_relay_info=True):
+		if not self.already_added_pseudoflags:
+			self._add_pseudo_flags()
 		self.site = open(filename, 'w')
 		self._write_page_header(include_relay_info)
 		self._write_valid_after_time()
@@ -74,6 +77,29 @@ class WebsiteWriter:
 		self.fallback_dirs = fallback_dirs
 	def get_consensus_time(self):
 		return self.consensus.valid_after
+
+	#-----------------------------------------------------------------------------------------
+	def _add_pseudo_flags(self):
+		"""
+		Add any calculated or otherwise pseudoflags to the data structures
+		"""
+		self.already_added_pseudoflags = True
+
+		# Add the ReachableIPv6 flag
+		for dirauth_nickname in self.known_authorities:
+			if dirauth_nickname in self.votes:
+				vote = self.votes[dirauth_nickname]
+				has_ipv6 = False
+				for r in vote.routers:
+					if len([a for a in vote.routers[r].or_addresses if a[2] == True]):
+						has_ipv6 = True
+						vote.routers[r].flags.append('ReachableIPv6')
+				if has_ipv6:
+					vote.known_flags.append('ReachableIPv6')
+		for r in self.consensus.routers:
+			if len([a for a in self.consensus.routers[r].or_addresses if a[2] == True]):
+				self.consensus.routers[r].flags.append('ReachableIPv6')
+		self.consensus.known_flags.append('ReachableIPv6')
 
 	#-----------------------------------------------------------------------------------------
 	def _write_page_header(self, include_relay_info):
