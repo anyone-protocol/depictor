@@ -86,6 +86,7 @@ class WebsiteWriter:
 		self.already_added_pseudoflags = True
 
 		# Add the ReachableIPv6 flag
+		routers_with_ipv6 = set()
 		for dirauth_nickname in self.known_authorities:
 			if dirauth_nickname in self.votes:
 				vote = self.votes[dirauth_nickname]
@@ -93,13 +94,18 @@ class WebsiteWriter:
 				for r in vote.routers:
 					if len([a for a in vote.routers[r].or_addresses if a[2] == True]):
 						has_ipv6 = True
+						routers_with_ipv6.add(r)
 						vote.routers[r].flags.append('ReachableIPv6')
 				if has_ipv6:
 					vote.known_flags.append('ReachableIPv6')
+					vote.known_flags.append('NoIPv6Consensus')
 		for r in self.consensus.routers:
 			if len([a for a in self.consensus.routers[r].or_addresses if a[2] == True]):
 				self.consensus.routers[r].flags.append('ReachableIPv6')
+			elif r in routers_with_ipv6:
+				self.consensus.routers[r].flags.append('NoIPv6Consensus')
 		self.consensus.known_flags.append('ReachableIPv6')
+		self.consensus.known_flags.append('NoIPv6Consensus')
 
 	#-----------------------------------------------------------------------------------------
 	def _write_page_header(self, include_relay_info):
