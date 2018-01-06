@@ -107,6 +107,21 @@ class WebsiteWriter:
 		self.consensus.known_flags.append('ReachableIPv6')
 		self.consensus.known_flags.append('NoIPv6Consensus')
 
+		# Add the FallbackDir flag
+		if not self.config['ignore_fallback_authorities']:
+			self.consensus.known_flags.append('FallbackDir')
+			for dirauth_nickname in self.known_authorities:
+				if dirauth_nickname in self.votes:
+					vote = self.votes[dirauth_nickname]
+					vote.known_flags.append('FallbackDir')
+					for r in vote.routers:
+						if r in self.fallback_dirs:
+							vote.routers[r].flags.append('FallbackDir')
+			for r in self.consensus.routers:
+				if r in self.fallback_dirs:
+					self.consensus.routers[r].flags.append('FallbackDir')
+
+
 	#-----------------------------------------------------------------------------------------
 	def _write_page_header(self, include_relay_info):
 		"""
@@ -962,7 +977,7 @@ class WebsiteWriter:
 		Write the status of the fallback directory mirrors
 		"""
 		if self.config['ignore_fallback_authorities']:
-				return
+			return
 
 		self.site.write("<br>\n\n\n"
 		+ " <!-- ================================================================= -->"
@@ -1425,11 +1440,6 @@ class WebsiteWriter:
 					self.site.write(" <br />" if flagsWritten > 0 else "")
 					self.site.write("bwauth=" + ",".join(assigning_bwauths))
 					flagsWritten += 1
-
-			if relay_fp in self.fallback_dirs:
-				self.site.write(" <br />" if flagsWritten > 0 else "")
-				self.site.write("FallbackDir")
-				flagsWritten += 1
 
 			self.site.write("</td>\n")
 		else:
