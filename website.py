@@ -1446,7 +1446,7 @@ class WebsiteWriter:
 				if not self.consensus.routers[relay_fp].is_unmeasured:
 					assigning_bwauths = self.__find_assigning_bwauth_for_bw_value(relay_fp)
 					self.site.write(" <br />" if flagsWritten > 0 else "")
-					self.site.write("bwauth=" + ",".join(assigning_bwauths))
+					self.site.write("bwauth=" + ",".join(assigning_bwauths) + " ")
 					flagsWritten += 1
 
 			self.site.write("</td>\n")
