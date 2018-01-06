@@ -121,6 +121,19 @@ class WebsiteWriter:
 				if r in self.fallback_dirs:
 					self.consensus.routers[r].flags.append('FallbackDir')
 
+		# Create an Unmeasured flag
+		self.consensus.known_flags.append('Unmeasured')
+		for dirauth_nickname in self.known_authorities:
+			if dirauth_nickname in self.votes:
+				vote = self.votes[dirauth_nickname]
+				vote.known_flags.append('Unmeasured')
+				for r in vote.routers:
+					if r in self.consensus.routers and self.consensus.routers[r].is_unmeasured and not vote.routers[r].measured:
+						vote.routers[r].flags.append('Unmeasured')
+		for r in self.consensus.routers:
+			if self.consensus.routers[r].is_unmeasured:
+				self.consensus.routers[r].flags.append('Unmeasured')
+
 
 	#-----------------------------------------------------------------------------------------
 	def _write_page_header(self, include_relay_info):
@@ -1430,11 +1443,7 @@ class WebsiteWriter:
 				self.site.write(" <br />" if flagsWritten > 0 else "")
 				self.site.write("bw=" + str(self.consensus.routers[relay_fp].bandwidth))
 				flagsWritten += 1
-				if self.consensus.routers[relay_fp].is_unmeasured:
-					self.site.write(" <br />" if flagsWritten > 0 else "")
-					self.site.write("Unmeasured")
-					flagsWritten += 1
-				else:
+				if not self.consensus.routers[relay_fp].is_unmeasured:
 					assigning_bwauths = self.__find_assigning_bwauth_for_bw_value(relay_fp)
 					self.site.write(" <br />" if flagsWritten > 0 else "")
 					self.site.write("bwauth=" + ",".join(assigning_bwauths))
