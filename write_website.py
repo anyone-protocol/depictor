@@ -9,11 +9,11 @@ Performs a variety of checks against the present votes and consensus.
 import os
 import sys
 import time
+import shutil
 import sqlite3
 import datetime
 import operator
 import traceback
-import subprocess
 
 import stem.descriptor
 import stem.descriptor.remote
@@ -301,7 +301,6 @@ def main():
 	w.set_fallback_dirs(fallback_dirs)
 	w.write_website(os.path.join(os.path.dirname(__file__), 'out', 'consensus-health.html'), True)
 	w.write_website(os.path.join(os.path.dirname(__file__), 'out', 'index.html'), False)
-
 	consensus_time = w.get_consensus_time()
 	del w
 
@@ -312,22 +311,14 @@ def main():
 	g.set_votes(votes)
 	g.set_fallback_dirs(fallback_dirs)
 	g.write_website(os.path.join(os.path.dirname(__file__), 'out', 'graphs.html'))
-
 	del g
 
-	# delete giant data structures for subprocess forking by piling hacks on top of each other
-	import gc
 	del consensuses, votes
-	gc.collect()
 	time.sleep(1)
 	archived = os.path.join(os.path.dirname(__file__), 'out', \
 				'consensus-health-' + consensus_time.strftime("%Y-%m-%d-%H-%M") + '.html')
-	subprocess.call(["cp", os.path.join(os.path.dirname(__file__), 'out', 'consensus-health.html'), archived])
-	#Do not gzip anymore, as Apache is not configured for it.
-	#subprocess.call(["gzip", "-9", archived])
-	#subprocess.call(["ln", "-s", archived + ".gz", archived])
-
-	subprocess.call(["cp", os.path.join('data', 'historical.db'), os.path.join('out', 'historical.db')])
+	shutil.copyfile(os.path.join(os.path.dirname(__file__), 'out', 'consensus-health.html'), archived)
+	shutil.copyfile(os.path.join('data', 'historical.db'), os.path.join('out', 'historical.db'))
 
 	# remove old files
 	weeks_to_keep = 3
