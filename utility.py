@@ -18,7 +18,7 @@ def get_bwauths():
 	return dict((k.lower(), v) for (k, v) in stem.descriptor.remote.get_authorities().items() if v.is_bandwidth_authority)
 
 downloader = stem.descriptor.remote.DescriptorDownloader(
-	timeout = 60,
+	timeout = 30,
 	fall_back_to_authority = False,
 	document_handler = stem.descriptor.DocumentHandler.DOCUMENT,
 )
@@ -30,7 +30,7 @@ def get_consensuses():
 	:returns: tuple of the form ({authority => consensus}, issues, runtimes)
 	"""
 
-	return _get_documents('consensus', '/tor/status-vote/current/consensus')
+	return _get_documents('consensus', '/tor/status-vote/current/consensus.z')
 
 
 def get_votes():
@@ -40,7 +40,7 @@ def get_votes():
 	:returns: tuple of the form ({authority => vote}, issues, runtimes)
 	"""
 
-	return _get_documents('vote', '/tor/status-vote/current/authority')
+	return _get_documents('vote', '/tor/status-vote/current/authority.z')
 
 
 def _get_documents(label, resource):
@@ -67,7 +67,7 @@ def _get_documents(label, resource):
 				v3ident = authority.v3ident
 
 				query = downloader.query(
-					'/tor/status-vote/current/%s' % v3ident,
+					'/tor/status-vote/current/%s.z' % v3ident,
 					default_params = False,
 				)
 
