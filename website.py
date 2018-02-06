@@ -1248,7 +1248,7 @@ class WebsiteWriter:
 						self.site.write("    <td>" + str(flagsAgree[dirauth_nickname][kf])
 						+ " " + kf + "</td>\n")
 					else:
-						self.site.write("    <td></td>\n")
+						self.site.write("    <td>0 " + kf + "</td>\n")
 
 					if dirauth_nickname in flagsMissing and kf in flagsMissing[dirauth_nickname]:
 						self.site.write("    <td><span class=\"oic\">"
