@@ -77,6 +77,11 @@ class WebsiteWriter:
 		self.fallback_dirs = fallback_dirs
 	def get_consensus_time(self):
 		return self.consensus.valid_after
+	def all_votes_present(self):
+		for dirauth_nickname in self.known_authorities:
+			if dirauth_nickname not in self.votes:
+				return False
+		return True
 
 	#-----------------------------------------------------------------------------------------
 	def _add_pseudo_flags(self):
@@ -1324,6 +1329,10 @@ class WebsiteWriter:
 			self._write_relay_info_tableRow(relay_fp, allRelays[relay_fp])
 
 		self.site.write("</table>\n")
+		self.site.write("<p class=\"bottom\"><sup>1</sup> We are missing at least one vote, and"
+		+ " the assigning bwauth is probably one of the missing vote(s).&nbsp;&nbsp;<sup>2</sup>"
+		+ " This is a bug, please report it (and the consensus time)</p>")
+
 
 	#-----------------------------------------------------------------------------------------	
 	def _write_relay_info_tableHeader(self):
@@ -1446,7 +1455,11 @@ class WebsiteWriter:
 				if not self.consensus.routers[relay_fp].is_unmeasured:
 					assigning_bwauths = self.__find_assigning_bwauth_for_bw_value(relay_fp)
 					self.site.write(" <br />" if flagsWritten > 0 else "")
-					self.site.write("bwauth=" + ",".join(assigning_bwauths) + " ")
+					self.site.write("bwauth=" + ",".join(assigning_bwauths))
+					if not assigning_bwauths and not self.all_votes_present():
+						self.site.write("<sup>1</sup>")
+					elif not assigning_bwauths:
+						self.site.write("<sup>2</sup>")
 					flagsWritten += 1
 
 			self.site.write("</td>\n")

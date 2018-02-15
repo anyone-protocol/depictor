@@ -34,12 +34,15 @@ li {
     text-align: left;
 }
 
-div.bottom {
+.bottom {
     font-size: 0.8em;
+    text-align: center;
+}
+
+div.bottom {
     margin-top: 0.5cm;
     margin-left: 1em;
     margin-right: 1em;
-    text-align: center;
 }
 
 /* The main column (left text) */
