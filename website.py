@@ -1475,9 +1475,14 @@ class WebsiteWriter:
    		"""
 		depictor_version = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'])
 
-		os.chdir(os.path.join(os.path.dirname(__file__), 'stem'))
-		stem_version = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'])
-		os.chdir('../../')
+		original_path = os.path.abspath(os.path.dirname(__file__))
+		stem_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'stem'))
+		if os.path.exists(stem_path):
+			os.chdir(stem_path)
+			stem_version = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'])
+			os.chdir(original_path)
+		else:
+			stem_version = "(unavailable)"
 
 		self.site.write("</div>\n"
 		+ "</div>\n"
