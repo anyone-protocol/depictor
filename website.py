@@ -262,7 +262,7 @@ class WebsiteWriter:
 		+ "  </colgroup>\n")
    
 		# XXX Should also write if the displayed consensus is out of date
-		signingFPs = {sig.identity:sig.method for sig in self.consensus.signatures}
+		signingFPs = [sig.identity for sig in self.consensus.signatures]
 		for dirauth_nickname in self.known_authorities: 
 			self.site.write("  <tr>\n" 
 			+ "    <td>" + dirauth_nickname + "</td>\n")
@@ -286,7 +286,7 @@ class WebsiteWriter:
 				# but we need this structure for the authority's fingerprint
 				authority = [d for d in self.consensus.directory_authorities if d.nickname.lower() == dirauth_nickname][0]
 				if authority.fingerprint in signingFPs:
-					self.site.write("    <td>" + signingFPs[authority.fingerprint] + "</td>\n")
+					self.site.write("    <td></td>\n")
 				elif authority.nickname.lower() in self.consensuses:
 					self.site.write("    <td class=\"oiv\">Missing Signature! "
 					+ "Valid-after time of auth's displayed consensus: "
