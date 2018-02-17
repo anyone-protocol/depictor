@@ -1478,8 +1478,8 @@ class WebsiteWriter:
 
 		self.site.write("    <td>" \
 		+ relay_nickname \
-		+ " <br /><span class=\"agt\"><a href=\"https://atlas.torproject.org/#details/" \
-		+ relay_fp + "\">Atlas</a> | " \
+		+ " <br /><span class=\"agt\"><a href=\"https://metrics.torproject.org/rs.html#details/" \
+		+ relay_fp + "\">Relay Search</a> | " \
 		+ "<a href=\"consensus-health-" \
 		+ (self.get_consensus_time() - datetime.timedelta(hours=1)).strftime("%Y-%m-%d-%H-%M")
 		+ ".html#" + relay_fp + "\">&#8668;</a></span>" \
