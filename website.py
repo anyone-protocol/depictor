@@ -7,6 +7,7 @@ Ported from Java version Doctor
 """
 
 import os
+import sys
 import time
 import operator
 import datetime
@@ -17,7 +18,7 @@ from Crypto.PublicKey import RSA
 
 import stem.descriptor.remote
 
-from utility import get_dirauths, get_bwauths, unix_time
+from utility import get_dirauths, get_bwauths, unix_time, FileMock
 
 class WebsiteWriter:
 	consensus = None
@@ -30,10 +31,16 @@ class WebsiteWriter:
 	config = {}
 	known_params = []
 	already_added_pseudoflags = False
-	def write_website(self, filename, include_relay_info=True):
+	def write_website(self, filename, include_relay_info=True, indexesFilename=None):
 		if not self.already_added_pseudoflags:
 			self._add_pseudo_flags()
+
 		self.site = open(filename, 'w')
+		if indexesFilename:
+			self.indexes = open(indexesFilename, 'w')
+		else:
+			self.indexes = FileMock()
+
 		self._write_page_header(include_relay_info)
 		self._write_valid_after_time()
 		self._write_signatures()
@@ -1280,7 +1287,75 @@ class WebsiteWriter:
 		+ "<h3><a href=\"#relayinfo\" class=\"anchor\">Relay info</a></h3>\n"
 		+ "<br>\n"
 		+ "<p>Looking for the (huge) relay info table? It's been moved to the <a "
-		+ "href=\"/consensus-health.html\">detailed page</a> to speed up this page.</p>\n")
+		+ "href=\"/consensus-health.html\">detailed page</a> to speed up this page.</p>\n\n"
+		+ "<p id=\"relay-addition-javascript-pointer\">If you enable javascript, you will be able "
+		+ "to add individual relays from the current consensus to this page.</p>\n\n"
+		+ "<script src=\"jquery-3.3.1.min.js\"></script>\n"
+		+ "<script type=\"text/javascript\">\n"
+		+ "  var relayIndexes = {}, dataLoaded = false, loadedRelays = [];\n"
+		+ "  $.get('relay-indexes.txt', function (data) {\n"
+		+ "    dataLoaded = true;\n"
+		+ "    lines = data.split('\\n');\n"
+		+ "    for(i=0; i<lines.length; i++) {\n"
+		+ "      parts = lines[i].split(':');\n"
+		+ "      fingerprint = parts[0];\n"
+		+ "      nickname = parts[1];\n"
+		+ "      indexes = parts[2].split(',')\n"
+		+ "      relayIndexes[fingerprint] = { indexes, nickname };\n"
+		+ "    }\n"
+		+ "    console.log('Loaded relay offset data');\n"
+		+ "  })\n"
+		+ "  var loadData = function() {\n"
+		+ "    if (!dataLoaded) {\n"
+		+ "      alert(\"Data not loaded yet via AJAX. Watch the console\");\n"
+		+ "      return;"
+		+ "    }\n"
+		+ "    let fps = $('#fingerprintBox').val().split(',');\n"
+		+ "    let retrieveData = function(fullFP) {\n"
+        + "      if (loadedRelays.indexOf(fullFP) >= 0) {\n"
+        + "        return;\n"
+        + "      }\n"
+        + "      loadedRelays.push(fullFP);\n"
+        + "      let rangeString = 'bytes=' + relayIndexes[fullFP].indexes[0] + '-' + relayIndexes[fullFP].indexes[1];\n"
+        + "      console.log(\"Querying for \" + rangeString);\n"
+		+ "      $.ajax({\n"
+		+ "        url: 'consensus-health.html',\n"
+		+ "        headers: { 'Range' : rangeString },\n"
+		+ "        success: function(data) {\n"
+		+ "            $('#relay-list tr').first().after(data);\n"
+		+ "            console.log('Retrieved data');\n"
+		+ "        }\n"
+		+ "      });\n"
+		+ "    }\n"
+		+ "    relayloop: for (i in fps) {\n"
+		+ "      let partialFP = fps[i].trim();\n"
+		+ "      let retrievedData = false;\n"
+		+ "      if (partialFP.toUpperCase() in relayIndexes) {\n"
+        + "        retrieveData(partialFP);\n"
+        + "        retrievedData = true;\n"
+        + "      } else {\n"
+        + "        partialloop: for (r in relayIndexes) {\n"
+        + "          if (relayIndexes[r].nickname == partialFP) {\n"
+        + "            retrieveData(r);\n"
+        + "            retrievedData = true;\n"
+        + "          }\n"
+        + "          if (r.startsWith(partialFP.toUpperCase())) {\n"
+        + "            retrieveData(r);\n"
+		+ "            retrievedData = true;\n"
+        + "          }\n"
+        + "        }\n"
+        + "        if (!retrievedData) {\n"
+        + "          alert(\"Could not match \" + partialFP + \" to a full or partial fingerprint or a nickname.\");\n"
+        + "        }\n"
+        + "      }\n"
+		+ "    }\n"
+		+ "  };\n"
+		+ " $('#relay-addition-javascript-pointer').html('But you can add individual "
+		+ "relays from the current consensus here. <input type=\"text\" id=\"fingerprintBox\" "
+		+ "placeholder=\"Fingerprint\"/><input type=\"button\" onclick=\"loadData()\" value=\"Load\"/>');\n"
+		+ "</script>\n")
+		self._write_relay_info_tableHeader(False)
+
 	def _write_relay_info_table(self):
 		"""
 		Write the (huge) table containing relay info contained in votes and
@@ -1302,8 +1377,11 @@ class WebsiteWriter:
 		+ "in a vote of a directory authority voting on this flag</li>\n"
 		+ "  <li><b><span class=\"ic\">In consensus:</span></b> Flag in consensus</li>\n"
 		+ "</ul>\n"
-		+ "<br>\n"
-		+ "<table border=\"0\" cellpadding=\"4\" cellspacing=\"0\" id=\"relay-list\" summary=\"\">\n"
+		+ "<br>\n")
+		self._write_relay_info_tableHeader(True)
+
+	def _write_relay_info_tableHeader(self, innerTable):
+		self.site.write("<table border=\"0\" cellpadding=\"4\" cellspacing=\"0\" id=\"relay-list\" summary=\"\">\n"
 		+ "  <colgroup>\n"
 		+ "    <col width=\"120\">\n"
 		+ "    <col width=\"80\">\n")
@@ -1311,31 +1389,35 @@ class WebsiteWriter:
 			self.site.write("    <col width=\"" + str(640 / len(self.votes)) + "\">\n")
 		self.site.write("  </colgroup>\n")
 
-		allRelays = {}
-		for dirauth_nickname in self.votes:
-			for relay_fp in self.votes[dirauth_nickname].routers:
-				allRelays[relay_fp] = self.votes[dirauth_nickname].routers[relay_fp].nickname
+		if innerTable:
+			allRelays = {}
+			for dirauth_nickname in self.votes:
+				for relay_fp in self.votes[dirauth_nickname].routers:
+					allRelays[relay_fp] = self.votes[dirauth_nickname].routers[relay_fp].nickname
 
-		for relay_fp in self.consensus.routers:
-			allRelays[relay_fp] = self.consensus.routers[relay_fp].nickname
+			for relay_fp in self.consensus.routers:
+				allRelays[relay_fp] = self.consensus.routers[relay_fp].nickname
 
-		linesWritten = 0
-		sortedKeys = allRelays.keys()
-		sortedKeys.sort()
-		for relay_fp in sortedKeys:
-			if linesWritten % 10 == 0:
-				self._write_relay_info_tableHeader()
-			linesWritten += 1
-			self._write_relay_info_tableRow(relay_fp, allRelays[relay_fp])
+			linesWritten = 0
+			sortedKeys = allRelays.keys()
+			sortedKeys.sort()
+			for relay_fp in sortedKeys:
+				if linesWritten % 10 == 0:
+					self._write_relay_info_tableMidHeader()
+				linesWritten += 1
+				self._write_relay_info_tableRow(relay_fp, allRelays[relay_fp])
+		else:
+			self._write_relay_info_tableMidHeader()
 
 		self.site.write("</table>\n")
-		self.site.write("<p class=\"bottom\"><sup>1</sup> We are missing at least one vote, and"
-		+ " the assigning bwauth is probably one of the missing vote(s).&nbsp;&nbsp;<sup>2</sup>"
-		+ " This is a bug, please report it (and the consensus time)</p>")
+		if innerTable:
+			self.site.write("<p class=\"bottom\"><sup>1</sup> We are missing at least one vote, and"
+			+ " the assigning bwauth is probably one of the missing vote(s).&nbsp;&nbsp;<sup>2</sup>"
+			+ " This is a bug, please report it (and the consensus time)</p>")
 
 
 	#-----------------------------------------------------------------------------------------	
-	def _write_relay_info_tableHeader(self):
+	def _write_relay_info_tableMidHeader(self):
 		"""
 		Write the table header that is repeated every ten relays and that
 		contains the directory authority names.
@@ -1374,6 +1456,10 @@ class WebsiteWriter:
 		"""
 		Write a single row in the table of relay info.
 		"""
+		import base64, binascii
+		start = self.site.tell()
+		#self.indexes.write(base64.b64encode(binascii.unhexlify(relay_fp)) + ":" + str(start))
+		self.indexes.write(relay_fp + ":" + relay_nickname + ":" + str(start))
 		self.site.write("  <tr>\n")
 		if relay_fp in self.consensus.routers and \
 			"Named" in self.consensus.routers[relay_fp].flags and \
@@ -1466,6 +1552,8 @@ class WebsiteWriter:
 		else:
 			self.site.write("    <td></td>\n")
 		self.site.write("  </tr>\n")
+		#self.indexes.write("," + str(self.site.tell() - start) + "\n")
+		self.indexes.write("," + str(self.site.tell()) + "\n")
 
 	#-----------------------------------------------------------------------------------------
 	def _write_page_footer(self):
@@ -1533,5 +1621,6 @@ if __name__ == '__main__':
 
 	w.write_website(os.path.join(os.path.dirname(__file__), 'out', \
 		'consensus-health-' + w.get_consensus_time().strftime("%Y-%m-%d-%H-%M") + '.html'), True)
-	w.write_website(os.path.join(os.path.dirname(__file__), 'out', 'consensus-health.html'), True)
+	w.write_website(os.path.join(os.path.dirname(__file__), 'out', 'consensus-health.html'), \
+		True, os.path.join(os.path.dirname(__file__), 'out', 'relay-indexes.txt'))
 	w.write_website(os.path.join(os.path.dirname(__file__), 'out', 'index.html'), False)

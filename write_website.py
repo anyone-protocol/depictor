@@ -299,7 +299,8 @@ def main():
 	w.set_consensuses(consensuses)
 	w.set_votes(votes)
 	w.set_fallback_dirs(fallback_dirs)
-	w.write_website(os.path.join(os.path.dirname(__file__), 'out', 'consensus-health.html'), True)
+	w.write_website(os.path.join(os.path.dirname(__file__), 'out', 'consensus-health.html'), \
+		True, os.path.join(os.path.dirname(__file__), 'out', 'relay-indexes.txt'))
 	w.write_website(os.path.join(os.path.dirname(__file__), 'out', 'index.html'), False)
 	consensus_time = w.get_consensus_time()
 	del w

@@ -92,3 +92,9 @@ def ut_to_datetime_format(ut):
 
 def consensus_datetime_format(dt):
 	return dt.strftime("%Y-%m-%d-%H-%M-%S")
+
+class FileMock():
+	def __init__(self):
+		pass
+	def write(self, str):
+		pass

@@ -7,6 +7,7 @@ stem-git
 out/index.html
 out/graphs.html
 out/vote-stats.csv
+out/relay-indexes.txt
 out/consensus-health*
 out/download-stats.csv
 out/fallback-dir-stats.csv
