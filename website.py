@@ -173,6 +173,10 @@ class WebsiteWriter:
 			+ "      color:gray;\n"
 			+ "      text-decoration:line-through;\n"
 			+ "    }\n"
+			+ "    .oict {\n"
+			+ "      opacity:0;\n"
+			+ "      font-size:0;\n"
+			+ "    }\n"
 			+ "    .ic {\n"
 			+ "      color:blue;\n"
 			+ "    }\n"
@@ -1183,7 +1187,7 @@ class WebsiteWriter:
 		+ "consensus, because there was no majority for the flag or "
 		+ "the flag was invalidated (e.g., Named gets invalidated by Unnamed)</li>\n"
 		+ "  <li><b><span class=\"oic\">Only in consensus:</span></b> Flag in consensus, but missing "
-		+ "in a vote of a directory authority voting on this flag</li>\n"
+		+ "in a vote of a directory authority voting on this flag.</li>\n"
 		+ "</ul>\n"
 		+ "<br>\n"
 		+ "<table border=\"0\" cellpadding=\"4\" cellspacing=\"0\" summary=\"\">\n"
@@ -1263,7 +1267,7 @@ class WebsiteWriter:
 						self.site.write("    <td>0 " + kf + "</td>\n")
 
 					if dirauth_nickname in flagsMissing and kf in flagsMissing[dirauth_nickname]:
-						self.site.write("    <td><span class=\"oic\">"
+						self.site.write("    <td><span class=\"oict\">!</span><span class=\"oic\">"
 						+ str(flagsMissing[dirauth_nickname][kf]) + " " + kf
 						+ "</span></td>\n")
 					else:
@@ -1374,7 +1378,8 @@ class WebsiteWriter:
 		+ "consensus, because there was no majority for the flag or "
 		+ "the flag was invalidated (e.g., Named gets invalidated by Unnamed)</li>\n"
 		+ "  <li><b><span class=\"oic\">Only in consensus:</span></b> Flag in consensus, but missing "
-		+ "in a vote of a directory authority voting on this flag</li>\n"
+		+ "in a vote of a directory authority voting on this flag. One can search the page for such flags by "
+		+ "prefacing them with !</li>\n"
 		+ "  <li><b><span class=\"ic\">In consensus:</span></b> Flag in consensus</li>\n"
 		+ "</ul>\n"
 		+ "<br>\n")
@@ -1512,7 +1517,7 @@ class WebsiteWriter:
 						else:
 							self.site.write("<span class=\"oiv\">" + flag + "</span>")
 					elif consensusFlags and flag in vote.known_flags and flag in consensusFlags:
-						self.site.write(  "<span class=\"oic\">" + flag + "</span>")
+						self.site.write(  "<span class=\"oict\">!</span><span class=\"oic\">" + flag + "</span>")
 				
 				if vote.routers[relay_fp].measured >= 0L:
 					self.site.write(" <br />" if flagsWritten > 0 else "")
