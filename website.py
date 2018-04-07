@@ -146,6 +146,16 @@ class WebsiteWriter:
 			if self.consensus.routers[r].is_unmeasured:
 				self.consensus.routers[r].flags.append('Unmeasured')
 
+		# Add a DescriptorConsensusMismatch flag
+		self.consensus.known_flags.append('DescriptorMismatch')
+		for dirauth_nickname in self.known_authorities:
+			if dirauth_nickname in self.votes:
+				vote = self.votes[dirauth_nickname]
+				vote.known_flags.append('DescriptorMismatch')
+				for r in vote.routers:
+					if r in self.consensus.routers and self.consensus.routers[r].published != vote.routers[r].published:
+						vote.routers[r].flags.append('DescriptorMismatch')
+
 
 	#-----------------------------------------------------------------------------------------
 	def _write_page_header(self, include_relay_info):
