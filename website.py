@@ -1311,10 +1311,13 @@ class WebsiteWriter:
 		+ "    dataLoaded = true;\n"
 		+ "    lines = data.split('\\n');\n"
 		+ "    for(i=0; i<lines.length; i++) {\n"
+		+ "      if (lines[i].trim().length == 0) continue;\n"
 		+ "      parts = lines[i].split(':');\n"
+		+ "      if (parts.length != 3) { console.log('Strange line: ' + lines[i]); continue; }\n"
 		+ "      fingerprint = parts[0];\n"
 		+ "      nickname = parts[1];\n"
 		+ "      indexes = parts[2].split(',')\n"
+		+ "      if (indexes.length != 2) { console.log('Strange line: ' + lines[i]); continue; }\n"
 		+ "      relayIndexes[fingerprint] = { indexes, nickname };\n"
 		+ "    }\n"
 		+ "    console.log('Loaded relay offset data');\n"
@@ -1367,6 +1370,7 @@ class WebsiteWriter:
 		+ " $('#relay-addition-javascript-pointer').html('But you can add individual "
 		+ "relays from the current consensus here. <input type=\"text\" id=\"fingerprintBox\" "
 		+ "placeholder=\"Fingerprint\"/><input type=\"button\" onclick=\"loadData()\" value=\"Load\"/>');\n"
+		+ " $('#fingerprintBox').on('keyup', function(e) { if(e.keyCode == 13) loadData(); });"
 		+ "</script>\n")
 		self._write_relay_info_tableHeader(False)
 
