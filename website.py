@@ -654,10 +654,10 @@ class WebsiteWriter:
 		+ "    <col width=\"170\">\n"
 		+ "  </colgroup>\n"
 		+ "  <tr>\n"
-		+ "    <th>Name</th>"
-		+ "    <th>Expiry</th>"
-		+ "    <th>Identity Key Len.</th>"
-		+ "    <th>Signing Key Len.</th>"
+		+ "    <th>Name</th>\n"
+		+ "    <th>Expiry</th>\n"
+		+ "    <th>Identity Key Len.</th>\n"
+		+ "    <th>Signing Key Len.</th>\n"
 		+ "  </tr>\n")
 
 		if not self.votes:
@@ -711,8 +711,8 @@ class WebsiteWriter:
 		+ "    <col width=\"640\">\n"
 		+ "  </colgroup>\n"
 		+ "  <tr>\n"
-		+ "    <th>Name</th>"
-		+ "    <th>Approximate Clock Skew</th>"
+		+ "    <th>Name</th>\n"
+		+ "    <th>Approximate Clock Skew</th>\n"
 		+ "  </tr>\n")
 
 		if not self.clockskew:
