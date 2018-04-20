@@ -1345,18 +1345,18 @@ class WebsiteWriter:
 		+ "      });\n"
 		+ "    }\n"
 		+ "    relayloop: for (i in fps) {\n"
-		+ "      let partialFP = fps[i].trim();\n"
+		+ "      let partialFP = fps[i].trim().toUpperCase();\n"
 		+ "      let retrievedData = false;\n"
-		+ "      if (partialFP.toUpperCase() in relayIndexes) {\n"
+		+ "      if (partialFP in relayIndexes) {\n"
         + "        retrieveData(partialFP);\n"
         + "        retrievedData = true;\n"
         + "      } else {\n"
         + "        partialloop: for (r in relayIndexes) {\n"
-        + "          if (relayIndexes[r].nickname == partialFP) {\n"
+        + "          if (relayIndexes[r].nickname.toUpperCase() == partialFP) {\n"
         + "            retrieveData(r);\n"
         + "            retrievedData = true;\n"
         + "          }\n"
-        + "          if (r.startsWith(partialFP.toUpperCase())) {\n"
+        + "          if (r.startsWith(partialFP)) {\n"
         + "            retrieveData(r);\n"
 		+ "            retrievedData = true;\n"
         + "          }\n"
@@ -1478,7 +1478,7 @@ class WebsiteWriter:
 		import base64, binascii
 		start = self.site.tell()
 		#self.indexes.write(base64.b64encode(binascii.unhexlify(relay_fp)) + ":" + str(start))
-		self.indexes.write(relay_fp + ":" + relay_nickname + ":" + str(start))
+		self.indexes.write(relay_fp.upper() + ":" + relay_nickname + ":" + str(start))
 		self.site.write("  <tr>\n")
 		if relay_fp in self.consensus.routers and \
 			"Named" in self.consensus.routers[relay_fp].flags and \
