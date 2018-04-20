@@ -24,6 +24,7 @@ class WebsiteWriter:
 	consensus = None
 	votes = None
 	fallback_dirs = None
+	clockskew = None
 	known_authorities = []
 	bandwidth_authorities = []
 	consensus_expiry = datetime.timedelta(hours=3)
@@ -51,6 +52,7 @@ class WebsiteWriter:
 		self._write_recommended_versions()
 		self._write_consensus_parameters()
 		self._write_authority_keys()
+		self._write_authority_clocks()
 		self._write_shared_random()
 		self._write_protocols()
 		self._write_bandwidth_weights()
@@ -82,6 +84,8 @@ class WebsiteWriter:
 		self.known_params = config['known_params']
 	def set_fallback_dirs(self, fallback_dirs):
 		self.fallback_dirs = fallback_dirs
+	def set_clockskew(self, clockskew):
+		self.clockskew = clockskew
 	def get_consensus_time(self):
 		return self.consensus.valid_after
 	def all_votes_present(self):
@@ -688,6 +692,55 @@ class WebsiteWriter:
 			+ "<br>\n"
 			+ "<p><i>Note that expiration dates of any legacy keys are "
 			+ "not included in votes and therefore not listed here!</i>"
+			+ "</p>\n")
+
+	#-----------------------------------------------------------------------------------------
+	def _write_authority_clocks(self):
+		"""
+		Write authority clock skew
+		"""
+		self.site.write("<br>\n\n\n"
+		+ " <!-- ================================================================= -->"
+		+ "<a name=\"authorityclocks\">\n"
+		+ "<h3><a href=\"#authorityclocks\" class=\"anchor\">"
+		+ "Authority Clock Skew</a></h3>\n"
+		+ "<br>\n"
+		+ "<table border=\"0\" cellpadding=\"4\" cellspacing=\"0\" summary=\"\">\n"
+		+ "  <colgroup>\n"
+		+ "    <col width=\"160\">\n"
+		+ "    <col width=\"640\">\n"
+		+ "  </colgroup>\n"
+		+ "  <tr>\n"
+		+ "    <th>Name</th>"
+		+ "    <th>Approximate Clock Skew</th>"
+		+ "  </tr>\n")
+
+		if not self.clockskew:
+			self.site.write("  <tr><td>(No clock skew data.)</td><td></td></tr>\n")
+		else:
+			for dirauth_nickname in self.known_authorities:
+				if dirauth_nickname in self.clockskew:
+					clock = self.clockskew[dirauth_nickname]
+
+					if clock > self.config['clockskew_threshold']:
+						self.site.write("  <tr>\n"
+						+ "    <td class=\"oiv\">" + dirauth_nickname + "</td>\n"
+						+ "    <td class=\"oiv\">"
+						+ str(clock) + " seconds</td>\n  </tr>\n")
+					else:
+						self.site.write("  <tr>\n"
+						+ "    <td>" + dirauth_nickname + "</td>\n"
+						+ "    <td>"
+						+ str(clock) + " seconds</td>\n  </tr>\n")
+				else:
+					self.site.write("  <tr>\n"
+					+ "    <td>" + dirauth_nickname + "</td>\n"
+					+ "    <td><span class=\"oiv\">Could not query authority<span></td>\n"
+					+ "  </tr>\n")
+
+			self.site.write("</table>\n"
+			+ "<br>\n"
+			+ "<p><i>Times are roughly accurate, anything below a couple seconds should be fine. Please use this table as a guide rather than an authoritative source.</i>"
 			+ "</p>\n")
 
 	#-----------------------------------------------------------------------------------------
@@ -1632,7 +1685,8 @@ if __name__ == '__main__':
                                     'known_params': [],
                                     'ignore_fallback_authorities': False,
                                     'graph_logical_min': 125,
-                                    'graph_logical_max': 25000
+                                    'graph_logical_max': 25000,
+                                    'clockskew_threshold': 0,
                                     })
 	config = stem.util.conf.get_config("consensus")
 	config.load(os.path.join(os.path.dirname(__file__), 'data', 'consensus.cfg'))

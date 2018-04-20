@@ -48,7 +48,8 @@ CONFIG = stem.util.conf.config_dict('consensus', {
 	'known_params': [],
 	'ignore_fallback_authorities' : False,
 	'graph_logical_min' : 125,
-	'graph_logical_max' : 25000
+	'graph_logical_max' : 25000,
+	'clockskew_threshold': 0,
 })
 
 def main():
@@ -58,6 +59,7 @@ def main():
 
 	consensuses, consensus_fetching_issues, consensus_fetching_runtimes = get_consensuses()
 	votes, vote_fetching_issues, vote_fetching_runtimes = get_votes()
+	clockskew = get_clockskew()
 
 	# updates the download statistics file
 	f = open(os.path.join(os.path.dirname(__file__), 'out', 'download-stats.csv'), 'a')
@@ -299,6 +301,7 @@ def main():
 	w.set_consensuses(consensuses)
 	w.set_votes(votes)
 	w.set_fallback_dirs(fallback_dirs)
+	w.set_clockskew(clockskew)
 	w.write_website(os.path.join(os.path.dirname(__file__), 'out', 'consensus-health.html'), \
 		True, os.path.join(os.path.dirname(__file__), 'out', 'relay-indexes.txt'))
 	w.write_website(os.path.join(os.path.dirname(__file__), 'out', 'index.html'), False)

@@ -1,4 +1,7 @@
+#!/usr/bin/env python
+
 import time
+import urllib
 import datetime
 
 import stem.descriptor
@@ -81,6 +84,26 @@ def _get_documents(label, resource):
 
 	return documents, issues, runtimes
 
+def get_clockskew():
+	clockskew = {}
+	for (nickname, authority) in get_dirauths().items():
+		authority_address = "http://" + str(authority.address) + ":" + str(authority.dir_port)
+		try:
+			startTimeStamp = datetime.datetime.utcnow()
+			startTime = time.time()
+			f = urllib.urlopen(authority_address)
+			for h in f.info().headers:
+				if h.upper().startswith('DATE:'):
+					clockskew[nickname] = datetime.datetime.strptime(h[6:].strip(), '%a, %d %b %Y %H:%M:%S %Z')
+			processing = time.time() - startTime
+			if processing > 5:
+				clockskew[nickname] -= datetime.timedelta(seconds=(processing / 2))
+			clockskew[nickname] -= startTimeStamp
+			clockskew[nickname] = clockskew[nickname].total_seconds()
+		except:
+			continue
+	return clockskew
+
 def unix_time(dt):
     return (dt - datetime.datetime.utcfromtimestamp(0)).total_seconds() * 1000.0
 
@@ -98,3 +121,8 @@ class FileMock():
 		pass
 	def write(self, str):
 		pass
+
+if __name__ == "__main__":
+	skew = get_clockskew()
+	for c in skew:
+		print c, skew[c]
