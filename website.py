@@ -591,7 +591,6 @@ class WebsiteWriter:
 							   p not in self.consensus.params or \
 							   self.consensus.params[p] != vote.params[p]:
 								conflictOrInvalid.append(p)
-								break
 					
 					if conflictOrInvalid:
 						self.site.write("  <tr>\n"
