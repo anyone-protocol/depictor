@@ -1453,6 +1453,8 @@ class WebsiteWriter:
 		self._write_relay_info_tableHeader(True)
 
 	def _write_relay_info_tableHeader(self, innerTable):
+		wroteFootnote = False
+
 		self.site.write("<table border=\"0\" cellpadding=\"4\" cellspacing=\"0\" id=\"relay-list\" summary=\"\">\n"
 		+ "  <colgroup>\n"
 		+ "    <col width=\"120\">\n"
@@ -1477,12 +1479,12 @@ class WebsiteWriter:
 				if linesWritten % 10 == 0:
 					self._write_relay_info_tableMidHeader()
 				linesWritten += 1
-				self._write_relay_info_tableRow(relay_fp, allRelays[relay_fp])
+				wroteFootnote |= self._write_relay_info_tableRow(relay_fp, allRelays[relay_fp])
 		else:
 			self._write_relay_info_tableMidHeader()
 
 		self.site.write("</table>\n")
-		if innerTable:
+		if wroteFootnote:
 			self.site.write("<p class=\"bottom\"><sup>1</sup> We are missing at least one vote, and"
 			+ " the assigning bwauth is probably one of the missing vote(s).&nbsp;&nbsp;<sup>2</sup>"
 			+ " This is a bug, please report it (and the consensus time)</p>")
@@ -1529,6 +1531,9 @@ class WebsiteWriter:
 		Write a single row in the table of relay info.
 		"""
 		import base64, binascii
+
+		wroteFootnote = False
+
 		start = self.site.tell()
 		#self.indexes.write(base64.b64encode(binascii.unhexlify(relay_fp)) + ":" + str(start))
 		self.indexes.write(relay_fp.upper() + ":" + relay_nickname + ":" + str(start))
@@ -1616,8 +1621,10 @@ class WebsiteWriter:
 					self.site.write("bwauth=" + ",".join(assigning_bwauths))
 					if not assigning_bwauths and not self.all_votes_present():
 						self.site.write("<sup>1</sup>")
+						wroteFootnote = True
 					elif not assigning_bwauths:
 						self.site.write("<sup>2</sup>")
+						wroteFootnote = True
 					flagsWritten += 1
 
 			self.site.write("</td>\n")
@@ -1626,6 +1633,8 @@ class WebsiteWriter:
 		self.site.write("  </tr>\n")
 		#self.indexes.write("," + str(self.site.tell() - start) + "\n")
 		self.indexes.write("," + str(self.site.tell()) + "\n")
+
+		return wroteFootnote
 
 	#-----------------------------------------------------------------------------------------
 	def _write_page_footer(self):
