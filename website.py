@@ -236,7 +236,7 @@ class WebsiteWriter:
 		else:
 			self.site.write(self.consensus.valid_after.isoformat().replace("T", " "))
 
-		self.site.write(". <i>Note that it takes up to 15 minutes to learn "
+		self.site.write(" UTC. <i>Note that it takes up to 15 minutes to learn "
 		+ "about new consensus and votes and process them.</i></p>\n")
 
 		wrote_at_least_one_odd_consensus = False
@@ -689,7 +689,7 @@ class WebsiteWriter:
 
 			self.site.write("</table>\n"
 			+ "<br>\n"
-			+ "<p><i>Note that expiration dates of any legacy keys are "
+			+ "<p><i>All times UTC. Note that expiration dates of any legacy keys are "
 			+ "not included in votes and therefore not listed here!</i>"
 			+ "</p>\n")
 
