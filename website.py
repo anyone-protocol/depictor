@@ -1420,7 +1420,8 @@ class WebsiteWriter:
 		+ "    }\n"
 		+ "  };\n"
 		+ " $('#relay-addition-javascript-pointer').html('But you can add individual "
-		+ "relays from the current consensus here. <input type=\"text\" id=\"fingerprintBox\" "
+		+ "relays from the current consensus here. <input autocomplete=\"off\" autocorrect=\"off\" "
+		+ "autocapitalize=\"off\" spellcheck=\"false\" type=\"text\" id=\"fingerprintBox\" "
 		+ "placeholder=\"Fingerprint\"/><input type=\"button\" onclick=\"loadData()\" value=\"Load\"/>');\n"
 		+ " $('#fingerprintBox').on('keyup', function(e) { if(e.keyCode == 13) loadData(); });"
 		+ "</script>\n")
