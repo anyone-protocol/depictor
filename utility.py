@@ -57,7 +57,10 @@ def _get_documents(label, resource):
 			resource,
 			endpoints = [(authority.address, authority.dir_port)],
 			default_params = False,
+			start = False
 		)
+		# Re-add the .z suffix per #25782
+		query.resource = query.resource + ".z"
 
 		try:
 			start_time = time.time()
