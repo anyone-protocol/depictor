@@ -18,7 +18,7 @@ from Crypto.PublicKey import RSA
 
 import stem.descriptor.remote
 
-from utility import get_dirauths, get_bwauths, unix_time, FileMock
+from utility import set_config, get_dirauths, get_bwauths, unix_time, FileMock
 
 class WebsiteWriter:
 	consensus = None
@@ -1680,6 +1680,18 @@ if __name__ == '__main__':
 	"""
 	import stem
 	import pickle
+	CONFIG = stem.util.conf.config_dict('consensus', {
+                                    'known_params': [],
+                                    'bwauths': [],
+                                    'ignore_fallback_authorities': False,
+                                    'graph_logical_min': 125,
+                                    'graph_logical_max': 25000,
+                                    'clockskew_threshold': 0,
+                                    })
+	config = stem.util.conf.get_config("consensus")
+	config.load(os.path.join(os.path.dirname(__file__), 'data', 'consensus.cfg'))
+	set_config(CONFIG)
+
 	w = WebsiteWriter()
 
 	c = pickle.load(open('consensus.p', 'rb'))
@@ -1690,15 +1702,6 @@ if __name__ == '__main__':
 	w.set_fallback_dirs(f)
 		
 
-	CONFIG = stem.util.conf.config_dict('consensus', {
-                                    'known_params': [],
-                                    'ignore_fallback_authorities': False,
-                                    'graph_logical_min': 125,
-                                    'graph_logical_max': 25000,
-                                    'clockskew_threshold': 0,
-                                    })
-	config = stem.util.conf.get_config("consensus")
-	config.load(os.path.join(os.path.dirname(__file__), 'data', 'consensus.cfg'))
 	w.set_config(CONFIG)
 
 	w.write_website(os.path.join(os.path.dirname(__file__), 'out', \

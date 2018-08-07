@@ -11,6 +11,11 @@ import stem.util.enum
 
 from stem.util.lru_cache import lru_cache
 
+config = {'bwauths': []}
+def set_config(c):
+	global config
+	config = c
+
 @lru_cache()
 def get_dirauths():
 	#Remove any BridgeAuths
@@ -18,7 +23,8 @@ def get_dirauths():
 
 @lru_cache()
 def get_bwauths():
-	return dict((k.lower(), v) for (k, v) in stem.descriptor.remote.get_authorities().items() if v.is_bandwidth_authority)
+	global config
+	return dict((k.lower(), v) for (k, v) in stem.descriptor.remote.get_authorities().items() if v.nickname.lower() in config['bwauths'])
 
 downloader = stem.descriptor.remote.DescriptorDownloader(
 	timeout = 30,

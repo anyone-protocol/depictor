@@ -32,13 +32,14 @@ from graphs import GraphWriter
 # dir-source line: dir-source authority_name v3ident hostname ip  DirPort  OrPort
 # r line: r nickname base64(fingerprint + "=")   -> python -c "x = ''; import sys; import base64; sys.stdout.write(''.join('{:02x}'.format(ord(c)) for c in base64.b64decode(x)))"
 
+#Also make sure to define the list of bwauths in the consensus.cfg file
+
 #stem.descriptor.remote.DIRECTORY_AUTHORITIES = {
 #'Faravahar': DirectoryAuthority(
 #    nickname = 'Faravahar',
 #    address = '154.35.175.225',
 #    or_port = 443,
 #    dir_port = 80,
-#    is_bandwidth_authority = True,
 #    fingerprint = 'CF6D0AAFB385BE71B8E111FC5CFF4B47923733BC',
 #    v3ident = 'EFCBE720AB3A82B99F9E953CD5BF50F7EEFC7B97',
 #  ),	
@@ -46,6 +47,7 @@ from graphs import GraphWriter
 
 CONFIG = stem.util.conf.config_dict('consensus', {
 	'known_params': [],
+	'bwauths': [],
 	'ignore_fallback_authorities' : False,
 	'graph_logical_min' : 125,
 	'graph_logical_max' : 25000,
@@ -56,6 +58,7 @@ def main():
 	# loads configuration data
 	config = stem.util.conf.get_config("consensus")
 	config.load(os.path.join(os.path.dirname(__file__), 'data', 'consensus.cfg'))
+	set_config(CONFIG)
 
 	consensuses, consensus_fetching_issues, consensus_fetching_runtimes = get_consensuses()
 	votes, vote_fetching_issues, vote_fetching_runtimes = get_votes()
