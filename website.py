@@ -282,8 +282,7 @@ class WebsiteWriter:
 		+ "<table border=\"0\" cellpadding=\"4\" cellspacing=\"0\" summary=\"\">\n"
 		+ "  <colgroup>\n"
 		+ "    <col width=\"160\">\n"
-		+ "    <col width=\"230\">\n"
-		+ "    <col width=\"410\">\n"
+		+ "    <col width=\"640\">\n"
 		+ "  </colgroup>\n")
    
 		# XXX Should also write if the displayed consensus is out of date
@@ -302,9 +301,13 @@ class WebsiteWriter:
 				+ "/tor/status-vote/current/consensus\">consensus</a> (<a href=\"http://" + authority.address 
 				+ ":" + str(authority.dir_port) + "/tor/status-vote/current/consensus-microdesc\">microdesc</a>)"
 				+ " <a href=\"http://" + authority.address + ":" + str(authority.dir_port)
-				+ "/tor/status-vote/current/authority\">vote</a></td>\n")
+				+ "/tor/status-vote/current/authority\">vote</a>")
+				if dirauth_nickname in self.bandwidth_authorities:
+					self.site.write(" <a href=\"http://" + authority.address + ":" + str(authority.dir_port)
+					+ "/tor/status-vote/next/bandwidth\">bandwidth vote</a>")
+				self.site.write("</td>\n")
 			else:
-				self.site.write("    <td colspan=\"2\" class=\"oiv\">Missing entirely from consensus</td>\n")
+				self.site.write("    <td class=\"oiv\">Missing entirely from consensus</td>\n")
 				
 			if dirauth_nickname in [d.nickname.lower() for d in self.consensus.directory_authorities]:
 				#The above structure is sufficient for getting the address & port
