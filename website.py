@@ -299,9 +299,11 @@ class WebsiteWriter:
 				authority = authority[0]
 				self.site.write("    <td><a href=\"http://" + authority.address + ":" + str(authority.dir_port)
 				+ "/tor/status-vote/current/consensus\">consensus</a> (<a href=\"http://" + authority.address 
-				+ ":" + str(authority.dir_port) + "/tor/status-vote/current/consensus-microdesc\">microdesc</a>)"
-				+ " <a href=\"http://" + authority.address + ":" + str(authority.dir_port)
+				+ ":" + str(authority.dir_port) + "/tor/status-vote/current/consensus-microdesc\">microdesc</a>)")
+				self.site.write(" <a href=\"http://" + authority.address + ":" + str(authority.dir_port)
 				+ "/tor/status-vote/current/authority\">vote</a>")
+				self.site.write(" <a href=\"http://" + authority.address + ":" + str(authority.dir_port)
+				+ "/tor/server/all\">descriptors</a>")
 				if dirauth_nickname in self.bandwidth_authorities:
 					self.site.write(" <a href=\"http://" + authority.address + ":" + str(authority.dir_port)
 					+ "/tor/status-vote/next/bandwidth\">bandwidth vote</a>")
