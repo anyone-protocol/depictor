@@ -26,6 +26,14 @@ def get_bwauths():
 	global config
 	return dict((k.lower(), v) for (k, v) in stem.descriptor.remote.get_authorities().items() if v.nickname.lower() in config['bwauths'])
 
+# How to grab a vote or consensus with stem:
+"""
+import stem.descriptor.remote
+authority = stem.descriptor.remote.get_authorities()['moria1']
+downloader = stem.descriptor.remote.DescriptorDownloader(fall_back_to_authority = False, document_handler = stem.descriptor.DocumentHandler.DOCUMENT)
+vote = downloader.query('/tor/status-vote/current/authority.z', default_params = False, endpoints=[(authority.address, authority.dir_port)]).run()[0]
+"""
+
 downloader = stem.descriptor.remote.DescriptorDownloader(
 	timeout = 30,
 	fall_back_to_authority = False,

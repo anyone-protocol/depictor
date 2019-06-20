@@ -57,6 +57,7 @@ class WebsiteWriter:
 		self._write_protocols()
 		self._write_bandwidth_weights()
 		self._write_bandwidth_scanner_status(True)
+		self._write_bandwidth_scanner_info()
 		self._write_fallback_directory_status(True)
 		self._write_authority_versions()
 		self._write_download_statistics()
@@ -1068,6 +1069,46 @@ class WebsiteWriter:
 					+ "    <td class=\"oiv\">Missing vote</td>\n"
 					+ "  </tr>\n")
 
+		self.site.write("</table>\n")
+
+	#-----------------------------------------------------------------------------------------
+	def _write_bandwidth_scanner_info(self):
+		"""
+		Write the headers and digest from the bandwidth file
+		"""
+		self.site.write("<br>\n\n\n"
+		+ " <!-- ================================================================= -->"
+		+ "<a name=\"bwauthinfo\">\n"
+		+ "<h3><a href=\"#bwauthinfo\" class=\"anchor\">"
+		+ "Bandwidth scanner information</a></h3>\n")
+		self.site.write("<table border=\"0\" cellpadding=\"4\" cellspacing=\"0\" summary=\"\">\n"
+		+ "  <colgroup>\n"
+		+ "    <col width=\"160\">\n"
+		+ "    <col width=\"640\">\n"
+		+ "  </colgroup>\n")
+		if not self.votes:
+			self.site.write("  <tr><td>(No votes.)</td><td></td></tr>\n")
+		else:
+			for dirauth_nickname in self.bandwidth_authorities:
+				if dirauth_nickname not in self.votes:
+					self.site.write("  <tr>\n"
+					+ "    <td>" + dirauth_nickname + "</td>\n"
+					+ "    <td class=\"oiv\">Missing vote</td>\n"
+					+ "  </tr>\n")
+				else:
+					vote = self.votes[dirauth_nickname]
+					self.site.write("  <tr>\n"
+					+ "    <td>" + dirauth_nickname + "</td>\n"
+					+ "    <td>")
+					for h in vote.bandwidth_file_headers:
+						self.site.write(h + "=" + vote.bandwidth_file_headers[h] + " ")
+						if h == "timestamp":
+							friendly = datetime.datetime.utcfromtimestamp(int(vote.bandwidth_file_headers[h])).isoformat().replace("T", " ")
+							self.site.write("(" + friendly + ") ")
+					for h in vote.bandwidth_file_digest:
+						self.site.write(h + "=" + vote.bandwidth_file_digest[h] + " ")
+					self.site.write("</td>\n"
+					+ "  </tr>\n")
 		self.site.write("</table>\n")
 
 	#-----------------------------------------------------------------------------------------
