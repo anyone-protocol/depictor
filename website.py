@@ -307,7 +307,7 @@ class WebsiteWriter:
 				+ "/tor/server/all\">descriptors</a>")
 				if dirauth_nickname in self.bandwidth_authorities:
 					self.site.write(" <a href=\"http://" + authority.address + ":" + str(authority.dir_port)
-					+ "/tor/status-vote/next/bandwidth\">bandwidth vote</a>")
+					+ "/tor/status-vote/next/bandwidth\">bandwidth file</a>")
 				self.site.write("</td>\n")
 			else:
 				self.site.write("    <td class=\"oiv\">Missing entirely from consensus</td>\n")
