@@ -47,7 +47,7 @@ def get_consensuses():
 	:returns: tuple of the form ({authority => consensus}, issues, runtimes)
 	"""
 
-	return _get_documents('consensus', '/tor/status-vote/current/consensus.z')
+	return _get_documents('consensus', '/tor/status-vote/current/consensus-microdesc.z')
 
 
 def get_votes():
