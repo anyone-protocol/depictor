@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # See LICENSE for licensing information
 
 """
@@ -71,7 +71,7 @@ class WebsiteWriter:
 
 	def set_consensuses(self, c):
 		self.consensuses = c
-		self.consensus = max(c.itervalues(), key=operator.attrgetter('valid_after'))
+		self.consensus = max(c.values(), key=operator.attrgetter('valid_after'))
 		self.known_authorities = get_dirauths().keys()
 		self.bandwidth_authorities = get_bwauths().keys()
 	def set_votes(self, v):
@@ -1053,7 +1053,7 @@ class WebsiteWriter:
 				
 				bandwidthWeights = 0
 				for r in vote.routers.values():
-					if r.measured >= 0L:
+					if r.measured and r.measured >= int(0):
 						bandwidthWeights += 1
 				
 				if bandwidthWeights > 0:
@@ -1223,7 +1223,7 @@ class WebsiteWriter:
 			maxDownloadsForAnyAuthority = max(len(downloadData[a]), maxDownloadsForAnyAuthority)
 
 		def getPercentile(dataset, percentile):
-			index = (percentile * (len(dataset) - 1)) / 100
+			index = int((percentile * (len(dataset) - 1)) / 100)
 			return str(dataset[index])
 
 		self.site.write("<br>\n\n\n"
@@ -1522,7 +1522,7 @@ class WebsiteWriter:
 				allRelays[relay_fp] = self.consensus.routers[relay_fp].nickname
 
 			linesWritten = 0
-			sortedKeys = allRelays.keys()
+			sortedKeys = list(allRelays.keys())
 			sortedKeys.sort()
 			for relay_fp in sortedKeys:
 				if linesWritten % 10 == 0:
@@ -1566,9 +1566,10 @@ class WebsiteWriter:
 		bwauths_voted = 0
 		for dirauth_nickname in self.votes:
 			if relay_fp in self.votes[dirauth_nickname].routers:
-				if self.votes[dirauth_nickname].routers[relay_fp].measured >= 0L:
+				measured = self.votes[dirauth_nickname].routers[relay_fp].measured
+				if measured and measured >= int(0):
 					bwauths_voted += 1
-				if target_bw == self.votes[dirauth_nickname].routers[relay_fp].measured:
+				if target_bw == measured:
 					bwauths.append(dirauth_nickname)
 		if len(bwauths) == bwauths_voted:
 			return ["all"]
@@ -1640,9 +1641,10 @@ class WebsiteWriter:
 					elif consensusFlags and flag in vote.known_flags and flag in consensusFlags:
 						self.site.write(  "<span class=\"oict\">!</span><span class=\"oic\">" + flag + "</span>")
 				
-				if vote.routers[relay_fp].measured >= 0L:
+				measured = vote.routers[relay_fp].measured
+				if measured and measured >= int(0):
 					self.site.write(" <br />" if flagsWritten > 0 else "")
-					self.site.write("bw=" + str(vote.routers[relay_fp].measured))
+					self.site.write("bw=" + str(measured))
 					flagsWritten += 1
 
 				self.site.write("</td>\n");
@@ -1660,9 +1662,10 @@ class WebsiteWriter:
 				if flag in consensusFlags:
 					self.site.write(flag)
 
-			if self.consensus.routers[relay_fp].bandwidth >= 0L:
+			bandwidth = self.consensus.routers[relay_fp].bandwidth
+			if bandwidth and bandwidth >= int(0):
 				self.site.write(" <br />" if flagsWritten > 0 else "")
-				self.site.write("bw=" + str(self.consensus.routers[relay_fp].bandwidth))
+				self.site.write("bw=" + str(bandwidth))
 				flagsWritten += 1
 				if not self.consensus.routers[relay_fp].is_unmeasured:
 					assigning_bwauths = self.__find_assigning_bwauth_for_bw_value(relay_fp)
@@ -1707,8 +1710,8 @@ class WebsiteWriter:
 		+ "<div class=\"bottom\" id=\"bottom\">\n"
 		+ "<p>This page was generated with <a href=\""
 		+ "https://gitweb.torproject.org/depictor.git/\">depictor</a> version "
-		+ depictor_version + " and <a href=\"https://gitweb.torproject.org/stem.git/"
-		+ "\">stem</a> version " + stem_version + "</p>"
+		+ str(depictor_version) + " and <a href=\"https://gitweb.torproject.org/stem.git/"
+		+ "\">stem</a> version " + str(stem_version) + "</p>"
 		+ "<p>\"Tor\" and the \"Onion Logo\" are <a "
 		+ "href=\"https://www.torproject.org/docs/trademark-faq.html.en\">"
 		+ "registered trademarks</a> of The Tor Project, Inc.</p>\n"

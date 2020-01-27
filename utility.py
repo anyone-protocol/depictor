@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import time
 import urllib
@@ -9,22 +9,26 @@ import stem.descriptor.remote
 import stem.util.conf
 import stem.util.enum
 
-from stem.util.lru_cache import lru_cache
-
 config = {'bwauths': []}
 def set_config(c):
 	global config
 	config = c
 
-@lru_cache()
+_dirAuths = None
 def get_dirauths():
-	#Remove any BridgeAuths
-	return dict((k.lower(), v) for (k, v) in stem.descriptor.remote.get_authorities().items() if v.v3ident)
+	global _dirAuths
+	if _dirAuths == None:
+		#Remove any BridgeAuths
+		_dirAuths = dict((k.lower(), v) for (k, v) in stem.descriptor.remote.get_authorities().items() if v.v3ident)
+	return _dirAuths
 
-@lru_cache()
+_bwAuths = None
 def get_bwauths():
 	global config
-	return dict((k.lower(), v) for (k, v) in stem.descriptor.remote.get_authorities().items() if v.nickname.lower() in config['bwauths'])
+	global _bwAuths
+	if _bwAuths == None:
+		_bwAuths = dict((k.lower(), v) for (k, v) in stem.descriptor.remote.get_authorities().items() if v.nickname.lower() in config['bwauths'])
+	return _bwAuths
 
 # How to grab a vote or consensus with stem:
 """
@@ -80,7 +84,7 @@ def _get_documents(label, resource):
 			start_time = time.time()
 			documents[nickname] = query.run()[0]
 			runtimes[nickname] = time.time() - start_time
-		except Exception, exc:
+		except Exception as exc:
 			if label == 'vote':
 				# try to download the vote via the other authorities
 
@@ -104,20 +108,24 @@ def _get_documents(label, resource):
 def get_clockskew():
 	clockskew = {}
 	for (nickname, authority) in get_dirauths().items():
-		authority_address = "http://" + str(authority.address) + ":" + str(authority.dir_port)
+		authority_address = "http://" + str(authority.address) + ":" + str(authority.dir_port) + "/tor/keys/authority.z"
 		try:
 			startTimeStamp = datetime.datetime.utcnow()
 			startTime = time.time()
-			f = urllib.urlopen(authority_address)
-			for h in f.info().headers:
-				if h.upper().startswith('DATE:'):
-					clockskew[nickname] = datetime.datetime.strptime(h[6:].strip(), '%a, %d %b %Y %H:%M:%S %Z')
+			f = urllib.request.urlopen(authority_address)
+			h = f.getheader('date')
+			if h:
+				clockskew[nickname] = datetime.datetime.strptime(h, '%a, %d %b %Y %H:%M:%S %Z')
+			else:
+				print("Could not get clockskew for ", nickname)
+				continue
 			processing = time.time() - startTime
 			if processing > 5:
 				clockskew[nickname] -= datetime.timedelta(seconds=(processing / 2))
 			clockskew[nickname] -= startTimeStamp
 			clockskew[nickname] = clockskew[nickname].total_seconds()
-		except:
+		except Exception as e:
+			print("Clockskew Exception:", e)
 			continue
 	return clockskew
 
@@ -142,4 +150,4 @@ class FileMock():
 if __name__ == "__main__":
 	skew = get_clockskew()
 	for c in skew:
-		print c, skew[c]
+		print(c, skew[c])

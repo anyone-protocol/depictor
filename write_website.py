@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2013, Damian Johnson, Tom Ritter, and The Tor Project
 # See LICENSE for licensing information
 
@@ -100,7 +100,7 @@ def main():
 					if expected == ut_to_datetime(d):
 						pass
 					else:
-						print "We seem to be missing", consensus_datetime_format(expected)
+						print("We seem to be missing", consensus_datetime_format(expected))
 						dbc.execute("INSERT OR REPLACE INTO " + tbl + "(date) VALUES (?)", (unix_time(expected),))
 						dbc.commit()
 				previous = d
@@ -109,13 +109,13 @@ def main():
 	if not CONFIG['ignore_fallback_authorities']:
 		fallback_dirs_running = 0
 		fallback_dirs_notrunning = 0
-		for relay_fp in consensuses.values()[0].routers:
-			if relay_fp in fallback_dirs and 'Running' in consensuses.values()[0].routers[relay_fp].flags:
+		for relay_fp in list(consensuses.values())[0].routers:
+			if relay_fp in fallback_dirs and 'Running' in list(consensuses.values())[0].routers[relay_fp].flags:
 				fallback_dirs_running += 1
 			elif relay_fp in fallback_dirs:
 				fallback_dirs_notrunning += 1
 					
-		insertValues = [unix_time(consensuses.values()[0].valid_after)]
+		insertValues = [unix_time(list(consensuses.values())[0].valid_after)]
 		insertValues.append(fallback_dirs_running)
 		insertValues.append(fallback_dirs_notrunning)
 		insertValues.append(len(fallback_dirs) - fallback_dirs_running - fallback_dirs_notrunning)
@@ -148,7 +148,7 @@ def main():
 		runningRelays    = 0
 		bandwidthWeights = 0
 		for r in vote.routers.values():
-			if r.measured >= 0L:
+			if r.measured and r.measured >= int(0):
 				bandwidthWeights += 1
 			if u'Running' in r.flags:
 				runningRelays += 1
@@ -159,7 +159,7 @@ def main():
 	for c in vote_data_schema:
 		vote_data_columns.add(c[1].replace("_known", "").replace("_running", "").replace("_bwauth", "").lower())
 
-	insertValues = [unix_time(consensuses.values()[0].valid_after)]
+	insertValues = [unix_time(list(consensuses.values())[0].valid_after)]
 	createColumns = ""
 	insertColumns = "date"
 	insertQuestions = ""
@@ -209,7 +209,7 @@ def main():
 		data[dirauth_nickname] = {'unmeasured' : 0, 'above' : 0, 'below' : 0, 'exclusive' : 0 , 'shared' : 0}
 
 		had_any_value = False
-		for r in consensuses.values()[0].routers.values():
+		for r in list(consensuses.values())[0].routers.values():
 			if r.is_unmeasured:
 				continue
 			elif r.fingerprint not in vote.routers or vote.routers[r.fingerprint].measured == None:
@@ -229,7 +229,7 @@ def main():
 				had_any_value = True
 				data[dirauth_nickname]['shared'] += 1
 			else:
-				print "What case am I in???"
+				print("What case am I in???")
 				sys.exit(1)
 
 		if not had_any_value:
@@ -240,7 +240,7 @@ def main():
 	for c in bwauth_stats_data_schema:
 		bwauth_stats_data_columns.add(c[1].replace("_above", "").replace("_shared", "").replace("_exclusive", "").replace("_below", "").replace("_unmeasured", "").lower())
 
-	insertValues = [unix_time(consensuses.values()[0].valid_after)]
+	insertValues = [unix_time(list(consensuses.values())[0].valid_after)]
 	createColumns = ""
 	insertColumns = "date"
 	insertQuestions = ""
@@ -343,4 +343,4 @@ if __name__ == '__main__':
 		main()
 	except:
 		msg = "%s failed with:\n\n%s" % (sys.argv[0], traceback.format_exc())
-		print "Error: %s" % msg
+		print("Error: %s" % msg)

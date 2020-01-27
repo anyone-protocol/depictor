@@ -1,8 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # See LICENSE for licensing information
 
 """
-Produces an HTML file for easily viewing voting and consensus differences
+processoduces an HTML file for easily viewing voting and consensus differences
 Ported from Java version Doctor
 """
 
@@ -358,8 +358,8 @@ class GraphWriter(WebsiteWriter):
 		
 		
 
-		var bwauths = """ + str(get_bwauths().keys()) + """;
-		var dirauths = """ + str(get_dirauths().keys()) + """;
+		var bwauths = """ + str(list(get_bwauths().keys())) + """;
+		var dirauths = """ + str(list(get_dirauths().keys())) + """;
 		var ignore_fallback_dirs = """ + str(self.config['ignore_fallback_authorities']).lower() + """;
 
 		var _getBandwidthDataValue = function(d, dirauth) { return d[dirauth + "_bwauth"]; }
