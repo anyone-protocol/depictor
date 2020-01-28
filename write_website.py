@@ -34,7 +34,7 @@ from graphs import GraphWriter
 
 #Also make sure to define the list of bwauths in the consensus.cfg file
 
-#stem.descriptor.remote.DIRECTORY_AUTHORITIES = {
+#stem.directory.DIRECTORY_AUTHORITIES = {
 #'Faravahar': DirectoryAuthority(
 #    nickname = 'Faravahar',
 #    address = '154.35.175.225',

@@ -2,7 +2,7 @@
 # See LICENSE for licensing information
 
 """
-processoduces an HTML file for easily viewing voting and consensus differences
+Produces an HTML file for easily viewing voting and consensus differences
 Ported from Java version Doctor
 """
 
