@@ -1105,6 +1105,9 @@ class WebsiteWriter:
 						if h == "timestamp":
 							friendly = datetime.datetime.utcfromtimestamp(int(vote.bandwidth_file_headers[h])).isoformat().replace("T", " ")
 							self.site.write("(" + friendly + ") ")
+						elif h == "time_to_report_half_network":
+							friendly = round(float(vote.bandwidth_file_headers[h]) / (60 * 60), 2)
+							self.site.write("(" + str(friendly) + " hours) ")
 					for h in vote.bandwidth_file_digest:
 						self.site.write(h + "=" + vote.bandwidth_file_digest[h] + " ")
 					self.site.write("</td>\n"
