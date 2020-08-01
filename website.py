@@ -16,6 +16,7 @@ import subprocess
 from base64 import b64decode
 from Crypto.PublicKey import RSA
 
+import stem.version
 import stem.descriptor.remote
 
 from utility import set_config, get_dirauths, get_bwauths, unix_time, FileMock
@@ -48,6 +49,7 @@ class WebsiteWriter:
 		self._write_known_flags()
 		self._write_flag_thresholds()
 		self._write_number_of_relays_voted_about(True)
+		self._write_ipv6_stats()
 		self._write_consensus_methods()
 		self._write_recommended_versions()
 		self._write_consensus_parameters()
@@ -161,6 +163,22 @@ class WebsiteWriter:
 					if r in self.consensus.routers and self.consensus.routers[r].published != vote.routers[r].published:
 						vote.routers[r].flags.append('DescriptorMismatch')
 
+		# Add a Vote's/Conesensus' Total Bandwidth for calculating Consensus Wight Fraction
+		for dirauth_nickname in self.known_authorities:
+			if dirauth_nickname in self.votes:
+				vote = self.votes[dirauth_nickname]
+				sum_bw = 0
+				for r in vote.routers:
+					if vote.routers[r].measured:
+						sum_bw += vote.routers[r].measured
+				vote.measured_bw_sum = sum_bw
+		sum_bw = 0
+		for r in self.consensus.routers:
+			if self.consensus.routers[r].bandwidth:
+				if self.consensus.routers[r].bandwidth:
+					sum_bw += self.consensus.routers[r].bandwidth
+		self.consensus.measured_bw_sum = sum_bw
+
 
 	#-----------------------------------------------------------------------------------------
 	def _write_page_header(self, include_relay_info):
@@ -201,6 +219,9 @@ class WebsiteWriter:
 			+ "    }\n"
 			+ "    #relay-list td {\n"
 			+ "      white-space:pre;\n"
+			+ "    }\n"
+			+ "    #ipv6stats-tbl td span {\n"
+			+ "      font-size: smaller;\n"
 			+ "    }\n"
 			+ "  </style>\n"
 			+ "    <div class=\"center\">\n"
@@ -449,7 +470,106 @@ class WebsiteWriter:
 		+  "    <td/>\n"
 		+  "    <td class=\"ic\">" + str(runningRelays) + " Running</td>\n"
 		+  "  </tr>\n"
-		+  "</table>\n")		
+		+  "</table>\n")
+
+	#-----------------------------------------------------------------------------------------
+	def _write_ipv6_stats(self):
+		def _get_and_write_data(name, document, consensus_line=False):
+			IPv6OrPort = 0
+			IPv6OrPort_cw = 0
+			MissingVersion = 0
+			PartialSupport = 0
+			PartialSupport_cw = 0
+			FullSupport = 0
+			FullSupport_cw = 0
+
+			partial_support_version = stem.version.Version('0.4.4')
+			full_support_version = stem.version.Version('0.4.5')
+			for r in document.routers.values():
+				HasIPv6OrPort = False
+				if len([a for a in r.or_addresses if a[2] == True]):
+					HasIPv6OrPort = True
+					IPv6OrPort += 1
+					IPv6OrPort_cw += r.measured if r.measured else 0
+					IPv6OrPort_cw += r.bandwidth if r.bandwidth and consensus_line else 0
+
+				if r.version:
+					if r.version >= full_support_version:
+						FullSupport += 1
+						FullSupport_cw += r.measured if r.measured else 0
+						FullSupport_cw += r.bandwidth if r.bandwidth and consensus_line else 0
+					if r.version >= partial_support_version:
+						PartialSupport += 1
+						PartialSupport_cw += r.measured if r.measured else 0
+						PartialSupport_cw += r.bandwidth if r.bandwidth and consensus_line else 0
+				else:
+					# Shouldn't happen but let's not blow up I guess.
+					pass
+
+			style = " class=\"ic\"" if consensus_line else ""
+
+			self.site.write("  <tr>\n"
+			+ "    <td>" + name + "</td>\n"
+			+ "    <td" + style + ">"
+			+ "      " + str(IPv6OrPort) + " <span>("
+			+ str(round(100 * (IPv6OrPort / float(len(document.routers))), 2)) + "%"
+			+ (", " + str(round(100 * (IPv6OrPort_cw / float(document.measured_bw_sum)), 2)) + "%" if document.measured_bw_sum else "")
+			+ ")</span>"
+			+ "    </td>\n"
+			+ "    <td" + style + ">"
+			+ "      " + str(PartialSupport) + " <span>("
+			+ str(round(100 * (PartialSupport / float(len(document.routers))), 2)) + "%"
+			+ (", " + str(round(100 * (PartialSupport_cw / float(document.measured_bw_sum)), 2)) + "%" if document.measured_bw_sum else "")
+			+ ")</span>"
+			+ "    </td>\n"
+			+ "    <td" + style + ">"
+			+ "      " + str(FullSupport) + " <span>("
+			+ str(round(100 * (FullSupport / float(len(document.routers))), 2)) + "%"
+			+ (", " + str(round(100 * (FullSupport_cw / float(document.measured_bw_sum)), 2)) + "%" if document.measured_bw_sum else "")
+			+ ")</span>"
+			+ "    </td>\n"
+			+ "  </tr>\n")
+
+
+		self.site.write("<br>\n\n\n"
+		+ " <!-- ================================================================= -->"
+		+ "<a name=\"ipv6stats\">\n"
+		+ "<h3><a href=\"#ipv6stats\" class=\"anchor\">"
+		+ "IPv6 Statistics</a></h3>\n"
+		+ "<br>\n"
+		+ "Percentages are of total number of relays in the vote or cosensus, and then percentage of bandwidth weight.\n"
+		+ "<br>\n"
+		+ "When a DirAuth reports 0 relays with an IPv6 ORPort, the DirAuth itself lacks IPv6. When the second percentage (bw weight) is missing, the DirAuth does not have a bwauth.\n"
+		+ "<br>\n"
+		+ "<table id=\"ipv6stats-tbl\" border=\"0\" cellpadding=\"4\" cellspacing=\"0\" summary=\"\">\n"
+		+ "  <colgroup>\n"
+		+ "    <col width=\"160\">\n"
+		+ "    <col width=\"168\">\n"
+		+ "    <col width=\"136\">\n"
+		+ "    <col width=\"168\">\n"
+		+ "    <col width=\"168\">\n"
+		+ "  </colgroup>\n")
+		if not self.votes:
+			self.site.write("  <tr><td colspan=\"5\">(No votes.)</td></tr>\n")
+		else:
+			self.site.write("  <tr>\n"
+			+ "    <th>DirAuth</th>"
+			+ "    <th>IPv6 ORPort</th>"
+			+ "    <th>Partial Reachability Support</th>"
+			+ "    <th>Full Reachability Support</th>"
+			+ "  </tr>\n")
+			for dirauth_nickname in self.known_authorities:
+				if dirauth_nickname in self.votes:
+					vote = self.votes[dirauth_nickname]
+					_get_and_write_data(dirauth_nickname, vote)
+				else:
+					self.site.write("  <tr>\n"
+					+ "    <td>" + dirauth_nickname + "</td>\n"
+					+ "    <td colspan=\"4\" class=\"oiv\">Vote Not Present</td>\n"
+					+ "  </tr>\n")
+
+		_get_and_write_data("consensus", self.consensus, True)
+		self.site.write("</table>\n")
 
 	#-----------------------------------------------------------------------------------------
 	def _write_consensus_methods(self):
