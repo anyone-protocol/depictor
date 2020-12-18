@@ -1182,6 +1182,11 @@ class WebsiteWriter:
 					+ "    <td>" + str(bandwidthWeights)
 					+ " Measured values in w lines</td>\n"
 					+ "  </tr>\n")
+				elif dirauth_nickname in self.bandwidth_authorities:
+					self.site.write("  <tr>\n"
+					+ "    <td>" + dirauth_nickname + "</td>\n"
+					+ "    <td class=\"oiv\">Missing bwauth values in vote</td>\n"
+					+ "  </tr>\n")
 			for dirauth_nickname in self.bandwidth_authorities:
 				if dirauth_nickname not in self.votes:
 					self.site.write("  <tr>\n"
