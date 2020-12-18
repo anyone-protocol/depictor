@@ -112,7 +112,7 @@ def get_clockskew():
 		try:
 			startTimeStamp = datetime.datetime.utcnow()
 			startTime = time.time()
-			f = urllib.request.urlopen(authority_address)
+			f = urllib.request.urlopen(authority_address, timeout=30)
 			h = f.getheader('date')
 			if h:
 				clockskew[nickname] = datetime.datetime.strptime(h, '%a, %d %b %Y %H:%M:%S %Z')
