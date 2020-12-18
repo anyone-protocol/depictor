@@ -280,7 +280,7 @@ class WebsiteWriter:
 				+ "    <td>" + dirauth_nickname + "</td>\n")
 
 				if dirauth_nickname not in self.consensuses:
-					self.site.write("    <td class=\"oiv\">Consensus Not Present</td>\n"
+					self.site.write("    <td class=\"oiv\">Consensus could not be retrieved</td>\n"
 					+ "  </tr>\n")
 				else:
 					self.site.write("    <td>")
@@ -377,7 +377,7 @@ class WebsiteWriter:
 			else:
 				self.site.write("  <tr>\n"
 				+ "    <td>" + dirauth_nickname + "</td>\n"
-				+ "    <td class=\"oiv\">Vote Not Present</td>\n"
+				+ "    <td class=\"oiv\">Vote could not be retrieved</td>\n"
 				+ "  </tr>\n")
 		self.site.write("  <tr>\n"
 		+ "    <td class=\"ic\">consensus</td>\n"
@@ -415,7 +415,7 @@ class WebsiteWriter:
 			else:
 				self.site.write("  <tr>\n"
 				+ "    <td>" + dirauth_nickname + "</td>\n"
-				+ "    <td class=\"oiv\">Vote Not Present</td>\n"
+				+ "    <td class=\"oiv\">Vote could not be retrieved</td>\n"
 				+ "  </tr>\n")
 		self.site.write("</table>\n")
 
@@ -459,7 +459,7 @@ class WebsiteWriter:
 				else:
 					self.site.write("  <tr>\n"
 					+ "    <td>" + dirauth_nickname + "</td>\n"
-					+ "    <td colspan=\"2\"><span class=\"oiv\">Vote Not Present<span></td>\n"
+					+ "    <td colspan=\"2\"><span class=\"oiv\">Vote could not be retrieved<span></td>\n"
 					+ "  </tr>\n")
 		runningRelays = 0
 		for r in self.consensus.routers.values():
@@ -565,7 +565,7 @@ class WebsiteWriter:
 				else:
 					self.site.write("  <tr>\n"
 					+ "    <td>" + dirauth_nickname + "</td>\n"
-					+ "    <td colspan=\"4\" class=\"oiv\">Vote Not Present</td>\n"
+					+ "    <td colspan=\"4\" class=\"oiv\">Vote could not be retrieved</td>\n"
 					+ "  </tr>\n")
 
 		_get_and_write_data("consensus", self.consensus, True)
@@ -616,7 +616,7 @@ class WebsiteWriter:
 				else:
 					self.site.write("  <tr>\n"
 					+ "    <td>" + dirauth_nickname + "</td>\n"
-					+ "    <td class=\"oiv\">Vote Not Present</td>\n"
+					+ "    <td class=\"oiv\">Vote could not be retrieved</td>\n"
 					+ "  </tr>\n")
 		self.site.write("  <tr>\n"
 		+ "    <td class=\"ic\">consensus</td>\n"
@@ -672,7 +672,7 @@ class WebsiteWriter:
 				else:
 					self.site.write("  <tr>\n"
 					+ "    <td>" + dirauth_nickname + "</td>\n"
-					+ "    <td class=\"oiv\">Vote Not Present</td>\n"
+					+ "    <td class=\"oiv\">Vote could not be retrieved</td>\n"
 					+ "  </tr>\n")
 		self.site.write("  <tr>\n"
 		+ "    <td class=\"ic\">consensus</td>\n"
@@ -740,7 +740,7 @@ class WebsiteWriter:
 				else:
 					self.site.write("  <tr>\n"
 					+ "    <td>" + dirauth_nickname + "</td>\n"
-					+ "    <td class=\"oiv\">Vote Not Present</td>\n"
+					+ "    <td class=\"oiv\">Vote could not be retrieved</td>\n"
 					+ "  </tr>\n")
 
 		self.site.write("  <tr>\n"
@@ -810,7 +810,7 @@ class WebsiteWriter:
 				else:
 					self.site.write("  <tr>\n"
 					+ "    <td>" + dirauth_nickname + "</td>\n"
-					+ "    <td colspan=\"3\"><span class=\"oiv\">Vote Not Present<span></td>\n"
+					+ "    <td colspan=\"3\"><span class=\"oiv\">Vote could not be retrieved<span></td>\n"
 					+ "  </tr>\n")
 
 			self.site.write("</table>\n"
@@ -958,7 +958,7 @@ class WebsiteWriter:
 				else:
 					self.site.write("  <tr>\n"
 					+ "    <td>" + dirauth_nickname + "</td>\n"
-					+ "    <td colspan=\"2\"><span class=\"oiv\">Vote Not Present<span></td>\n"
+					+ "    <td colspan=\"2\"><span class=\"oiv\">Vote could not be retrieved<span></td>\n"
 					+ "  </tr>\n")
 		self.site.write("  <tr>\n"
 		+ "    <td class=\"ic\">consensus</td>\n"
@@ -1045,7 +1045,7 @@ class WebsiteWriter:
 				else:
 					self.site.write("  <tr>\n"
 					+ "    <td>" + dirauth_nickname + "</td>\n"
-					+ "    <td colspan=\"2\" class=\"oiv\">Vote Not Present</td>\n"	
+					+ "    <td colspan=\"2\" class=\"oiv\">Vote could not be retrieved</td>\n"	
 					+ "  </tr>\n")
 			self.site.write("  <tr>\n"
 			+ "    <td class=\"ic\">consensus</td>\n"
@@ -1515,7 +1515,7 @@ class WebsiteWriter:
 			else:
 				self.site.write("  <tr>\n"
 				+ "    <td>" + dirauth_nickname + "</td>\n"
-				+ "    <td colspan=\"3\"><span class=\"oiv\">Vote Not Present<span></td>\n"
+				+ "    <td colspan=\"3\"><span class=\"oiv\">Vote could not be retrieved<span></td>\n"
 				+ "  </tr>\n")
 		self.site.write("</table>\n")
 
