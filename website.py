@@ -979,13 +979,13 @@ class WebsiteWriter:
 		s = ""
 		for k in keys:
 			s += k + "="
-			if c and (k not in v or k not in c or c[k] != v[k]):
+			if c and c.get(k, None) != v.get(k, None):
 				s += "<span class=\"oiv\">"
 			if k in v:
 				s += ",".join([str(i) for i in v[k]])
 			else:
 				s += "(none)"
-			if c and (k not in v or k not in c or c[k] != v[k]):
+			if c and c.get(k, None) != v.get(k, None):
 				s += "</span>"
 			s += " "
 		return s
