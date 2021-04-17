@@ -1,8 +1,7 @@
 *.pyc
 *.p
 *.swp
-stem
-stem-git
+
 
 out/index.html
 out/graphs.html
