@@ -20,8 +20,8 @@ import stem.descriptor.remote
 import stem.util.conf
 import stem.util.enum
 
-from stem.descriptor.remote import FallbackDirectory
-from stem.descriptor.remote import DirectoryAuthority
+from stem.directory import Fallback
+from stem.directory import Authority
 
 from utility import *
 from website import WebsiteWriter
@@ -35,7 +35,7 @@ from graphs import GraphWriter
 #Also make sure to define the list of bwauths in the consensus.cfg file
 
 #stem.directory.DIRECTORY_AUTHORITIES = {
-#'Faravahar': DirectoryAuthority(
+#'Faravahar': Authority(
 #    nickname = 'Faravahar',
 #    address = '154.35.175.225',
 #    or_port = 443,
@@ -72,7 +72,7 @@ def main():
 
 	# Calculate the fallback directory info
 	if not CONFIG['ignore_fallback_authorities']:
-		fallback_dirs = stem.descriptor.remote.FallbackDirectory.from_remote()
+		fallback_dirs = Fallback.from_remote()
 	else:
 		fallback_dirs = []
 	

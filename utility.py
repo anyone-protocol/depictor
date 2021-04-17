@@ -4,6 +4,7 @@ import time
 import urllib
 import datetime
 
+import stem.directory
 import stem.descriptor
 import stem.descriptor.remote
 import stem.util.conf
@@ -19,7 +20,7 @@ def get_dirauths():
 	global _dirAuths
 	if _dirAuths == None:
 		#Remove any BridgeAuths
-		_dirAuths = dict((k.lower(), v) for (k, v) in stem.descriptor.remote.get_authorities().items() if v.v3ident)
+		_dirAuths = dict((k.lower(), v) for (k, v) in stem.directory.Authority.from_cache().items() if v.v3ident)
 	return _dirAuths
 
 _bwAuths = None
@@ -27,7 +28,7 @@ def get_bwauths():
 	global config
 	global _bwAuths
 	if _bwAuths == None:
-		_bwAuths = dict((k.lower(), v) for (k, v) in stem.descriptor.remote.get_authorities().items() if v.nickname.lower() in config['bwauths'])
+		_bwAuths = dict((k.lower(), v) for (k, v) in stem.directory.Authority.from_cache().items() if v.nickname.lower() in config['bwauths'])
 	return _bwAuths
 
 # How to grab a vote or consensus with stem:
@@ -73,7 +74,7 @@ def _get_documents(label, resource):
 
 		query = downloader.query(
 			resource,
-			endpoints = [(authority.address, authority.dir_port)],
+			endpoints = [stem.DirPort(authority.address, authority.dir_port)],
 			default_params = False,
 			start = False
 		)

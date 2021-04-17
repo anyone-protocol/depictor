@@ -337,7 +337,7 @@ class WebsiteWriter:
 				#The above structure is sufficient for getting the address & port
 				# but we need this structure for the authority's fingerprint
 				authority = [d for d in self.consensus.directory_authorities if d.nickname.lower() == dirauth_nickname][0]
-				if authority.fingerprint in signingFPs:
+				if authority.v3ident in signingFPs:
 					self.site.write("    <td></td>\n")
 				elif authority.nickname.lower() in self.consensuses:
 					self.site.write("    <td class=\"oiv\">Missing Signature! "
