@@ -14,7 +14,7 @@ import datetime
 import subprocess
 
 from base64 import b64decode
-from Crypto.PublicKey import RSA
+from Cryptodome.PublicKey import RSA
 
 import stem.version
 import stem.descriptor.remote
@@ -759,7 +759,7 @@ class WebsiteWriter:
 		key = key.replace("\n", "")
 		keyDER = b64decode(key)
 		keyPub = RSA.importKey(keyDER)
-		return str(keyPub.size() + 1)
+		return str(keyPub.size_in_bits())
 
 	def _write_authority_keys(self):
 		"""
