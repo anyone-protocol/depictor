@@ -21,6 +21,7 @@ def get_dirauths():
 	if _dirAuths == None:
 		#Remove any BridgeAuths
 		_dirAuths = dict((k.lower(), v) for (k, v) in stem.directory.Authority.from_cache().items() if v.v3ident)
+		_dirAuths['moria1'].address = "128.31.0.34"
 	return _dirAuths
 
 _bwAuths = None
