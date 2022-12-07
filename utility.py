@@ -132,7 +132,7 @@ def get_clockskew():
 			if processing > 5:
 				clockskew[nickname] -= datetime.timedelta(seconds=(processing / 2))
 			clockskew[nickname] -= startTimeStamp
-			clockskew[nickname] = clockskew[nickname].total_seconds()
+			clockskew[nickname] = round(clockskew[nickname].total_seconds(), 2)
 		except Exception as e:
 			print("Clockskew Exception:", e)
 			continue
