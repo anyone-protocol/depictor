@@ -1,0 +1,47 @@
+diff --git a/stem/directory.py b/stem/directory.py
+index 710e598e..d61ef3d8 100644
+--- a/stem/directory.py
++++ b/stem/directory.py
+@@ -63,7 +63,7 @@ AUTHORITY_ADDR = re.compile('"([\\d\\.]+):(\\d+) ([\\dA-F ]{49})",')
+ FALLBACK_DIV = '/* ===== */'
+ FALLBACK_MAPPING = re.compile('/\\*\\s+(\\S+)=(\\S*)\\s+\\*/')
+ 
+-FALLBACK_ADDR = re.compile('"([\\d\\.]+):(\\d+) orport=(\\d+) id=([\\dA-F]{40}).*')
++FALLBACK_ADDR = re.compile('"([\\d\\.]+) orport=(\\d+) id=([\\dA-F]{40}).*')
+ FALLBACK_NICKNAME = re.compile('/\\* nickname=(\\S+) \\*/')
+ FALLBACK_EXTRAINFO = re.compile('/\\* extrainfo=([0-1]) \\*/')
+ FALLBACK_IPV6 = re.compile('" ipv6=\\[([\\da-f:]+)\\]:(\\d+)"')
+@@ -141,7 +141,7 @@ class Directory(object):
+       raise ValueError('%s has an invalid IPv4 address: %s' % (identifier, address))
+     elif not connection.is_valid_port(or_port):
+       raise ValueError('%s has an invalid ORPort: %s' % (identifier, or_port))
+-    elif not connection.is_valid_port(dir_port):
++    elif not connection.is_valid_port(dir_port, True):
+       raise ValueError('%s has an invalid DirPort: %s' % (identifier, dir_port))
+     elif not tor_tools.is_valid_fingerprint(fingerprint):
+       raise ValueError('%s has an invalid fingerprint: %s' % (identifier, fingerprint))
+@@ -418,7 +418,8 @@ class Fallback(Directory):
+       if mapping:
+         header[mapping.group(1)] = mapping.group(2)
+       else:
+-        raise OSError('Malformed fallback directory header line: %s' % line)
++        # Ignore unknown lines so the file can evolve without breaking this.
++        continue
+ 
+     Fallback._pop_section(lines)  # skip human readable comments
+ 
+@@ -433,12 +434,12 @@ class Fallback(Directory):
+       results = {}
+ 
+       for matches in _directory_entries(lines, Fallback._pop_section, (FALLBACK_ADDR, FALLBACK_NICKNAME, FALLBACK_EXTRAINFO, FALLBACK_IPV6), required = (FALLBACK_ADDR,)):
+-        address, dir_port, or_port, fingerprint = matches[FALLBACK_ADDR]  # type: ignore
++        address, or_port, fingerprint = matches[FALLBACK_ADDR]  # type: ignore
+ 
+         results[fingerprint] = Fallback(
+           address = address,
+           or_port = int(or_port),
+-          dir_port = int(dir_port),
++          dir_port = 0,
+           fingerprint = fingerprint,
+           nickname = matches.get(FALLBACK_NICKNAME),  # type: ignore
+           has_extrainfo = matches.get(FALLBACK_EXTRAINFO) == '1',

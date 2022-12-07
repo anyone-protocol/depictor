@@ -21,7 +21,14 @@ def get_dirauths():
 	if _dirAuths == None:
 		#Remove any BridgeAuths
 		_dirAuths = dict((k.lower(), v) for (k, v) in stem.directory.Authority.from_cache().items() if v.v3ident)
-		_dirAuths['moria1'].address = "128.31.0.34"
+		# Update IP addresses and other information that has changed since stem cut a release
+		del _dirAuths['faravahar']
+		_dirAuths['moria1'].address = "128.31.0.24"
+		_dirAuths['moria1'].or_port = 9201
+		_dirAuths['moria1'].dir_port = 9231
+		_dirAuths['moria1'].v3ident = "F533C81CEF0BC0267857C99B2F471ADF249FA232"
+		_dirAuths['moria1'].fingerprint = "1A25C6358DB91342AA51720A5038B72742732498"
+		_dirAuths['dizum'].address = "45.66.35.11"
 	return _dirAuths
 
 _bwAuths = None
@@ -29,7 +36,7 @@ def get_bwauths():
 	global config
 	global _bwAuths
 	if _bwAuths == None:
-		_bwAuths = dict((k.lower(), v) for (k, v) in stem.directory.Authority.from_cache().items() if v.nickname.lower() in config['bwauths'])
+		_bwAuths = dict((k.lower(), v) for (k, v) in get_dirauths().items() if v.nickname.lower() in config['bwauths'])
 	return _bwAuths
 
 # How to grab a vote or consensus with stem:
