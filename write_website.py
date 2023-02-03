@@ -96,8 +96,9 @@ def main():
 				if previous == 0:
 					pass
 				else:
-					expected = ut_to_datetime(previous) + datetime.timedelta(hours=1)
-					if expected == ut_to_datetime(d):
+					expected_0 = ut_to_datetime(previous) + datetime.timedelta(hours=1)
+					expected_1 = ut_to_datetime(previous) + datetime.timedelta(minutes=30)
+					if ut_to_datetime(d) in [expected_0, expected_1]:
 						pass
 					else:
 						print("We seem to be missing", consensus_datetime_format(expected))
