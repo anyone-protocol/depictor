@@ -101,8 +101,8 @@ def main():
 					if ut_to_datetime(d) in [expected_0, expected_1]:
 						pass
 					else:
-						print("We seem to be missing", consensus_datetime_format(expected))
-						dbc.execute("INSERT OR REPLACE INTO " + tbl + "(date) VALUES (?)", (unix_time(expected),))
+						print("We seem to be missing", consensus_datetime_format(expected_1))
+						dbc.execute("INSERT OR REPLACE INTO " + tbl + "(date) VALUES (?)", (unix_time(expected_1),))
 						dbc.commit()
 				previous = d
 
