@@ -117,6 +117,38 @@ class GraphWriter(WebsiteWriter):
 			+ "      background-color: #e41a1c;\n"
 			+ "      stroke-width: 1.5px;\n"
 			+ "    }\n"
+			+ "    .auth_moria1 {\n"
+			+ "      stroke: #1f78b4 !important;\n"
+			+ "      background-color: #1f78b4 !important;\n"
+			+ "    }\n"
+			+ "    .auth_tor26 {\n"
+			+ "      stroke: #33a02c !important;\n"
+			+ "      background-color: #33a02c !important;\n"
+			+ "    }\n"
+			+ "    .auth_dizum {\n"
+			+ "      stroke: #e31a1c !important;\n"
+			+ "      background-color: #e31a1c !important;\n"
+			+ "    }\n"
+			+ "    .auth_gabelmoo {\n"
+			+ "      stroke: #ff7f00 !important;\n"
+			+ "      background-color: #ff7f00 !important;\n"
+			+ "    }\n"
+			+ "    .auth_danneburg {\n"
+			+ "      stroke: #6a3d9a !important;\n"
+			+ "      background-color: #6a3d9a !important;\n"
+			+ "    }\n"
+			+ "    .auth_maatuska {\n"
+			+ "      stroke: #a6cee3 !important;\n"
+			+ "      background-color: #a6cee3 !important;\n"
+			+ "    }\n"
+			+ "    .auth_longclaw {\n"
+			+ "      stroke: #b2df8a !important;\n"
+			+ "      background-color: #b2df8a !important;\n"
+			+ "    }\n"
+			+ "    .auth_bastet {\n"
+			+ "      stroke: #fb9a99 !important;\n"
+			+ "      background-color: #fb9a99 !important;\n"
+			+ "    }\n"
 			+ "    .auth1 {\n"
 			+ "      fill: none;\n"
 			+ "      stroke: #1f78b4;\n"
@@ -244,7 +276,7 @@ class GraphWriter(WebsiteWriter):
 		i = 0
 		for d in dirAuths:
 			i += 1
-			self.site.write("        <span class=\"auth" + str(i) + "\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> " + d + "\n")
+			self.site.write("        <span class=\"auth_" + d + " auth" + str(i) + "\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> " + d + "\n")
 
 		self.site.write("      </div>\n"
 		+ "    </td>\n"
@@ -293,7 +325,7 @@ class GraphWriter(WebsiteWriter):
 		i = 0
 		for d in bwAuths:
 			i += 1
-			self.site.write("        <span class=\"auth" + str(i) + "\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> " + d + "\n")
+			self.site.write("        <span class=\"auth_" + d + " auth" + str(i) + "\" style=\"margin-left:5px\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> " + d + "\n")
 
 		self.site.write("      </div>\n"
 		+ "    </td>\n"
@@ -522,7 +554,7 @@ class GraphWriter(WebsiteWriter):
 			for(auth in graph.authorities)
 			{
 				this_auth = graph.authorities[auth];
-				lines.push({authIndex: i, line: (function(dirAuthClosure) {
+				lines.push({authName: this_auth, authIndex: i, line: (function(dirAuthClosure) {
 					return d3.line()
 					    .defined(function(d) { 
 						return d && graph.data_func(d, dirAuthClosure) && 
@@ -553,7 +585,7 @@ class GraphWriter(WebsiteWriter):
 			for(l in lines)
 			{
 				svg.append("path")
-			    	.attr("class", "auth" + lines[l].authIndex)
+			    	.attr("class", "auth_" + lines[l].authName + " auth" + lines[l].authIndex)
 				    .attr("d", lines[l].line);
 			}
 
