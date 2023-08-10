@@ -60,6 +60,7 @@ def main():
 	config.load(os.path.join(os.path.dirname(__file__), 'data', 'consensus.cfg'))
 	set_config(CONFIG)
 
+	validation = validate_votes()
 	consensuses, consensus_fetching_issues, consensus_fetching_runtimes = get_consensuses()
 	votes, vote_fetching_issues, vote_fetching_runtimes = get_votes()
 	clockskew = get_clockskew()
@@ -81,7 +82,7 @@ def main():
 	# pickle.dump(consensuses, open('consensus.p', 'wb'))
 	# pickle.dump(votes, open('votes.p', 'wb'))
 	# pickle.dump(fallback_dirs, open('fallback_dirs.p', 'wb'))
-
+	# pickle.dump(validation, open('validation.p', 'wb'))
 
 	dbc = sqlite3.connect(os.path.join('data', 'historical.db'))
 
@@ -306,6 +307,7 @@ def main():
 	w.set_votes(votes)
 	w.set_fallback_dirs(fallback_dirs)
 	w.set_clockskew(clockskew)
+	w.set_validation(validation)
 	w.write_website(os.path.join(os.path.dirname(__file__), 'out', 'consensus-health.html'), \
 		True, os.path.join(os.path.dirname(__file__), 'out', 'relay-indexes.txt'))
 	w.write_website(os.path.join(os.path.dirname(__file__), 'out', 'index.html'), False)

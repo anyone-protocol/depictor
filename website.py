@@ -26,6 +26,7 @@ class WebsiteWriter:
 	votes = None
 	fallback_dirs = None
 	clockskew = None
+	validation = None
 	known_authorities = []
 	bandwidth_authorities = []
 	consensus_expiry = datetime.timedelta(hours=3)
@@ -64,6 +65,7 @@ class WebsiteWriter:
 		self._write_authority_versions()
 		self._write_download_statistics()
 		self._write_relay_info_summary()
+		self._write_vote_validity()
 		if include_relay_info:
 			self._write_relay_info_table()
 		else:
@@ -89,6 +91,8 @@ class WebsiteWriter:
 		self.fallback_dirs = fallback_dirs
 	def set_clockskew(self, clockskew):
 		self.clockskew = clockskew
+	def set_validation(self, validation):
+		self.validation = validation
 	def get_consensus_time(self):
 		return self.consensus.valid_after
 	def all_votes_present(self):
@@ -233,7 +237,7 @@ class WebsiteWriter:
 			+ "directory consensus process.")
 		if not include_relay_info:
 			self.site.write("<br />This is the abbreviated page. The "
-			+ "<a href=\"/consensus-health.html\">detailed page</a> "
+			+ "<a href=\"consensus-health.html\">detailed page</a> "
 			+ "which includes the (large) relay info table is also "
 			+ "available.")
 		self.site.write("</p>\n")
@@ -442,7 +446,7 @@ class WebsiteWriter:
 		+ "    <col width=\"320\">\n"
 		+ "  </colgroup>\n")
 		if not self.votes:
-		  self.site.write("  <tr><td>(No votes.)</td><td></td><td></td></tr>\n")
+			self.site.write("  <tr><td>(No votes.)</td><td></td><td></td></tr>\n")
 		else:
 			for dirauth_nickname in self.known_authorities:
 				if dirauth_nickname in self.votes:
@@ -1520,6 +1524,37 @@ class WebsiteWriter:
 		self.site.write("</table>\n")
 
 	#-----------------------------------------------------------------------------------------
+	def _write_vote_validity(self):
+		"""
+		Write the vote validity
+		"""
+		self.site.write("<br>\n\n\n"
+		+ " <!-- ================================================================= -->"
+		+ "<a name=\"vote\">\n"
+		+ "<h3><a href=\"#vote\" class=\"anchor\">Validity "
+		+ "of votes</a></h3>\n"
+		+ "<br>\n"
+		+ "<p>This table monitors the votes each authority receives from other authorities.</p>\n"
+		+ "<br>\n"
+		+ "<table border=\"0\" cellpadding=\"4\" cellspacing=\"0\" summary=\"\">\n"
+		+ "  <colgroup>\n"
+		+ "    <col width=\"160\">\n"
+		+ "    <col width=\"630\">\n"
+		+ "  </colgroup>\n"
+		+ "  <tr>\n" 
+		+ "    <td><b>Sender</b></td>\n"
+		+ "    <td><b>Receiver</b></td>\n")
+		for dirauth_sender in self.validation:
+			self.site.write("<tr>\n" + "<td>" + dirauth_sender + "</td>\n<td>\n")
+			for (dirauth_receiver, validation) in self.validation[dirauth_sender].items():
+				self.site.write("<a style = \"color: " + ("blue" if validation[1] == 'OK' else "red") + \
+					"\" href = \"" + validation[0] + \
+					"\" title = \"" + validation[1] + "\">" + \
+					dirauth_receiver + "</a> \n")
+			self.site.write("</td></tr>\n")
+		self.site.write("</table>\n")
+
+	#-----------------------------------------------------------------------------------------
 	def _write_relay_info_pointer(self):
 		"""
 		Write a pointer to where the huge table is located
@@ -1530,7 +1565,7 @@ class WebsiteWriter:
 		+ "<h3><a href=\"#relayinfo\" class=\"anchor\">Relay info</a></h3>\n"
 		+ "<br>\n"
 		+ "<p>Looking for the (huge) relay info table? It's been moved to the <a "
-		+ "href=\"/consensus-health.html\">detailed page</a> to speed up this page.</p>\n\n"
+		+ "href=\"consensus-health.html\">detailed page</a> to speed up this page.</p>\n\n"
 		+ "<p id=\"relay-addition-javascript-pointer\">If you enable javascript, you will be able "
 		+ "to add individual relays from the current consensus to this page.</p>\n\n"
 		+ "<script src=\"jquery-3.3.1.min.js\"></script>\n"
@@ -1880,6 +1915,8 @@ if __name__ == '__main__':
 	w.set_votes(v)
 	f = pickle.load(open('fallback_dirs.p', 'rb'))
 	w.set_fallback_dirs(f)
+	va = pickle.load(open('validation.p', 'rb'))
+	w.set_validation(va)
 		
 
 	w.set_config(CONFIG)
