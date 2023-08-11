@@ -2,7 +2,7 @@
 *.p
 *.swp
 
-
+out/bwauth*
 out/index.html
 out/graphs.html
 out/vote-stats.csv
@@ -13,3 +13,16 @@ out/fallback-dir-stats.csv
 out/historical.db
 
 data/historical.db
+
+update.sh
+
+*.orig
+*.pyc
+*.swp
+*.swo
+.editorconfig
+.tox
+stem-git/.idea/
+stem-git/.mypy_cache/
+stem-git/test/data/
+stem-git/docs/_build/

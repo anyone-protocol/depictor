@@ -73,6 +73,82 @@ def get_votes():
 	return _get_documents('vote', '/tor/status-vote/current/authority.z')
 
 
+# Multithreading
+import concurrent.futures
+
+def _validate_from_one_vote(authority, recv_authority):
+	_downloader = stem.descriptor.remote.DescriptorDownloader(
+		timeout = 30,
+		retries = 5,
+		fall_back_to_authority = False,
+		document_handler = stem.descriptor.DocumentHandler.DOCUMENT,
+	)
+	query = _downloader.query(
+		'/tor/status-vote/current/%s.z' % authority.v3ident,
+		endpoints = [stem.DirPort(recv_authority.address, recv_authority.dir_port)],
+		default_params = False,
+		start = False
+	)
+	# Re-add the .z suffix per #25782
+	query.resource = query.resource + ".z"
+	exception = ""
+	for i in range(5):
+		try:
+			recv_vote = query.run()[0]
+			return ("OK", recv_vote)
+		except Exception as exc:
+			exception = str(exc)
+			time.sleep(10)
+			continue
+	return (exception, "")
+
+
+def validate_votes():
+	"""
+	Confirm that there is no discrepency within votes.
+
+	:returns: dict of the form {sender => {receiver => {URL, err}}}
+	"""
+	validation = {}
+	validation_queue = {}
+	validation_result = {}
+	with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+		for (nickname, authority) in get_dirauths().items():
+			if authority.v3ident is None:
+				continue
+			validation[nickname] = {}
+			validation_queue[nickname] = {}
+			validation_result[nickname] = {}
+			for (recv_nickname, recv_authority) in get_dirauths().items():
+				if recv_authority.v3ident is None:
+					continue
+				validation_queue[nickname][recv_nickname] = executor.submit(_validate_from_one_vote, authority, recv_authority)
+		for (nickname, authority) in get_dirauths().items():
+			if authority.v3ident is None:
+				continue
+			for (recv_nickname, recv_authority) in get_dirauths().items():
+				if recv_authority.v3ident is None:
+					continue
+				validation[nickname][recv_nickname] = validation_queue[nickname][recv_nickname].result()
+		for (nickname, authority) in get_dirauths().items():
+			if authority.v3ident is None:
+				continue
+			for (recv_nickname, recv_authority) in get_dirauths().items():
+				if recv_authority.v3ident is None:
+					continue
+				url = 'http://' + str(recv_authority.address) + ':' + str(recv_authority.dir_port) + \
+					'/tor/status-vote/current/%s.z' % authority.v3ident
+				if validation[nickname][recv_nickname][0] != "OK":
+					validation_result[nickname][recv_nickname] = (url, validation[nickname][recv_nickname][0])
+				elif validation[nickname][nickname][0] != "OK":
+					validation_result[nickname][recv_nickname] = (url, "Unable to validate the vote with the sender")
+				elif validation[nickname][nickname] != validation[nickname][recv_nickname]:
+					validation_result[nickname][recv_nickname] = (url, "Discrepency detected")
+				else:
+					validation_result[nickname][recv_nickname] = (url, "OK")
+	return validation_result
+
+
 def _get_documents(label, resource):
 	documents, issues, runtimes = {}, [], {}
 
@@ -132,7 +208,7 @@ def get_clockskew():
 			if processing > 5:
 				clockskew[nickname] -= datetime.timedelta(seconds=(processing / 2))
 			clockskew[nickname] -= startTimeStamp
-			clockskew[nickname] = round(clockskew[nickname].total_seconds(), 2)
+			clockskew[nickname] = clockskew[nickname].total_seconds()
 		except Exception as e:
 			print("Clockskew Exception:", e)
 			continue
