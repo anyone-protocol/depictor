@@ -64,8 +64,8 @@ class WebsiteWriter:
 		self._write_fallback_directory_status(True)
 		self._write_authority_versions()
 		self._write_download_statistics()
-		self._write_relay_info_summary()
 		self._write_vote_validity()
+		self._write_relay_info_summary()
 		if include_relay_info:
 			self._write_relay_info_table()
 		else:
@@ -301,20 +301,20 @@ class WebsiteWriter:
 		"""
 		self.site.write("<br>\n\n\n"
 		+ " <!-- ================================================================= -->"
-		+ "<a name=\"signatures\">\n" 
-		+ "<h3><a href=\"#signatures\" class=\"anchor\">" 
-		+ "Signatures</a></h3>\n" 
+		+ "<a name=\"signatures\">\n"
+		+ "<h3><a href=\"#signatures\" class=\"anchor\">"
+		+ "Signatures</a></h3>\n"
 		+ "<br>\n"
 		+ "<table border=\"0\" cellpadding=\"4\" cellspacing=\"0\" summary=\"\">\n"
 		+ "  <colgroup>\n"
 		+ "    <col width=\"160\">\n"
 		+ "    <col width=\"640\">\n"
 		+ "  </colgroup>\n")
-   
+
 		# XXX Should also write if the displayed consensus is out of date
 		signingFPs = [sig.identity for sig in self.consensus.signatures]
-		for dirauth_nickname in self.known_authorities: 
-			self.site.write("  <tr>\n" 
+		for dirauth_nickname in self.known_authorities:
+			self.site.write("  <tr>\n"
 			+ "    <td>" + dirauth_nickname + "</td>\n")
 			
 			#Try and find a structure that has it's IP & Port
@@ -324,7 +324,7 @@ class WebsiteWriter:
 			if authority:
 				authority = authority[0]
 				self.site.write("    <td><a href=\"http://" + authority.address + ":" + str(authority.dir_port)
-				+ "/tor/status-vote/current/consensus\">consensus</a> (<a href=\"http://" + authority.address 
+				+ "/tor/status-vote/current/consensus\">consensus</a> (<a href=\"http://" + authority.address
 				+ ":" + str(authority.dir_port) + "/tor/status-vote/current/consensus-microdesc\">microdesc</a>)")
 				self.site.write(" <a href=\"http://" + authority.address + ":" + str(authority.dir_port)
 				+ "/tor/status-vote/current/authority\">vote</a>")
@@ -1440,7 +1440,7 @@ class WebsiteWriter:
 		+ "    <col width=\"210\">\n"
 		+ "    <col width=\"210\">\n"
 		+ "  </colgroup>\n"
-		+ "  <tr>\n" 
+		+ "  <tr>\n"
 		+ "    <td></td>\n"
 		+ "    <td><b>Only in vote</b></td>"
 		+ "    <td><b>In vote and consensus</b></td>"
@@ -1531,8 +1531,7 @@ class WebsiteWriter:
 		self.site.write("<br>\n\n\n"
 		+ " <!-- ================================================================= -->"
 		+ "<a name=\"vote\">\n"
-		+ "<h3><a href=\"#vote\" class=\"anchor\">Validity "
-		+ "of votes</a></h3>\n"
+		+ "<h3><a href=\"#vote\" class=\"anchor\">Validity of votes</a></h3>\n"
 		+ "<br>\n"
 		+ "<p>This table monitors the votes each authority receives from other authorities.</p>\n"
 		+ "<br>\n"
@@ -1541,13 +1540,13 @@ class WebsiteWriter:
 		+ "    <col width=\"160\">\n"
 		+ "    <col width=\"630\">\n"
 		+ "  </colgroup>\n"
-		+ "  <tr>\n" 
+		+ "  <tr>\n"
 		+ "    <td><b>Sender</b></td>\n"
 		+ "    <td><b>Receiver</b></td>\n")
 		for dirauth_sender in self.validation:
 			self.site.write("<tr>\n" + "<td>" + dirauth_sender + "</td>\n<td>\n")
 			for (dirauth_receiver, validation) in self.validation[dirauth_sender].items():
-				self.site.write("<a style = \"color: " + ("blue" if validation[1] == 'OK' else "red") + \
+				self.site.write("<a class=\"" + ("oiv" if validation[1] != 'OK' else "") + \
 					"\" href = \"" + validation[0] + \
 					"\" title = \"" + validation[1] + "\">" + \
 					dirauth_receiver + "</a> \n")
@@ -1884,7 +1883,7 @@ class WebsiteWriter:
 
 if __name__ == '__main__':
 	"""
-	I found that the most effective way to test this independently was to pickle the 
+	I found that the most effective way to test this independently was to pickle the
 	downloaded conensuses in ./write_website.py like this:
 
 	import pickle

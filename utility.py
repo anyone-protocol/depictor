@@ -3,6 +3,7 @@
 import time
 import urllib
 import datetime
+import concurrent.futures
 
 import stem.directory
 import stem.descriptor
@@ -73,9 +74,6 @@ def get_votes():
 	return _get_documents('vote', '/tor/status-vote/current/authority.z')
 
 
-# Multithreading
-import concurrent.futures
-
 def _validate_from_one_vote(authority, recv_authority):
 	_downloader = stem.descriptor.remote.DescriptorDownloader(
 		timeout = 30,
@@ -101,7 +99,6 @@ def _validate_from_one_vote(authority, recv_authority):
 			time.sleep(10)
 			continue
 	return (exception, "")
-
 
 def validate_votes():
 	"""
@@ -147,7 +144,6 @@ def validate_votes():
 				else:
 					validation_result[nickname][recv_nickname] = (url, "OK")
 	return validation_result
-
 
 def _get_documents(label, resource):
 	documents, issues, runtimes = {}, [], {}
@@ -208,7 +204,7 @@ def get_clockskew():
 			if processing > 5:
 				clockskew[nickname] -= datetime.timedelta(seconds=(processing / 2))
 			clockskew[nickname] -= startTimeStamp
-			clockskew[nickname] = clockskew[nickname].total_seconds()
+			clockskew[nickname] = round(clockskew[nickname].total_seconds(), 2)
 		except Exception as e:
 			print("Clockskew Exception:", e)
 			continue
