@@ -203,7 +203,7 @@ class WebsiteWriter:
 			+ "    tr:nth-child(2n) {\n"
 			+ "      background-color:#eeeeee;\n"
 			+ "    }\n"
-			+ "    .oiv {\n"
+			+ "    .oiv, a.oiv {\n"
 			+ "      color:red;\n"
 			+ "    }\n"
 			+ "    .oic {\n"
