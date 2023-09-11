@@ -32,7 +32,6 @@ class WebsiteWriter:
 	consensus_expiry = datetime.timedelta(hours=3)
 	directory_key_warning_time = datetime.timedelta(days=14)
 	config = {}
-	known_params = []
 	already_added_pseudoflags = False
 	def write_website(self, filename, include_relay_info=True, indexesFilename=None):
 		if not self.already_added_pseudoflags:
@@ -86,7 +85,6 @@ class WebsiteWriter:
 		self.directory_key_warning_time = timedelta
 	def set_config(self, config):
 		self.config = config
-		self.known_params = config['known_params']
 	def set_fallback_dirs(self, fallback_dirs):
 		self.fallback_dirs = fallback_dirs
 	def set_clockskew(self, clockskew):
@@ -714,20 +712,19 @@ class WebsiteWriter:
 			for dirauth_nickname in self.known_authorities:
 				if dirauth_nickname in self.votes:
 					vote = self.votes[dirauth_nickname]
-					conflictOrInvalid = []
+					conflict = []
 					if vote.params:
 						for p in vote.params:
-							if (p not in self.known_params and not p.startswith('bwauth')) or \
-							   p not in self.consensus.params or \
+							if p not in self.consensus.params or \
 							   self.consensus.params[p] != vote.params[p]:
-								conflictOrInvalid.append(p)
+								conflict.append(p)
 					
-					if conflictOrInvalid:
+					if conflict:
 						self.site.write("  <tr>\n"
 						+ "    <td class=\"oiv\">" + dirauth_nickname + "</td>\n"
 						+ "    <td>params")
 						for p in vote.params:
-							if p in conflictOrInvalid:
+							if p in conflict:
 								self.site.write(" <span class=\"oiv\">" + p + "=" + str(vote.params[p]) + "</span>")
 							else:
 								self.site.write(" " + p + "=" + str(vote.params[p]))
@@ -1895,7 +1892,6 @@ if __name__ == '__main__':
 	import stem
 	import pickle
 	CONFIG = stem.util.conf.config_dict('consensus', {
-                                    'known_params': [],
                                     'bwauths': [],
                                     'ignore_fallback_authorities': False,
                                     'graph_logical_min': 125,

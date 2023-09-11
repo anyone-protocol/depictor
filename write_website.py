@@ -46,7 +46,6 @@ from graphs import GraphWriter
 #}
 
 CONFIG = stem.util.conf.config_dict('consensus', {
-	'known_params': [],
 	'bwauths': [],
 	'ignore_fallback_authorities' : False,
 	'graph_logical_min' : 125,
