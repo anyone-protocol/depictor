@@ -1,5 +1,5 @@
 diff --git a/stem/directory.py b/stem/directory.py
-index 710e598e..d61ef3d8 100644
+index 710e598e..a6429a0e 100644
 --- a/stem/directory.py
 +++ b/stem/directory.py
 @@ -63,7 +63,7 @@ AUTHORITY_ADDR = re.compile('"([\\d\\.]+):(\\d+) ([\\dA-F ]{49})",')
@@ -45,3 +45,12 @@ index 710e598e..d61ef3d8 100644
            fingerprint = fingerprint,
            nickname = matches.get(FALLBACK_NICKNAME),  # type: ignore
            has_extrainfo = matches.get(FALLBACK_EXTRAINFO) == '1',
+@@ -571,7 +572,7 @@ DIRECTORY_AUTHORITIES = {
+   ),
+   'tor26': Authority(
+     nickname = 'tor26',
+-    address = '86.59.21.38',
++    address = '217.196.147.77',
+     or_port = 443,
+     dir_port = 80,
+     fingerprint = '847B1F850344D7876491A54892F904934E4EB85D',
