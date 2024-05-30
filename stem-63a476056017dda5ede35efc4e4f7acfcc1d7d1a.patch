@@ -1,5 +1,5 @@
 diff --git a/stem/directory.py b/stem/directory.py
-index 710e598e..a6429a0e 100644
+index 710e598e..8296cb2a 100644
 --- a/stem/directory.py
 +++ b/stem/directory.py
 @@ -63,7 +63,7 @@ AUTHORITY_ADDR = re.compile('"([\\d\\.]+):(\\d+) ([\\dA-F ]{49})",')
@@ -45,7 +45,7 @@ index 710e598e..a6429a0e 100644
            fingerprint = fingerprint,
            nickname = matches.get(FALLBACK_NICKNAME),  # type: ignore
            has_extrainfo = matches.get(FALLBACK_EXTRAINFO) == '1',
-@@ -571,7 +572,7 @@ DIRECTORY_AUTHORITIES = {
+@@ -571,11 +572,11 @@ DIRECTORY_AUTHORITIES = {
    ),
    'tor26': Authority(
      nickname = 'tor26',
@@ -53,4 +53,50 @@ index 710e598e..a6429a0e 100644
 +    address = '217.196.147.77',
      or_port = 443,
      dir_port = 80,
-     fingerprint = '847B1F850344D7876491A54892F904934E4EB85D',
+-    fingerprint = '847B1F850344D7876491A54892F904934E4EB85D',
+     orport_v6 = ('2001:858:2:2:aabb:0:563b:1526', 443),
++    fingerprint = '847B1F850344D7876491A54892F904934E4EB85D',
+     v3ident = '14C131DFC5C6F93646BE72FA1401C02A8DF2E8B4',
+   ),
+   'dizum': Authority(
+@@ -591,8 +592,8 @@ DIRECTORY_AUTHORITIES = {
+     address = '131.188.40.189',
+     or_port = 443,
+     dir_port = 80,
+-    fingerprint = 'F2044413DAC2E02E3D6BCF4735A19BCA1DE97281',
+     orport_v6 = ('2001:638:a000:4140::ffff:189', 443),
++    fingerprint = 'F2044413DAC2E02E3D6BCF4735A19BCA1DE97281',
+     v3ident = 'ED03BB616EB2F60BEC80151114BB25CEF515B226',
+   ),
+   'dannenberg': Authority(
+@@ -609,8 +610,8 @@ DIRECTORY_AUTHORITIES = {
+     address = '171.25.193.9',
+     or_port = 80,
+     dir_port = 443,
+-    fingerprint = 'BD6A829255CB08E66FBE7D3748363586E46B3810',
+     orport_v6 = ('2001:67c:289c::9', 80),
++    fingerprint = 'BD6A829255CB08E66FBE7D3748363586E46B3810',
+     v3ident = '49015F787433103580E3B66A1707A00E60F2D15B',
+   ),
+   'Faravahar': Authority(
+@@ -634,10 +635,19 @@ DIRECTORY_AUTHORITIES = {
+     address = '204.13.164.118',
+     or_port = 443,
+     dir_port = 80,
+-    fingerprint = '24E2F139121D4394C54B5BCC368B3B411857C413',
+     orport_v6 = ('2620:13:4000:6000::1000:118', 443),
++    fingerprint = '24E2F139121D4394C54B5BCC368B3B411857C413',
+     v3ident = '27102BC123E7AF1D4741AE047E160C91ADC76B21',
+   ),
++  'faravahar': Authority(
++    nickname = 'faravahar',
++    address = '216.218.219.41',
++    or_port = 443,
++    dir_port = 80,
++    orport_v6 = ('2001:470:164:2::2', 443),
++    fingerprint = 'E3E42D35F801C9D5AB23584E0025D56FE2B33396',
++    v3ident = '70849B868D606BAECFB6128C5E3D782029AA394F',
++  ),
+   'Serge': Authority(
+     nickname = 'Serge',
+     address = '66.111.2.131',
