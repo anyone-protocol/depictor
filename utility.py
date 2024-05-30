@@ -23,7 +23,6 @@ def get_dirauths():
 		#Remove any BridgeAuths
 		_dirAuths = dict((k.lower(), v) for (k, v) in stem.directory.Authority.from_cache().items() if v.v3ident)
 		# Update IP addresses and other information that has changed since stem cut a release
-		del _dirAuths['faravahar']
 		_dirAuths['moria1'].address = "128.31.0.24"
 		_dirAuths['moria1'].or_port = 9201
 		_dirAuths['moria1'].dir_port = 9231
