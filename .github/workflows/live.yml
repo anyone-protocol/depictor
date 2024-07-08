@@ -3,7 +3,7 @@ name: LIVE - Tag and Deploy
 on:
   push:
     branches:
-      - main
+      - master
   workflow_dispatch:
 
 jobs:
@@ -13,6 +13,8 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Build and push
         uses: ./.github/actions/build-and-push
         with:
