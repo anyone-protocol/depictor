@@ -34,16 +34,64 @@ from graphs import GraphWriter
 
 #Also make sure to define the list of bwauths in the consensus.cfg file
 
-#stem.directory.DIRECTORY_AUTHORITIES = {
-#'Faravahar': Authority(
-#    nickname = 'Faravahar',
-#    address = '154.35.175.225',
-#    or_port = 443,
-#    dir_port = 80,
-#    fingerprint = 'CF6D0AAFB385BE71B8E111FC5CFF4B47923733BC',
-#    v3ident = 'EFCBE720AB3A82B99F9E953CD5BF50F7EEFC7B97',
-#  ),	
-#}
+stem.directory.DIRECTORY_AUTHORITIES = {
+'ATORDAeuclive': Authority(
+   nickname = 'ATORDAeuclive',
+   address = '49.13.145.234',
+   or_port = 9201,
+   dir_port = 9230,
+   fingerprint = '9F01AEC951F037664F8762D54E0EEA8E6809176A',
+   v3ident = '9425F567C631319350C6EEF65E775A8AC0699DA0',
+ ),
+'ATORDAuselive': Authority(
+   nickname = 'ATORDAuselive',
+   address = '5.161.108.187',
+   or_port = 9201,
+   dir_port = 9230,
+   fingerprint = '54849A361F8CED0D1B70B722CB8B33E9071E5561',
+   v3ident = '6F3E34A99853CC3CB2D9E7A6FF8D64ED75C8B9E8',
+ ),
+'ATORDAuswlive': Authority(
+   nickname = 'ATORDAuswlive',
+   address = '5.78.90.106',
+   or_port = 9201,
+   dir_port = 9230,
+   fingerprint = '2E397C3F4BC12B4F92940C2B92D4E091E82D2D31',
+   v3ident = 'C30FBEF011CDFDDD3879BF2BA77A56274899B1BB',
+ ),
+'AnyoneAshLive': Authority(
+   nickname = 'AnyoneAshLive',
+   address = '5.161.228.187',
+   or_port = 9201,
+   dir_port = 9230,
+   fingerprint = 'F3FE23A099FB8BBD36AD4B86CB32B573AB790234',
+   v3ident = '6CE85CF74AB78E4D350E0418234B97F47AB32A20',
+ ),
+'AnyoneHilLive': Authority(
+   nickname = 'AnyoneHilLive',
+   address = '5.78.94.15',
+   or_port = 9201,
+   dir_port = 9230,
+   fingerprint = '5F94833043EB92018319CB83559706CC1127151B',
+   v3ident = '39C78145CFDF464E624626D4F78A315387132082',
+ ),
+'AnyoneHelLive': Authority(
+   nickname = 'AnyoneHelLive',
+   address = '95.216.32.105',
+   or_port = 9201,
+   dir_port = 9230,
+   fingerprint = '9EDC92CC9C7C59E3FD871BC7F1ACD0885FD6CBF7',
+   v3ident = '5F18C895685A4207E0778FEB2A9CE4C90DABE7A6',
+ ),
+'AnyoneFalLive': Authority(
+   nickname = 'AnyoneFalLive',
+   address = '176.9.29.53',
+   or_port = 9201,
+   dir_port = 9230,
+   fingerprint = '5F18C895685A4207E0778FEB2A9CE4C90DABE7A6',
+   v3ident = '271F7D1592BF37AEB67BF48164928720EF9D0648',
+ ),
+}
 
 CONFIG = stem.util.conf.config_dict('consensus', {
 	'bwauths': [],
@@ -54,34 +102,31 @@ CONFIG = stem.util.conf.config_dict('consensus', {
 })
 
 def main():
-	# loads configuration data
+	print('Loading configuration data')
 	config = stem.util.conf.get_config("consensus")
 	config.load(os.path.join(os.path.dirname(__file__), 'data', 'consensus.cfg'))
 	set_config(CONFIG)
 
+	print('Fetching votes')
 	validation = validate_votes()
 	consensuses, consensus_fetching_issues, consensus_fetching_runtimes = get_consensuses()
 	votes, vote_fetching_issues, vote_fetching_runtimes = get_votes()
 	clockskew = get_clockskew()
 
-	# updates the download statistics file
+	print('Updating download statistics file')
 	f = open(os.path.join(os.path.dirname(__file__), 'out', 'download-stats.csv'), 'a')
 	for ds in consensus_fetching_runtimes:
 		f.write("%s,%i,%i\n" % (ds, time.time() * 1000, int(consensus_fetching_runtimes[ds] * 1000)))
 	f.close()
 
-	# Calculate the fallback directory info
-	if not CONFIG['ignore_fallback_authorities']:
-		fallback_dirs = Fallback.from_remote()
-	else:
-		fallback_dirs = []
-	
+	fallback_dirs = []
+
 	# great for debugging
-	# import pickle
-	# pickle.dump(consensuses, open('consensus.p', 'wb'))
-	# pickle.dump(votes, open('votes.p', 'wb'))
-	# pickle.dump(fallback_dirs, open('fallback_dirs.p', 'wb'))
-	# pickle.dump(validation, open('validation.p', 'wb'))
+	import pickle
+	pickle.dump(consensuses, open('consensus.p', 'wb'))
+	pickle.dump(votes, open('votes.p', 'wb'))
+	pickle.dump(fallback_dirs, open('fallback_dirs.p', 'wb'))
+	pickle.dump(validation, open('validation.p', 'wb'))
 
 	dbc = sqlite3.connect(os.path.join('data', 'historical.db'))
 
@@ -106,46 +151,11 @@ def main():
 						dbc.commit()
 				previous = d
 
-	# Calculate the number of fallback directory authorities present in the consensus and insert it into the database
-	if not CONFIG['ignore_fallback_authorities']:
-		fallback_dirs_running = 0
-		fallback_dirs_notrunning = 0
-		for relay_fp in list(consensuses.values())[0].routers:
-			if relay_fp in fallback_dirs and 'Running' in list(consensuses.values())[0].routers[relay_fp].flags:
-				fallback_dirs_running += 1
-			elif relay_fp in fallback_dirs:
-				fallback_dirs_notrunning += 1
-					
-		insertValues = [unix_time(list(consensuses.values())[0].valid_after)]
-		insertValues.append(fallback_dirs_running)
-		insertValues.append(fallback_dirs_notrunning)
-		insertValues.append(len(fallback_dirs) - fallback_dirs_running - fallback_dirs_notrunning)
-
-		dbc.execute("CREATE TABLE IF NOT EXISTS fallback_dir_data (date integer, fallback_dirs_running integer, fallback_dirs_notrunning integer, fallback_dirs_missing integer, PRIMARY KEY(date ASC));")
-		dbc.commit()
-
-		dbc.execute("INSERT OR REPLACE INTO fallback_dir_data VALUES (?,?,?,?)", insertValues)
-		dbc.commit()
-
-		# Write out the updated csv file for the graphs
-		fallback_dir_data = dbc.execute("SELECT * from fallback_dir_data ORDER BY date DESC LIMIT 2160")
-		f = open(os.path.join(os.path.dirname(__file__), 'out', 'fallback-dir-stats.csv'), 'w')
-		f.write("date")
-		f.write(",fallback_dirs_running")
-		f.write(",fallback_dirs_notrunning")
-		f.write(",fallback_dirs_missing")
-		f.write("\n")
-		for r in fallback_dir_data.fetchall():
-			for v in r:
-				f.write(("0" if v == None else str(v)) + ",")
-			f.write("\n")
-		f.close()
-
 	# Calculate the number of known and measured relays for each dirauth and insert it into the database
 	data = {}
 	for dirauth_nickname in votes:
 		vote = votes[dirauth_nickname]
-				
+
 		runningRelays    = 0
 		bandwidthWeights = 0
 		for r in vote.routers.values():
@@ -270,7 +280,7 @@ def main():
 
 	dbc.execute("INSERT OR REPLACE INTO bwauth_data(" + insertColumns + ") VALUES (?" + insertQuestions + ")", insertValues)
 	dbc.commit()
-		
+
 	# Write out the bwauth csv file
 	bwauth_data_columns = []
 	bwauth_data_schema = dbc.execute("PRAGMA table_info(bwauth_data)")

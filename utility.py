@@ -22,13 +22,6 @@ def get_dirauths():
 	if _dirAuths == None:
 		#Remove any BridgeAuths
 		_dirAuths = dict((k.lower(), v) for (k, v) in stem.directory.Authority.from_cache().items() if v.v3ident)
-		# Update IP addresses and other information that has changed since stem cut a release
-		_dirAuths['moria1'].address = "128.31.0.24"
-		_dirAuths['moria1'].or_port = 9201
-		_dirAuths['moria1'].dir_port = 9231
-		_dirAuths['moria1'].v3ident = "F533C81CEF0BC0267857C99B2F471ADF249FA232"
-		_dirAuths['moria1'].fingerprint = "1A25C6358DB91342AA51720A5038B72742732498"
-		_dirAuths['dizum'].address = "45.66.35.11"
 	return _dirAuths
 
 _bwAuths = None
@@ -110,6 +103,7 @@ def validate_votes():
 	validation_result = {}
 	with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
 		for (nickname, authority) in get_dirauths().items():
+			print('Processing validation_queue ' + nickname)
 			if authority.v3ident is None:
 				continue
 			validation[nickname] = {}
@@ -120,6 +114,7 @@ def validate_votes():
 					continue
 				validation_queue[nickname][recv_nickname] = executor.submit(_validate_from_one_vote, authority, recv_authority)
 		for (nickname, authority) in get_dirauths().items():
+			print('Processing validation ' + nickname)
 			if authority.v3ident is None:
 				continue
 			for (recv_nickname, recv_authority) in get_dirauths().items():
@@ -130,6 +125,7 @@ def validate_votes():
 			if authority.v3ident is None:
 				continue
 			for (recv_nickname, recv_authority) in get_dirauths().items():
+				print('Processing validation_result ' + recv_nickname)
 				if recv_authority.v3ident is None:
 					continue
 				url = 'http://' + str(recv_authority.address) + ':' + str(recv_authority.dir_port) + \
@@ -142,6 +138,7 @@ def validate_votes():
 					validation_result[nickname][recv_nickname] = (url, "Discrepency detected")
 				else:
 					validation_result[nickname][recv_nickname] = (url, "OK")
+	print('Processing done')
 	return validation_result
 
 def _get_documents(label, resource):

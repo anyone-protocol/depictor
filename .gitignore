@@ -2,7 +2,6 @@
 *.p
 *.swp
 
-
 out/index.html
 out/graphs.html
 out/vote-stats.csv
@@ -11,6 +10,8 @@ out/consensus-health*
 out/download-stats.csv
 out/fallback-dir-stats.csv
 out/historical.db
-out/out/bwauth-stats*
+out/bwauth-stats*
 
 data/historical.db
+
+/consensus.cfg
