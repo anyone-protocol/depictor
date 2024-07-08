@@ -20,10 +20,10 @@ job "depictor-live" {
 
     task "depictor-nginx-task" {
       driver = "docker"
-      force_pull = true
 
       config {
         image = "svforte/depictor:latest"
+        force_pull = true
         ports = ["nginx-http"]
       }
 
