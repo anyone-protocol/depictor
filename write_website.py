@@ -122,11 +122,11 @@ def main():
 	fallback_dirs = []
 
 	# great for debugging
-	import pickle
-	pickle.dump(consensuses, open('consensus.p', 'wb'))
-	pickle.dump(votes, open('votes.p', 'wb'))
-	pickle.dump(fallback_dirs, open('fallback_dirs.p', 'wb'))
-	pickle.dump(validation, open('validation.p', 'wb'))
+	# import pickle
+	# pickle.dump(consensuses, open('consensus.p', 'wb'))
+	# pickle.dump(votes, open('votes.p', 'wb'))
+	# pickle.dump(fallback_dirs, open('fallback_dirs.p', 'wb'))
+	# pickle.dump(validation, open('validation.p', 'wb'))
 
 	dbc = sqlite3.connect(os.path.join('data', 'historical.db'))
 
