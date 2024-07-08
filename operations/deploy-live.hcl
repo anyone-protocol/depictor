@@ -37,10 +37,10 @@ job "depictor-live" {
         port = "nginx-http"
         tags = [
           "traefik.enable=true",
-          "traefik.http.routers.deb-repo.entrypoints=https",
-          "traefik.http.routers.deb-repo.rule=Host(`netowork-health.dmz.ator.dev`)",
-          "traefik.http.routers.deb-repo.tls=true",
-          "traefik.http.routers.deb-repo.tls.certresolver=atorresolver",
+          "traefik.http.routers.depictor.entrypoints=https",
+          "traefik.http.routers.depictor.rule=Host(`netowork-health.dmz.ator.dev`)",
+          "traefik.http.routers.depictor.tls=true",
+          "traefik.http.routers.depictor.tls.certresolver=atorresolver",
         ]
         check {
           name     = "nginx http server alive"
