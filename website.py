@@ -1706,8 +1706,7 @@ class WebsiteWriter:
 		"""
 		self.site.write("  <tr class=\"tbl-hdr\">\n    <th>Fingerprint</th>\n    <th>Nickname</th>\n")
 		for dirauth_nickname in self.votes:
-			shortNickname = dirauth_nickname[0:5] + "." if len(dirauth_nickname) > 6 else dirauth_nickname
-			self.site.write("    <th>" + shortNickname + "</th>\n")
+			self.site.write("    <th>" + dirauth_nickname + "</th>\n")
 		self.site.write("    <th>consensus</th>\n  </tr>\n")
 
 	#-----------------------------------------------------------------------------------------
@@ -1871,9 +1870,6 @@ class WebsiteWriter:
 		+ "https://gitweb.torproject.org/depictor.git/\">depictor</a> version "
 		+ str(depictor_version) + " and <a href=\"https://gitweb.torproject.org/stem.git/"
 		+ "\">stem</a> version " + str(stem_version) + "</p>"
-		+ "<p>\"Tor\" and the \"Onion Logo\" are <a "
-		+ "href=\"https://www.torproject.org/docs/trademark-faq.html.en\">"
-		+ "registered trademarks</a> of The Tor Project, Inc.</p>\n"
 		+ "</div>\n"
 		+ "</body>\n"
 		+ "</html>")
