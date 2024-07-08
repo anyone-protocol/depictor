@@ -9,7 +9,6 @@ COPY out/jquery-3.3.1.min.js /app/out/
 COPY out/stylesheet-ltr.css /app/out/
 COPY out/favicon.ico /app/out/
 COPY *.py .
-COPY .git .
 
 COPY data/consensus.cfg /app/data/
 

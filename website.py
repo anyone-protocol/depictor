@@ -1852,24 +1852,11 @@ class WebsiteWriter:
 		Write the footer of the HTML page containing the blurb that is on
 		every page of the metrics website.
    		"""
-		depictor_version = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'])
-
-		original_path = os.path.abspath(os.path.dirname(__file__))
-		stem_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'stem'))
-		if os.path.exists(stem_path):
-			os.chdir(stem_path)
-			stem_version = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'])
-			os.chdir(original_path)
-		else:
-			stem_version = "(unavailable)"
 
 		self.site.write("</div>\n"
 		+ "</div>\n"
 		+ "<div class=\"bottom\" id=\"bottom\">\n"
-		+ "<p>This page was generated with <a href=\""
-		+ "https://gitweb.torproject.org/depictor.git/\">depictor</a> version "
-		+ str(depictor_version) + " and <a href=\"https://gitweb.torproject.org/stem.git/"
-		+ "\">stem</a> version " + str(stem_version) + "</p>"
+		+ "<p>This page was generated with depictor</p>"
 		+ "</div>\n"
 		+ "</body>\n"
 		+ "</html>")
