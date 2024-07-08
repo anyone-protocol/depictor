@@ -1,0 +1,21 @@
+name: LIVE - Tag and Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+      - name: Build and push
+        uses: ./.github/actions/build-and-push
+        with:
+          docker-username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          docker-password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          docker-tag: latest
