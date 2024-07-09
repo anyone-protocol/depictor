@@ -36,7 +36,7 @@ job "depictor-live" {
         name = "depictor-nginx"
         port = "nginx-http"
         tags = [
-          "deploy_sha=DEPLOY_SHA"
+          "deploy_sha=DEPLOY_SHA",
           "traefik.enable=true",
           "traefik.http.routers.depictor.entrypoints=https",
           "traefik.http.routers.depictor.rule=Host(`netowork-health.dmz.ator.dev`)",
