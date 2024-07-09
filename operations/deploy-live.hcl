@@ -22,7 +22,7 @@ job "depictor-live" {
       driver = "docker"
 
       config {
-        image = "svforte/depictor:latest"
+        image = "svforte/depictor:DEPLOY_SHA"
         force_pull = true
         ports = ["nginx-http"]
       }
@@ -36,7 +36,7 @@ job "depictor-live" {
         name = "depictor-nginx"
         port = "nginx-http"
         tags = [
-          "deploy_sha=DEPLOY_SHA",
+          "deploy_nonce=DEPLOY_NONCE",
           "traefik.enable=true",
           "traefik.http.routers.depictor.entrypoints=https",
           "traefik.http.routers.depictor.rule=Host(`netowork-health.dmz.ator.dev`)",
