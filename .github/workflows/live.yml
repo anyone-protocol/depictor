@@ -23,7 +23,7 @@ jobs:
         with:
           docker-username: ${{ secrets.DOCKER_HUB_USERNAME }}
           docker-password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          docker-tag: latest
+          docker-tag: ${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
       - name: Deploy
         uses: ./.github/actions/deploy
         with:
