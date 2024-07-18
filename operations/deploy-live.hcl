@@ -22,7 +22,7 @@ job "depictor-live" {
       driver = "docker"
 
       config {
-        image = "svforte/depictor:DEPLOY_SHA"
+        image = "svforte/depictor:DEPLOY_TAG"
         force_pull = true
         ports = ["nginx-http"]
       }

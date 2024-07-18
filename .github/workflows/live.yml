@@ -31,5 +31,5 @@ jobs:
           nomad-cacert: operations/admin-ui-ca.crt
           nomad-token: ${{ secrets.NOMAD_TOKEN_DEPLOY }}
           nomad-addr: ${{ secrets.NOMAD_DEPLOY_ADDR }}
-          deploy-sha: ${{ github.sha }}
+          deploy-tag: ${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           deploy-nonce: ${{ github.run_id }}-${{ github.run_attempt }}

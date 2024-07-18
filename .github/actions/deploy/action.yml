@@ -8,7 +8,7 @@ inputs:
     required: true
   nomad-addr:
     required: true
-  deploy-sha:
+  deploy-tag:
     required: true
   deploy-nonce:
     required: true
@@ -23,7 +23,7 @@ runs:
         NOMAD_TOKEN: ${{ inputs.nomad-token }}
         NOMAD_ADDR: ${{ inputs.nomad-addr }}
       run: |
-        sed -i 's/DEPLOY_SHA/${{ inputs.deploy-sha }}/g' operations/deploy-${{ inputs.environment }}.hcl
+        sed -i 's/DEPLOY_TAG/${{ inputs.deploy-tag }}/g' operations/deploy-${{ inputs.environment }}.hcl
         sed -i 's/DEPLOY_NONCE/${{ inputs.deploy-nonce }}/g' operations/deploy-${{ inputs.environment }}.hcl
         curl -L https://releases.hashicorp.com/nomad/1.6.3/nomad_1.6.3_linux_amd64.zip -o nomad.zip
         unzip nomad.zip
