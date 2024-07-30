@@ -22,7 +22,7 @@ job "depictor-live" {
       driver = "docker"
 
       config {
-        image = "ghcr.io/ator-development/depictor:DEPLOY_TAG"
+        image = "svforte/depictor:DEPLOY_TAG"
         force_pull = true
         ports = ["nginx-http"]
       }
