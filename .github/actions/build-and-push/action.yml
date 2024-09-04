@@ -21,4 +21,4 @@ runs:
       uses: docker/build-push-action@v2
       with:
         push: true
-        tags: ghcr.io/ator-development/depictor:${{ github.sha }},ghcr.io/ator-development/depictor:${{ inputs.docker-tag }}
+        tags: ghcr.io/anyone-protocol/depictor:${{ github.sha }},ghcr.io/anyone-protocol/depictor:${{ inputs.docker-tag }}
