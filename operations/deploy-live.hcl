@@ -22,7 +22,7 @@ job "depictor-live" {
       driver = "docker"
 
       config {
-        image = "ghcr.io/ator-development/depictor:DEPLOY_TAG"
+        image = "ghcr.io/anyone-protocol/depictor:DEPLOY_TAG"
         force_pull = true
         ports = ["nginx-http"]
       }
@@ -39,9 +39,9 @@ job "depictor-live" {
           "deploy_nonce=DEPLOY_NONCE",
           "traefik.enable=true",
           "traefik.http.routers.depictor.entrypoints=https",
-          "traefik.http.routers.depictor.rule=Host(`netowork-health.dmz.ator.dev`)",
+          "traefik.http.routers.depictor.rule=Host(`net-health.en.anyone.tech`)",
           "traefik.http.routers.depictor.tls=true",
-          "traefik.http.routers.depictor.tls.certresolver=atorresolver",
+          "traefik.http.routers.depictor.tls.certresolver=anyoneresolver",
         ]
         check {
           name     = "nginx http server alive"
