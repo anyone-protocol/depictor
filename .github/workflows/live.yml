@@ -11,7 +11,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
@@ -33,3 +32,15 @@ jobs:
           nomad-addr: ${{ secrets.NOMAD_DEPLOY_ADDR }}
           deploy-tag: ${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           deploy-nonce: ${{ github.run_id }}-${{ github.run_attempt }}
+  
+  keepalive:
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    needs: build
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: gautamkrishnar/keepalive-workflow@v2
+        with:
+          use_api: false
