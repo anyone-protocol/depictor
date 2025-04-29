@@ -15,7 +15,7 @@ SECONDS_DIFF=$((NOW_TIME - LAST_COMMIT_TIME))
 
 # 30 days = 2592000 seconds
 # First we use 1 to test it works on github
-if [ "$SECONDS_DIFF" -gt 1 ]; then
+if [ "$SECONDS_DIFF" -gt 2592000 ]; then
   echo "Keepalive run at $(date)" > .github/keepalive/file.txt
   git add .github/keepalive/file.txt
   git commit -m "Keepalive commit at $(date)"
