@@ -40,7 +40,9 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: gautamkrishnar/keepalive-workflow@v2
-        with:
-          use_api: false
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Keepalive Script
+        run: |
+          bash ./.github/keepalive/script.sh
