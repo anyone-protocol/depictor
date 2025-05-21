@@ -1,7 +1,7 @@
 job "depictor-live" {
   datacenters = ["ator-fin"]
   type        = "service"
-  namespace   = "ator-network"
+  namespace   = "live-network"
 
   group "depictor" {
     count = 1
