@@ -12,6 +12,7 @@ job "depictor-live" {
     count = 1
 
     network {
+      mode = "bridge"
       port "nginx-http" {
         to = 80
         host_network = "wireguard"
