@@ -11,6 +11,8 @@ job "depictor-live" {
   update {
     # NB: Startup was previously failing default 5m deadline
     healthy_deadline  = "10m"
+    # NB: Process deadline must be longer than healthy deadline
+    progress_deadline = "15m"
   }
 
   group "depictor" {
