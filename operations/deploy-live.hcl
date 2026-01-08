@@ -8,6 +8,11 @@ job "depictor-live" {
     value = "live-network"
   }
 
+  update {
+    # NB: Startup was previously failing default 5m deadline
+    healthy_deadline  = "10m"
+  }
+
   group "depictor" {
     count = 1
 
