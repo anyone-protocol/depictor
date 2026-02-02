@@ -55,6 +55,8 @@ job "depictor-live" {
 
       env {
         CRON_SCHEDULE = "5 * * * *"
+        DOWNLOAD_STATS_MAX_SIZE_MB = "100"
+        DOWNLOAD_STATS_KEEP_LINES = "20000"
       }
 
       resources {

@@ -349,6 +349,17 @@ def main():
 			if (consensus_time - f_time).days > weeks_to_keep * 7:
 				os.remove(os.path.join(os.path.dirname(__file__), 'out', f))
 
+	# Trim download-stats.csv if it exceeds size limit (keep last N lines)
+	download_stats_path = os.path.join(os.path.dirname(__file__), 'out', 'download-stats.csv')
+	max_size_mb = int(os.environ.get('DOWNLOAD_STATS_MAX_SIZE_MB', '50'))
+	keep_lines = int(os.environ.get('DOWNLOAD_STATS_KEEP_LINES', '10000'))
+	if os.path.exists(download_stats_path) and os.path.getsize(download_stats_path) > max_size_mb * 1024 * 1024:
+		print(f'Trimming download-stats.csv to last {keep_lines} lines')
+		with open(download_stats_path, 'r') as f:
+			lines = f.readlines()[-keep_lines:]
+		with open(download_stats_path, 'w') as f:
+			f.writelines(lines)
+
 
 if __name__ == '__main__':
 	try:
