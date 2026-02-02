@@ -8,13 +8,6 @@ job "depictor-live" {
     value = "live-network"
   }
 
-  update {
-    # NB: Startup was previously failing default 5m deadline
-    healthy_deadline  = "10m"
-    # NB: Process deadline must be longer than healthy deadline
-    progress_deadline = "15m"
-  }
-
   group "depictor" {
     count = 1
 
@@ -58,6 +51,10 @@ job "depictor-live" {
         image = "ghcr.io/anyone-protocol/depictor:DEPLOY_TAG"
         force_pull = true
         ports = ["nginx-http"]
+      }
+
+      env {
+        CRON_SCHEDULE = "5 * * * *"
       }
 
       resources {

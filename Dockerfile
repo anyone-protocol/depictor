@@ -1,22 +1,35 @@
-FROM python:3 as build
+FROM nginx:1.27
+
+# Install Python and cron
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 \
+    python3-pip \
+    cron \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-RUN mkdir /app/out
+# Create output directory linked to nginx html
+RUN rm -rf /usr/share/nginx/html \
+    && ln -s /app/out /usr/share/nginx/html \
+    && mkdir /app/out /app/data
 
-COPY out/d3.v4.min.js /app/out/
-COPY out/jquery-3.3.1.min.js /app/out/
-COPY out/stylesheet-ltr.css /app/out/
-COPY out/favicon.ico /app/out/
+# Install Python dependencies (before copying code for better caching)
+RUN pip3 install --break-system-packages --no-cache-dir stem pycryptodomex
+
+# Copy entrypoint scripts (changes less frequently)
+COPY entrypoint.sh /entrypoint.sh
+COPY run_write_website.sh /app/run_write_website.sh
+RUN chmod +x /entrypoint.sh /app/run_write_website.sh
+
+# Copy static assets
+COPY out/d3.v4.min.js out/jquery-3.3.1.min.js out/stylesheet-ltr.css out/favicon.ico /app/out/
+
+# Copy Python scripts and config
 COPY *.py .
-
 COPY data/consensus.cfg /app/data/
 
-RUN pip3 install stem
-RUN pip3 install pycryptodomex
-
+# Run initial website generation
 RUN python3 write_website.py
 
-FROM nginx:1.27
-
-COPY --from=build /app/out /usr/share/nginx/html
+ENTRYPOINT ["/entrypoint.sh"]

@@ -1,8 +1,6 @@
 name: LIVE - Tag and Deploy
 
 on:
-  schedule:
-    - cron: "5 * * * *" # Every hour at minute 5
   push:
     branches:
       - master
@@ -32,17 +30,3 @@ jobs:
           nomad-addr: ${{ secrets.NOMAD_ADDR }}
           deploy-tag: ${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           deploy-nonce: ${{ github.run_id }}-${{ github.run_attempt }}
-  
-  keepalive:
-    runs-on: ubuntu-latest
-    if: ${{ always() }}
-    needs: build
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Run Keepalive Script
-        run: |
-          bash ./.github/keepalive/script.sh
