@@ -1,4 +1,5 @@
 name: Build and Push Docker Image
+description: 'Build and push Depictor Docker image to GitHub Container Registry'
 inputs:
   docker-username:
     required: true
