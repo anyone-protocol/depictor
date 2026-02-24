@@ -60,8 +60,8 @@ job "depictor-live" {
       }
 
       resources {
-        cpu    = 128
-        memory = 128
+        cpu    = 2048
+        memory = 4096 # python script is memory hungry :(
       }
     }
   }
